@@ -7,7 +7,6 @@ CREATE TABLE IF NOT EXISTS statcast.statcast_raw (
     `release_speed` Nullable(Float64),
     `release_pos_x` Nullable(Float64),
     `release_pos_z` Nullable(Float64),
-    `player_name` Nullable(String),
     `batter` Int64 DEFAULT 0,
     `pitcher` Int64 DEFAULT 0,
     `events` Nullable(String),
