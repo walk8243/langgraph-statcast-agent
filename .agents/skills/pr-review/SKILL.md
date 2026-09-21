@@ -36,7 +36,7 @@ description: Use this skill when reviewing and testing a Pull Request, checking 
 ---
 
 ## （参考）マージ完了後のクリーンアップ
-人間による PR マージ（Squash and Merge）が完了した後、ローカル環境で以下のクリーンアップを行います。
+人間による PR マージ（通常のマージ / Create a merge commit）が完了した後、ローカル環境で以下のクリーンアップを行います。
 
 1. メインブランチを最新化:
    ```bash
