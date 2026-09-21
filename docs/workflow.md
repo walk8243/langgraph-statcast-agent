@@ -22,7 +22,7 @@ flowchart TD
     F --> G[3. 実装着手<br/>Status: In progress に変更<br/>ブランチ作成 & コーディング]
     G --> H[4. PR作成<br/>1 issue 1 PR / Closes #XX]
     H --> I[5. PRレビュー通過<br/>Status: In review に変更]
-    I --> J[マージ & 自動クローズ<br/>Status: Done]
+    I --> J[手動マージ & 自動クローズ<br/>Status: Done]
 ```
 
 ---
@@ -100,11 +100,15 @@ flowchart TD
   * 対象Issueの「達成条件」がすべて満たされているか。
   * 実行計画と実装に乖離がないか。
   * 動作確認手順が明確で、テストがパスしているか。
-* **マージ方式**:
-  * 原則 **Squash and Merge** を推奨します（コミット履歴をシンプルに保つため）。
+* **Project ステータス**:
+  * レビューおよび動作検証を通過したら、Project上のステータスを **`In review`** に変更します。
+* **マージの実行 (手動)**:
+  * ⚠️ **PR のマージは必ず人間（開発者・レビュアー）の目を通して手動で行います。**
+  * エージェントはレビューおよび検証の完了までを担当し、勝手にマージを実行することはありません。
+  * マージ方式は原則 **Squash and Merge** を推奨します。
 * **完了処理**:
-  * PRマージにより対応Issueが自動クローズされます。
-  * GitHub Projects上のカードが自動（または手動）で `Done` に遷移します。
+  * 人間による PR マージにより、対応Issueが自動クローズされます。
+  * GitHub Projects上のカードが自動で `Done` に遷移します。
 
 ---
 
@@ -166,5 +170,5 @@ AI エージェント（Antigravity等）と協調して本ワークフローを
 | **2. 実行計画立案** | `task-plan` | `.agents/skills/task-plan/SKILL.md` |
 | **3. 実装** | `task-implement` | `.agents/skills/task-implement/SKILL.md` |
 | **4. PR作成** | `pr-create` | `.agents/skills/pr-create/SKILL.md` |
-| **5. レビュー & マージ** | `pr-review-merge` | `.agents/skills/pr-review-merge/SKILL.md` |
+| **5. レビュー** | `pr-review` | `.agents/skills/pr-review/SKILL.md` |
 

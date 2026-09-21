@@ -35,7 +35,8 @@
 
 5. **レビュー & マージ (Review & Merge)**
    - **PRレビューを行い、通過・確認待ちとなったら、ProjectのIssueステータスを「`In review`」に変更してください。**
-   - レビュー指摘対応および検証が完了したらマージします（Squash and Merge推奨）。マージ完了によりStatusは「`Done`」となります。
+   - **⚠️ マージの実行**: PR のマージは必ず**人間（開発者）の目を通して手動で**行います。エージェントは自動でマージを実行せず、動作確認・レビュー・ステータス更新を完了した上で人間によるマージを依頼してください。
+   - 人間によるマージ完了（Squash and Merge推奨）により、Issueが自動クローズされ、Statusは「`Done`」となります。
 
 ---
 
@@ -49,5 +50,5 @@
 | `task-plan` | [.agents/skills/task-plan/SKILL.md](file:///d:/git/langgraph-statcast-agent/.agents/skills/task-plan/SKILL.md) | 実行計画立案（Issueコメント投稿、1 issue 1 PR 判定、子Issue起票） |
 | `task-implement` | [.agents/skills/task-implement/SKILL.md](file:///d:/git/langgraph-statcast-agent/.agents/skills/task-implement/SKILL.md) | 実装（ブランチ作成、コーディング、テスト実行） |
 | `pr-create` | [.agents/skills/pr-create/SKILL.md](file:///d:/git/langgraph-statcast-agent/.agents/skills/pr-create/SKILL.md) | PR作成（1 issue 1 PR、`Closes #XX`、テンプレート適用） |
-| `pr-review-merge` | [.agents/skills/pr-review-merge/SKILL.md](file:///d:/git/langgraph-statcast-agent/.agents/skills/pr-review-merge/SKILL.md) | レビュー・マージ（差分・DoD確認、マージ実行、Issueクローズ確認） |
+| `pr-review` | [.agents/skills/pr-review/SKILL.md](file:///d:/git/langgraph-statcast-agent/.agents/skills/pr-review/SKILL.md) | PRレビュー（差分・DoD確認、動作検証、ステータスIn review更新、人間へのマージ依頼） |
 
