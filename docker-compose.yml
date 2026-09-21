@@ -1,0 +1,74 @@
+services:
+  pubsub:
+    image: gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators
+    container_name: statcast-pubsub
+    command: gcloud beta emulators pubsub start --project=${GCP_PROJECT_ID:-local-statcast-project} --host-port=0.0.0.0:8085
+    ports:
+      - "${PUBSUB_PORT:-8085}:8085"
+    environment:
+      - PUBSUB_PROJECT_ID=${GCP_PROJECT_ID:-local-statcast-project}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -f http://localhost:8085 || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  pubsub-init:
+    image: gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators
+    container_name: statcast-pubsub-init
+    depends_on:
+      pubsub:
+        condition: service_healthy
+    environment:
+      - PUBSUB_HOST=pubsub
+      - PUBSUB_PORT=8085
+      - GCP_PROJECT_ID=${GCP_PROJECT_ID:-local-statcast-project}
+      - PUBSUB_TOPIC_STATCAST_RAW=${PUBSUB_TOPIC_STATCAST_RAW:-statcast-raw-ingested}
+      - PUBSUB_SUBSCRIPTION_STATCAST_RAW=${PUBSUB_SUBSCRIPTION_STATCAST_RAW:-statcast-raw-ingested-sub}
+    volumes:
+      - ./docker/pubsub/init-topics.sh:/init-topics.sh:ro
+    entrypoint: ["/bin/bash", "/init-topics.sh"]
+    restart: "no"
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.8
+    container_name: statcast-clickhouse
+    ports:
+      - "${CLICKHOUSE_HTTP_PORT:-8123}:8123"
+      - "${CLICKHOUSE_NATIVE_PORT:-9000}:9000"
+    environment:
+      - CLICKHOUSE_DB=${CLICKHOUSE_DB:-statcast}
+      - CLICKHOUSE_USER=${CLICKHOUSE_USER:-statcast}
+      - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD:-statcast_pass}
+      - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8123/ping || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: statcast-postgres
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-statcast}
+      - POSTGRES_USER=${POSTGRES_USER:-statcast}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-statcast_pass}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-statcast} -d ${POSTGRES_DB:-statcast}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+volumes:
+  clickhouse_data:
+  postgres_data:
