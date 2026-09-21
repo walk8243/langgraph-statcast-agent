@@ -94,10 +94,11 @@ flowchart TD
   * 形式: `feature/issue-<num>-<short-description>` / `fix/issue-<num>-<short-description>`
   * 例: `feature/issue-1-docker-compose-setup`
 * **コミットメッセージ規約**:
-  * コミットメッセージは**日本語**で記述し、対応するIssue番号を含めます。
-  * 形式: `<type>: <日本語の説明> (#<num>)`
+  * コミットメッセージは**日本語**で記述します。
+  * すべての変更は Issue と紐付いた PR（`Closes #XX`）を経由するため、**コミットメッセージへの Issue 番号の記載は不要**です。
+  * 形式: `<type>: <日本語の説明>`
   * プレフィックス例: `feat:` (新機能), `fix:` (バグ修正), `docs:` (ドキュメント), `refactor:` (改善・リファクタリング), `test:` (テスト), `chore:` (メンテ等)
-  * 例: `feat: データ収集パイプラインの実装 (#1)` / `docs: プロジェクト管理ワークフローの整備 (#2)`
+  * 例: `feat: データ収集パイプラインの実装` / `docs: プロジェクト管理ワークフローの整備`
 
 ---
 

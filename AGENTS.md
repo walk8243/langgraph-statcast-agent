@@ -30,7 +30,7 @@
    - **実装を開始する際、対象 Issue の Assignee に自身（`@me`）を設定し、Project の `Start date`（本日日付 `YYYY-MM-DD`）を設定した上で、Issueステータスを「`In progress`」に変更してください。**
    - ブランチ名は `feature/issue-<num>-<short-description>` または `fix/issue-<num>-<short-description>` としてください。
    - Issueコメントの実行計画に沿って実装を進め、テストを記述・実行してください。
-   - **コミットメッセージは日本語で記述し、対応するIssue番号を含めてください**（例: `feat: 〇〇の実装 (#XX)` / `fix: 〇〇の修正 (#XX)`）。
+   - **コミットメッセージは日本語で記述してください**（すべてのPRが対応するIssueと紐付くため、コミットメッセージへのIssue番号の記載は不要です。例: `feat: 〇〇の実装` / `fix: 〇〇の修正`）。
 
 4. **PR作成 (Pull Request)**
    - **1 issue 1 PR**: 1つのPRが対応するIssueは原則1つです。
