@@ -313,3 +313,11 @@ pyrightconfig.json
 .env.*.local
 *.env
 
+# Python / uv
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+

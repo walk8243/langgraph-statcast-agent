@@ -1,0 +1,26 @@
+[project]
+name = "statcast-ingestion"
+version = "0.1.0"
+description = "Baseball Savant to ClickHouse Statcast Ingestion Service"
+requires-python = ">=3.10"
+dependencies = [
+    "clickhouse-connect>=0.7.0",
+    "requests>=2.31.0",
+    "pandas>=2.0.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+]
+
+[project.scripts]
+statcast-ingestion = "src.main:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]

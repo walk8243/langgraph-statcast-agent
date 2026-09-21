@@ -136,12 +136,14 @@ docker compose ps
 ### 4. データの取得とエージェント実行
 
 ```bash
-# 1. データの収集実行 (Ingestion)
-docker compose run --rm ingestion --player-id 660271 --season 2026
+# 1. データの収集実行 (Ingestion - 投手データ取得例)
+docker compose run --rm ingestion --player-id 808967 --start-date 2024-04-01 --end-date 2024-04-07
+
+# 打者データを取得する場合
+docker compose run --rm ingestion --player-id 673548 --player-type batter --start-date 2024-04-01 --end-date 2024-04-07
 
 # 2. Agent CLI の対話起動
 docker compose run --rm agent
-
 ```
 
 ---
@@ -161,7 +163,7 @@ docker compose run --rm agent
 ## 検証ステータス
 
 * [ ] Docker Compose 環境の構築（DB群 + Pub/Sub エミュレータ）
-* [ ] Ingestion サービスの実装（Savant CSV 取得 → 列指向DB 投入）
+* [x] Ingestion サービスの実装（Savant CSV 取得 → 列指向DB 投入）
 * [ ] Pub/Sub を経由した Aggregator のトリガー実装
 * [ ] Aggregator による指標算出（Barrel%, xwOBA 等）と RDB 格納
 * [ ] LangGraph による基本解説ワークフローの実装
