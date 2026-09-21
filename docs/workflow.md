@@ -147,3 +147,18 @@ Issueに投稿する実行計画コメントは、以下のようなフォーマ
   * `In Progress`: 実行計画をコメント投稿し、実装を開始した状態
   * `In Review`: PRを作成した状態
   * `Done`: PRがマージされ、Issueがクローズされた状態
+
+---
+
+## 5. エージェント支援スキル (Workspace Skills)
+
+AI エージェント（Antigravity等）と協調して本ワークフローをスムーズに進めるため、各フェーズに対応した Workspace Skill が `.agents/skills/` に定義されています。
+
+| フェーズ | 対応スキル | 格納場所 |
+| :--- | :--- | :--- |
+| **1. タスク起票** | `task-create` | `.agents/skills/task-create/SKILL.md` |
+| **2. 実行計画立案** | `task-plan` | `.agents/skills/task-plan/SKILL.md` |
+| **3. 実装** | `task-implement` | `.agents/skills/task-implement/SKILL.md` |
+| **4. PR作成** | `pr-create` | `.agents/skills/pr-create/SKILL.md` |
+| **5. レビュー & マージ** | `pr-review-merge` | `.agents/skills/pr-review-merge/SKILL.md` |
+
