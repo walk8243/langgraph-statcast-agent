@@ -2,7 +2,7 @@
 
 このリポジトリで作業するすべての AI コーディングエージェント（Antigravity, Copilot, etc.）および開発者は、以下のプロジェクト管理・開発ワークフローを遵守してください。
 
-詳細な規定は [docs/workflow.md](file:///d:/git/langgraph-statcast-agent/docs/workflow.md) を参照してください。
+詳細な規定は [docs/workflow.md](docs/workflow.md) を参照してください。
 
 ---
 
@@ -50,9 +50,9 @@
 
 | スキル名 | 格納場所 | 用途 |
 | :--- | :--- | :--- |
-| `task-create` | [.agents/skills/task-create/SKILL.md](file:///d:/git/langgraph-statcast-agent/.agents/skills/task-create/SKILL.md) | タスク起票（前提条件・達成条件を整理して Issue 作成） |
-| `task-plan` | [.agents/skills/task-plan/SKILL.md](file:///d:/git/langgraph-statcast-agent/.agents/skills/task-plan/SKILL.md) | 実行計画立案（Issueコメント投稿、1 issue 1 PR 判定、子Issue起票） |
-| `task-implement` | [.agents/skills/task-implement/SKILL.md](file:///d:/git/langgraph-statcast-agent/.agents/skills/task-implement/SKILL.md) | 実装（ブランチ作成、コーディング、テスト実行） |
-| `pr-create` | [.agents/skills/pr-create/SKILL.md](file:///d:/git/langgraph-statcast-agent/.agents/skills/pr-create/SKILL.md) | PR作成（1 issue 1 PR、`Closes #XX`、テンプレート適用） |
-| `pr-review` | [.agents/skills/pr-review/SKILL.md](file:///d:/git/langgraph-statcast-agent/.agents/skills/pr-review/SKILL.md) | PRレビュー（差分・DoD確認、動作検証、ステータスIn review更新、人間へのマージ依頼） |
+| `task-create` | [.agents/skills/task-create/SKILL.md](.agents/skills/task-create/SKILL.md) | タスク起票（前提条件・達成条件を整理して Issue 作成） |
+| `task-plan` | [.agents/skills/task-plan/SKILL.md](.agents/skills/task-plan/SKILL.md) | 実行計画立案（Issueコメント投稿、1 issue 1 PR 判定、子Issue起票） |
+| `task-implement` | [.agents/skills/task-implement/SKILL.md](.agents/skills/task-implement/SKILL.md) | 実装（ブランチ作成、コーディング、テスト実行） |
+| `pr-create` | [.agents/skills/pr-create/SKILL.md](.agents/skills/pr-create/SKILL.md) | PR作成（1 issue 1 PR、`Closes #XX`、テンプレート適用） |
+| `pr-review` | [.agents/skills/pr-review/SKILL.md](.agents/skills/pr-review/SKILL.md) | PRレビュー（差分・DoD確認、動作検証、ステータスIn review更新、人間へのマージ依頼） |
 
