@@ -1,0 +1,58 @@
+name: タスク起票 (Task)
+description: プロジェクト管理用のタスクを起票します（起票時は前提条件と達成条件のみでOK）
+title: "[Task]: "
+labels: ["task"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### タスク起票ガイドライン
+        - 起票段階では詳細な実装計画は不要です。
+        - **「前提条件」** と **「達成条件」** を整理してください。
+        - 実行計画は着手時に作成し、このIssueのコメントに投稿します。
+  - type: textarea
+    id: overview
+    attributes:
+      label: 概要
+      description: タスクの目的や背景を簡潔に記載してください。
+      placeholder: 何を目的としたタスクかを簡潔に記載
+    validations:
+      required: true
+  - type: textarea
+    id: prerequisites
+    attributes:
+      label: 前提条件 (Prerequisites)
+      description: このタスクに着手・完了するために必要な前提（依存する他タスク、環境、技術選定、リソース等）を記載してください。
+      placeholder: |
+        - [ ] #XX の完了
+        - Docker Compose 環境が構築されていること
+        - （特になければ「なし」と記載）
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: 達成条件 (Acceptance Criteria / Definition of Done)
+      description: 何が完了したらこのタスクがクローズ可能になるかを箇条書きで記載してください。
+      placeholder: |
+        - [ ] 〇〇の設定ファイルが作成されていること
+        - [ ] 〇〇のコマンドで正常に動作確認ができること
+        - [ ] テスト/動作検証が完了していること
+    validations:
+      required: true
+  - type: input
+    id: parent_issue
+    attributes:
+      label: 親Issue / 関連Issue
+      description: "実行計画中にPR分割などで生じた子タスクの場合、元の親Issue番号（例: #12）を記載してください。"
+      placeholder: "#XX"
+    validations:
+      required: false
+  - type: textarea
+    id: notes
+    attributes:
+      label: 備考 / 参考情報
+      description: 参考リンクや関連資料があれば記載してください（任意）。
+      placeholder: 参考ドキュメント、関連PRなど
+    validations:
+      required: false

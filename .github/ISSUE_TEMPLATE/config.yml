@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: プロジェクト管理ワークフロー (Documentation)
+    url: https://github.com/walk8243/langgraph-statcast-agent/blob/main/docs/workflow.md
+    about: タスク起票からレビュー・マージまでの運用ルールと開発ガイドラインを確認できます。
