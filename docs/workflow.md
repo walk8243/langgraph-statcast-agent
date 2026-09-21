@@ -85,6 +85,9 @@ flowchart TD
 
 ### フェーズ 3: 実装 (Implementation)
 
+* **着手時の準備**:
+  * **Assignee の設定**: 対象 Issue の担当者として自分自身（`@me`）をアサインします。
+  * **Project ステータス更新**: [GitHub Project](https://github.com/users/walk8243/projects/6/views/1) 上で対象 Issue のステータスを **`In progress`** に変更します。
 * **作業ブランチの作成**:
   * ブランチ名は Issue 番号とタスク概要を含めます。
   * 形式: `feature/issue-<num>-<short-description>` / `fix/issue-<num>-<short-description>`

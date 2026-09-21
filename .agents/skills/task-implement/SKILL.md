@@ -15,8 +15,19 @@ description: Use this skill when starting the implementation of an approved GitH
 * 対象Issueの「前提条件」が満たされているか確認します。
 * Issueのコメントに実行計画が投稿され、ステータスが **`Ready`** であることを確認します。
 
-### 2. Project ステータスの更新 (`In progress`)
-実装に着手するタイミングで、[GitHub Project](https://github.com/users/walk8243/projects/6/views/1) 上の対象 Issue ステータスを **`In progress`** に変更します。
+### 2. Issue の Assignee 設定 (`@me`) と Project ステータス更新 (`In progress`)
+実装に着手するタイミングで、対象 Issue に対して以下を行います。
+
+1. **担当者のアサイン (`@me`)**:
+   - 対象 Issue の Assignee に自分自身（`@me`）を設定します。
+   - **GitHub CLI**:
+     ```bash
+     gh issue edit <issue-number> --add-assignee "@me"
+     ```
+   - **GitHub MCP ツール**:
+     - `get_me` で自身のログインユーザー名を取得後、`issue_write`（`method: "update"`, `issue_number: <num>`, `assignees: ["<username>"]`）を実行します。
+2. **Project ステータス更新**:
+   - [GitHub Project](https://github.com/users/walk8243/projects/6/views/1) 上の対象 Issue ステータスを **`In progress`** に変更します。
 
 ### 3. 作業ブランチの作成・切り替え
 ブランチ命名規則に従って新しいブランチを作成します。

@@ -27,7 +27,7 @@
      - PRを分割する場合は、**新規子Issueを起票し、元の親Issueと親子関係として紐付け**を行ってください（例: Issue本文で `Parent: #XX`、またはタスクリスト `- [ ] #YY` で参照）。各子IssueのSizeが `S` や `M` に収まるように分割します。
 
 3. **実装 (Implementation)**
-   - **実装を開始する際、ProjectのIssueステータスを「`In progress`」に変更してください。**
+   - **実装を開始する際、対象 Issue の Assignee に自身（`@me`）を設定し、ProjectのIssueステータスを「`In progress`」に変更してください。**
    - ブランチ名は `feature/issue-<num>-<short-description>` または `fix/issue-<num>-<short-description>` としてください。
    - Issueコメントの実行計画に沿って実装を進め、テストを記述・実行してください。
 
