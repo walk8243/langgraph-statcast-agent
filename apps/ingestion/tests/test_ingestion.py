@@ -56,3 +56,33 @@ def test_clean_statcast_df():
     assert cleaned["batter"].iloc[0] is None
     # 空文字の None 置換
     assert cleaned["player_name"].iloc[1] is None
+
+
+def test_clean_statcast_df_without_player_name():
+    """テーブル定義から player_name が削除された場合に正しく除外されることを検証"""
+    raw_data = {
+        "pitch_type": ["FF"],
+        "game_date": ["2024-04-06"],
+        "release_speed": [95.5],
+        "player_name": ["Yamamoto, Yoshinobu"],
+        "pitcher": [808967],
+        "batter": [673548],
+    }
+    df = pd.DataFrame(raw_data)
+    # ClickHouse の新テーブル定義を模したカラムリスト（player_name を含まない）
+    expected_columns = [
+        "pitch_type",
+        "game_date",
+        "release_speed",
+        "pitcher",
+        "batter",
+    ]
+
+    cleaned = clean_statcast_df(df, expected_columns)
+
+    # player_name が除外され、expected_columns のみになっていること
+    assert list(cleaned.columns) == expected_columns
+    assert "player_name" not in cleaned.columns
+    assert cleaned["pitcher"].iloc[0] == 808967
+    assert cleaned["batter"].iloc[0] == 673548
+
