@@ -11,18 +11,18 @@
 
 ```mermaid
 flowchart TD
-    A[1. タスク起票<br/>前提条件・達成条件の整理] --> B[GitHub Projectに追加<br/>Status: Todo]
+    A[1. タスク起票<br/>前提条件・達成条件の整理] --> B[GitHub Projectに自動追加<br/>Status: Todo / Backlog]
     B --> C[2. 実行計画立案<br/>変更箇所・手順・検証法の検討]
     C --> D{PR分割が必要か?<br/>肥大化 / 責務の分離}
     
     D -- Yes (分割) --> E[新規子Issueを起票<br/>親子関係の紐付け]
     E --> B
     
-    D -- No (そのまま着手) --> F[Issueに実行計画を<br/>コメントとして投稿]
-    F --> G[3. 実装<br/>ブランチ作成 & コーディング]
-    G --> H[4. PR作成<br/>1 issue 1 PR<br/>Closes #XX 記載]
-    H --> I[5. レビュー & 修正]
-    I --> J[マージ & 自動クローズ<br/>Project: Done]
+    D -- No (そのまま着手) --> F[Issueに実行計画をコメント投稿<br/>Status: Ready に変更]
+    F --> G[3. 実装着手<br/>Status: In progress に変更<br/>ブランチ作成 & コーディング]
+    G --> H[4. PR作成<br/>1 issue 1 PR / Closes #XX]
+    H --> I[5. PRレビュー通過<br/>Status: In review に変更]
+    I --> J[マージ & 自動クローズ<br/>Status: Done]
 ```
 
 ---
@@ -140,13 +140,19 @@ Issueに投稿する実行計画コメントは、以下のようなフォーマ
 
 ## 4. GitHub Projects の運用
 
-* **Views**:
-  * **Board View**: `Todo` → `In Progress` → `In Review` → `Done`
-* **ステータス遷移**:
-  * `Todo`: 起票されたタスク（前提・達成条件が揃っている状態）
-  * `In Progress`: 実行計画をコメント投稿し、実装を開始した状態
-  * `In Review`: PRを作成した状態
-  * `Done`: PRがマージされ、Issueがクローズされた状態
+本リポジトリのタスクは以下の GitHub Project で一元管理されます。
+
+* **プロジェクト**: [Backlog · langgraph-statcast-agent project](https://github.com/users/walk8243/projects/6/views/1)
+* **自動連携**: Issue が起票されると、上記 Project に自動で追加されます。
+* **ステータス遷移ルール**:
+
+| ステータス | 遷移タイミング | 担当・トリガー |
+| :--- | :--- | :--- |
+| **`Todo` / `Backlog`** | Issue 起票時 | 自動追加（初期状態） |
+| **`Ready`** | 実行計画を立案し、Issue コメントへ投稿後 | 計画完了・着手可能 |
+| **`In progress`** | ブランチを作成し、実装を開始した時 | 実装着手 |
+| **`In review`** | PR を作成し、レビューを通過・確認待ちになった時 | レビュー中 |
+| **`Done`** | PR がマージされ、Issue がクローズされた時 | 自動 / マージ完了 |
 
 ---
 

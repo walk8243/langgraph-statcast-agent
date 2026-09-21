@@ -62,5 +62,8 @@ description: Use this skill when planning the implementation for a specific GitH
 - [ ] 分割推奨（理由: ...）
 ```
 
-### 5. 完了報告
-コメント投稿の完了とURLを報告し、ユーザー承認または実装（`task-implement`）への着手を案内します。
+### 5. Project ステータスの更新 (`Ready`)
+実行計画のコメント投稿が完了したら、[GitHub Project](https://github.com/users/walk8243/projects/6/views/1) 上で対象 Issue のステータスを **`Ready`** に変更します。
+
+### 6. 完了報告
+コメント投稿とステータス更新（Ready）の完了を報告し、ユーザー承認または実装（`task-implement`）への着手を案内します。
