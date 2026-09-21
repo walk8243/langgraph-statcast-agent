@@ -20,12 +20,12 @@ description: Use this skill when starting the implementation of an approved GitH
 
 1. **担当者のアサイン (`@me`)**:
    - 対象 Issue の Assignee に自分自身（`@me`）を設定します。
-   - **GitHub CLI**:
+   - **GitHub MCP ツール（優先）**:
+     - `get_me` で自身のログインユーザー名を取得後、`issue_write`（`method: "update"`, `issue_number: <num>`, `assignees: ["<username>"]`）を実行します。
+   - **GitHub CLI（フォールバック）**:
      ```bash
      gh issue edit <issue-number> --add-assignee "@me"
      ```
-   - **GitHub MCP ツール**:
-     - `get_me` で自身のログインユーザー名を取得後、`issue_write`（`method: "update"`, `issue_number: <num>`, `assignees: ["<username>"]`）を実行します。
 2. **Start date の設定**:
    - [GitHub Project](https://github.com/users/walk8243/projects/6/views/1) 上で対象 Issue の **`Start date`** フィールドに本日日付（形式: `YYYY-MM-DD`）を設定します。
 3. **Project ステータス更新**:

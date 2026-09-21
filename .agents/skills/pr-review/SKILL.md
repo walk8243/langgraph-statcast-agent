@@ -13,7 +13,7 @@ description: Use this skill when reviewing and testing a Pull Request, checking 
 ## 実行フロー
 
 ### 1. PR 内容と達成条件の突き合わせ
-1. `pull_request_read` 等を用いて PR の変更差分（diff）と説明文を確認します。
+1. GitHub MCPツール `pull_request_read` を用いて PR の変更差分（diff）と説明文を確認します。
 2. 紐付いている Issue（`Closes #<num>`）の「達成条件 (DoD)」がすべて網羅されているかを照合します。
 
 ### 2. 動作確認・検証の実施
@@ -21,7 +21,7 @@ description: Use this skill when reviewing and testing a Pull Request, checking 
 * ユニットテスト、Lint、ビルド、コンテナヘルスチェック等が正常にパスすることを確認します。
 
 ### 3. レビュー結果のコメント
-* 不備や修正が必要な点があれば、PR にコメントを投稿して開発者に修正を促します。
+* 不備や修正が必要な点があれば、GitHub MCPツール `add_issue_comment` や `pull_request_review_write` を用いて PR にコメントを投稿し、開発者に修正を促します。
 * すべて問題なければ、PR にレビューコメントまたは承認（Approve）を投稿します。
 
 ### 4. Project ステータス (`In review`) と End date の更新

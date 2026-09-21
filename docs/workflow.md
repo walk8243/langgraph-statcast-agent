@@ -192,7 +192,8 @@ Issueに投稿する実行計画コメントは、以下のようなフォーマ
 
 ## 5. エージェント支援スキル (Workspace Skills)
 
-AI エージェント（Antigravity等）と協調して本ワークフローをスムーズに進めるため、各フェーズに対応した Workspace Skill が `.agents/skills/` に定義されています。
+AI エージェント（Antigravity等）と協調して本ワークフローをスムーズに進めるため、各フェーズに対応した Workspace Skill が `.agents/skills/` に定義されています。  
+各スキルは、環境依存やトークンスコープ問題を防ぐため、**GitHub CLI よりも GitHub MCP サーバー (`github-mcp-server`) のツール呼び出しを最優先で使用**します。
 
 | フェーズ | 対応スキル | 格納場所 |
 | :--- | :--- | :--- |

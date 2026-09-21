@@ -6,6 +6,21 @@
 
 ---
 
+## ツール利用の基本方針（GitHub MCP サーバーの優先）
+
+GitHub に対する操作（Issue・PR の起票・閲覧・更新、コメント投稿、担当者アサイン等）を行う際は、**GitHub CLI (`gh` コマンド) よりも GitHub MCP サーバー (`github-mcp-server`) のツール呼び出しを最優先で使用してください**。
+
+| 操作内容 | 優先ツール (`github-mcp-server`) | フォールバック |
+| :--- | :--- | :--- |
+| Issue 起票・更新 | `issue_write` | `gh issue create` / `gh issue edit` |
+| Issue 閲覧・一覧 | `issue_read`, `list_issues` | `gh issue view` / `gh issue list` |
+| コメント投稿 | `add_issue_comment` | `gh issue comment` |
+| 認証ユーザー情報取得 | `get_me` | `gh api user` |
+| PR 作成 | `create_pull_request` | `gh pr create` |
+| PR 閲覧・差分確認 | `pull_request_read` | `gh pr view` / `gh pr diff` |
+
+---
+
 ## 開発ワークフローの基本サイクル
 
 作業は必ず以下のステップに従って進めてください。

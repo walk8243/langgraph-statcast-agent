@@ -54,12 +54,12 @@ Closes #<num>
 ```
 
 ### 3. Pull Request の作成
-GitHub MCPツール `create_pull_request` または GitHub CLI (`gh pr create`) を使用してPRを作成します。
+GitHub MCPツール `create_pull_request` を優先して使用します（利用できない場合のみ GitHub CLI `gh pr create` を使用）。
 
-* **title**: `feat: <変更内容> (#<num>)`
+* **title**: `<type>: <日本語の変更内容>`
 * **head**: 現在の作業ブランチ
 * **base**: `main`
 * **body**: 上記で作成したPR本文
 
 ### 4. 完了報告
-作成された PR の番号と URL をユーザーに報告し、レビューフェーズ（`pr-review-merge`）へ案内します。
+作成された PR の番号と URL をユーザーに報告し、レビューフェーズ（`pr-review`）へ案内します。
