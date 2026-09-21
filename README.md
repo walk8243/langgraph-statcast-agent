@@ -142,7 +142,10 @@ docker compose run --rm ingestion --player-id 808967 --start-date 2024-04-01 --e
 # 打者データを取得する場合
 docker compose run --rm ingestion --player-id 673548 --player-type batter --start-date 2024-04-01 --end-date 2024-04-07
 
-# 2. Agent CLI の対話起動
+# 2. データの集計実行 (Aggregation - 打者基本指標の集計と RDB 登録)
+docker compose run --rm aggregation --player-id 673548 --year 2024
+
+# 3. Agent CLI の対話起動
 docker compose run --rm agent
 ```
 
