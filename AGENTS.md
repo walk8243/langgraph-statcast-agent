@@ -27,7 +27,7 @@
      - PRを分割する場合は、**新規子Issueを起票し、元の親Issueと親子関係として紐付け**を行ってください（例: Issue本文で `Parent: #XX`、またはタスクリスト `- [ ] #YY` で参照）。各子IssueのSizeが `S` や `M` に収まるように分割します。
 
 3. **実装 (Implementation)**
-   - **実装を開始する際、対象 Issue の Assignee に自身（`@me`）を設定し、ProjectのIssueステータスを「`In progress`」に変更してください。**
+   - **実装を開始する際、対象 Issue の Assignee に自身（`@me`）を設定し、Project の `Start date`（本日日付 `YYYY-MM-DD`）を設定した上で、Issueステータスを「`In progress`」に変更してください。**
    - ブランチ名は `feature/issue-<num>-<short-description>` または `fix/issue-<num>-<short-description>` としてください。
    - Issueコメントの実行計画に沿って実装を進め、テストを記述・実行してください。
 
@@ -37,7 +37,7 @@
    - テンプレート: `.github/pull_request_template.md` を使用し、達成条件のチェックリストと動作確認手順を記載してください。
 
 5. **レビュー & マージ (Review & Merge)**
-   - **PRレビューを行い、通過・確認待ちとなったら、ProjectのIssueステータスを「`In review`」に変更してください。**
+   - **PRレビューを行い、通過・確認待ちとなったら、Project の `End date`（本日日付 `YYYY-MM-DD`）を設定した上で、Issueステータスを「`In review`」に変更してください。**
    - **⚠️ マージの実行**: PR のマージは必ず**人間（開発者）の目を通して手動で**行います。エージェントは自動でマージを実行せず、動作確認・レビュー・ステータス更新を完了した上で人間によるマージを依頼してください。
    - 人間によるマージ完了（Squash and Merge推奨）により、Issueが自動クローズされ、Statusは「`Done`」となります。
 

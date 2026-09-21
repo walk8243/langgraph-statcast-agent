@@ -15,7 +15,7 @@ description: Use this skill when starting the implementation of an approved GitH
 * 対象Issueの「前提条件」が満たされているか確認します。
 * Issueのコメントに実行計画が投稿され、ステータスが **`Ready`** であることを確認します。
 
-### 2. Issue の Assignee 設定 (`@me`) と Project ステータス更新 (`In progress`)
+### 2. Issue の Assignee 設定 (`@me`)、Start date 設定、Project ステータス更新 (`In progress`)
 実装に着手するタイミングで、対象 Issue に対して以下を行います。
 
 1. **担当者のアサイン (`@me`)**:
@@ -26,7 +26,9 @@ description: Use this skill when starting the implementation of an approved GitH
      ```
    - **GitHub MCP ツール**:
      - `get_me` で自身のログインユーザー名を取得後、`issue_write`（`method: "update"`, `issue_number: <num>`, `assignees: ["<username>"]`）を実行します。
-2. **Project ステータス更新**:
+2. **Start date の設定**:
+   - [GitHub Project](https://github.com/users/walk8243/projects/6/views/1) 上で対象 Issue の **`Start date`** フィールドに本日日付（形式: `YYYY-MM-DD`）を設定します。
+3. **Project ステータス更新**:
    - [GitHub Project](https://github.com/users/walk8243/projects/6/views/1) 上の対象 Issue ステータスを **`In progress`** に変更します。
 
 ### 3. 作業ブランチの作成・切り替え

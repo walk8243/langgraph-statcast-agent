@@ -24,8 +24,10 @@ description: Use this skill when reviewing and testing a Pull Request, checking 
 * 不備や修正が必要な点があれば、PR にコメントを投稿して開発者に修正を促します。
 * すべて問題なければ、PR にレビューコメントまたは承認（Approve）を投稿します。
 
-### 4. Project ステータスの更新 (`In review`)
-* レビューおよび動作検証を通過したら、[GitHub Project](https://github.com/users/walk8243/projects/6/views/1) 上で対象 Issue のステータスを **`In review`** に変更します。
+### 4. Project ステータス (`In review`) と End date の更新
+* レビューおよび動作検証を通過したら、[GitHub Project](https://github.com/users/walk8243/projects/6/views/1) 上で対象 Issue に対し以下を設定します。
+  1. **Status**: **`In review`** に変更
+  2. **End date**: 本日日付（形式: `YYYY-MM-DD`）を設定
 
 ### 5. 人間による最終確認・マージの依頼（終了）
 * **エージェントはマージを実行しません。**
