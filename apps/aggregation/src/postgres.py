@@ -71,10 +71,6 @@ def upsert_batter_season_stats(
         on_base_percentage,
         slugging_percentage,
         ops,
-        risp_plate_appearances,
-        risp_at_bats,
-        risp_hits,
-        risp_batting_average,
         updated_at
     ) VALUES (
         %(player_id)s,
@@ -97,10 +93,6 @@ def upsert_batter_season_stats(
         %(on_base_percentage)s,
         %(slugging_percentage)s,
         %(ops)s,
-        %(risp_plate_appearances)s,
-        %(risp_at_bats)s,
-        %(risp_hits)s,
-        %(risp_batting_average)s,
         CURRENT_TIMESTAMP
     )
     ON CONFLICT (player_id, year) DO UPDATE SET
@@ -122,10 +114,6 @@ def upsert_batter_season_stats(
         on_base_percentage = EXCLUDED.on_base_percentage,
         slugging_percentage = EXCLUDED.slugging_percentage,
         ops = EXCLUDED.ops,
-        risp_plate_appearances = EXCLUDED.risp_plate_appearances,
-        risp_at_bats = EXCLUDED.risp_at_bats,
-        risp_hits = EXCLUDED.risp_hits,
-        risp_batting_average = EXCLUDED.risp_batting_average,
         updated_at = CURRENT_TIMESTAMP;
     """
 

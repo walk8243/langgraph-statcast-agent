@@ -67,24 +67,7 @@ def fetch_batter_raw_counts(
         countIf(events = 'hit_by_pitch') AS hit_by_pitch,
         countIf(events IN ('sac_bunt', 'sac_bunt_double_play')) AS sac_bunts,
         countIf(events IN ('sac_fly', 'sac_fly_double_play')) AS sac_flies,
-        countIf(events = 'grounded_into_double_play') AS grounded_into_double_play,
-        countIf(
-            ((on_2b IS NOT NULL AND on_2b > 0) OR (on_3b IS NOT NULL AND on_3b > 0))
-            AND events IS NOT NULL AND events != ''
-        ) AS risp_plate_appearances,
-        countIf(
-            ((on_2b IS NOT NULL AND on_2b > 0) OR (on_3b IS NOT NULL AND on_3b > 0))
-            AND events NOT IN (
-                'walk', 'intent_walk', 'hit_by_pitch',
-                'sac_bunt', 'sac_bunt_double_play',
-                'sac_fly', 'sac_fly_double_play',
-                'catcher_interf'
-            ) AND events IS NOT NULL AND events != ''
-        ) AS risp_at_bats,
-        countIf(
-            ((on_2b IS NOT NULL AND on_2b > 0) OR (on_3b IS NOT NULL AND on_3b > 0))
-            AND events IN ('single', 'double', 'triple', 'home_run')
-        ) AS risp_hits
+        countIf(events = 'grounded_into_double_play') AS grounded_into_double_play
     FROM {table} FINAL
     WHERE batter = %(player_id)s
       {year_filter}

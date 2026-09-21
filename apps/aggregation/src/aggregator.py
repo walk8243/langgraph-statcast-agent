@@ -24,9 +24,6 @@ class BatterRawCounts(BaseModel):
     sac_bunts: int = 0
     sac_flies: int = 0
     grounded_into_double_play: int = 0
-    risp_plate_appearances: int = 0
-    risp_at_bats: int = 0
-    risp_hits: int = 0
 
 
 class BatterSeasonStats(BatterRawCounts):
@@ -36,7 +33,6 @@ class BatterSeasonStats(BatterRawCounts):
     on_base_percentage: float = Field(default=0.0, description="出塁率 (OBP)")
     slugging_percentage: float = Field(default=0.0, description="長打率 (SLG)")
     ops: float = Field(default=0.0, description="OPS (OBP + SLG)")
-    risp_batting_average: float = Field(default=0.0, description="得点圏打率 (RISP AVG)")
 
 
 def calculate_batter_stats(raw: BatterRawCounts) -> BatterSeasonStats:
@@ -54,13 +50,6 @@ def calculate_batter_stats(raw: BatterRawCounts) -> BatterSeasonStats:
     # OPS = OBP + SLG
     ops = round(obp + slg, 3)
 
-    # 得点圏打率 (RISP AVG) = RISP_H / RISP_AB
-    risp_ba = (
-        round(raw.risp_hits / raw.risp_at_bats, 3)
-        if raw.risp_at_bats > 0
-        else 0.0
-    )
-
     data = raw.model_dump()
     data.update(
         {
@@ -68,7 +57,6 @@ def calculate_batter_stats(raw: BatterRawCounts) -> BatterSeasonStats:
             "on_base_percentage": obp,
             "slugging_percentage": slg,
             "ops": ops,
-            "risp_batting_average": risp_ba,
         }
     )
     return BatterSeasonStats(**data)

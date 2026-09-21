@@ -42,9 +42,6 @@ def test_calculate_batter_stats_standard():
     # OPS: 0.375 + 0.571 = 0.946
     assert stats.ops == 0.946
 
-    # 得点圏打率: 3 / 10 = 0.300
-    assert stats.risp_batting_average == 0.300
-
     # カウント指標が保持されていること
     assert stats.games == 10
     assert stats.plate_appearances == 40
@@ -60,9 +57,6 @@ def test_calculate_batter_stats_standard():
     assert stats.sac_bunts == 0
     assert stats.sac_flies == 0
     assert stats.grounded_into_double_play == 1
-    assert stats.risp_plate_appearances == 12
-    assert stats.risp_at_bats == 10
-    assert stats.risp_hits == 3
 
 
 def test_calculate_batter_stats_zero_division():
@@ -84,9 +78,6 @@ def test_calculate_batter_stats_zero_division():
         sac_bunts=0,
         sac_flies=0,
         grounded_into_double_play=0,
-        risp_plate_appearances=0,
-        risp_at_bats=0,
-        risp_hits=0,
     )
 
     stats = calculate_batter_stats(raw)
@@ -95,7 +86,6 @@ def test_calculate_batter_stats_zero_division():
     assert stats.on_base_percentage == 0.0
     assert stats.slugging_percentage == 0.0
     assert stats.ops == 0.0
-    assert stats.risp_batting_average == 0.0
 
 
 def test_calculate_batter_stats_only_walks():
@@ -117,9 +107,6 @@ def test_calculate_batter_stats_only_walks():
         sac_bunts=0,
         sac_flies=0,
         grounded_into_double_play=0,
-        risp_plate_appearances=0,
-        risp_at_bats=0,
-        risp_hits=0,
     )
 
     stats = calculate_batter_stats(raw)

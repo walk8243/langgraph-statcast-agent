@@ -58,8 +58,7 @@ def aggregate_batter(
             f"BB: {stats.walks}, HBP: {stats.hit_by_pitch}, SH: {stats.sac_bunts}, "
             f"SF: {stats.sac_flies}, GIDP: {stats.grounded_into_double_play}, "
             f"AVG: {stats.batting_average:.3f}, OBP: {stats.on_base_percentage:.3f}, "
-            f"SLG: {stats.slugging_percentage:.3f}, OPS: {stats.ops:.3f}, "
-            f"RISP(PA={stats.risp_plate_appearances}, AB={stats.risp_at_bats}, H={stats.risp_hits}, AVG={stats.risp_batting_average:.3f})"
+            f"SLG: {stats.slugging_percentage:.3f}, OPS: {stats.ops:.3f}"
         )
         upsert_batter_season_stats(pg_conn, stats)
         saved_count += 1

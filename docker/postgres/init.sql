@@ -29,10 +29,6 @@ CREATE TABLE IF NOT EXISTS batter_season_stats (
     on_base_percentage NUMERIC(5, 3) NOT NULL DEFAULT 0.000,
     slugging_percentage NUMERIC(5, 3) NOT NULL DEFAULT 0.000,
     ops NUMERIC(5, 3) NOT NULL DEFAULT 0.000,
-    risp_plate_appearances INT NOT NULL DEFAULT 0,
-    risp_at_bats INT NOT NULL DEFAULT 0,
-    risp_hits INT NOT NULL DEFAULT 0,
-    risp_batting_average NUMERIC(5, 3) NOT NULL DEFAULT 0.000,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (player_id, year)
