@@ -48,12 +48,17 @@ description: Use this skill when starting the implementation of an approved GitH
 * 計画にない大幅な仕様変更が生じた場合は、独断で進めずにIssueコメントに差分を追記するかユーザーに確認します。
 
 ### 5. コミット作成
-* コミットメッセージには対応するIssue番号を含めます。
-* **例**: `feat: implement ingestion pipeline (#XX)` / `fix: resolve db healthcheck timeout (#XX)`
+* コミットメッセージは**日本語**で記述し、対応するIssue番号を含めます。
+* **プレフィックス (Conventional Commits)**: `feat:` (新機能), `fix:` (修正), `docs:` (ドキュメント), `refactor:` (リファクタリング), `test:` (テスト追加・修正), `chore:` (雑務・メンテ) 等
+* **形式**: `<type>: <日本語の説明> (#<num>)`
+* **例**:
+  - `feat: データ収集パイプラインの実装 (#XX)`
+  - `fix: DBヘルスチェックのタイムアウトを解消 (#XX)`
+  - `docs: 開発ワークフロードキュメントの更新 (#XX)`
 * **コマンド**:
   ```bash
   git add <files>
-  git commit -m "<type>: <description> (#<num>)"
+  git commit -m "<type>: <日本語の説明> (#<num>)"
   ```
 
 ### 6. 完了報告

@@ -93,9 +93,11 @@ flowchart TD
   * ブランチ名は Issue 番号とタスク概要を含めます。
   * 形式: `feature/issue-<num>-<short-description>` / `fix/issue-<num>-<short-description>`
   * 例: `feature/issue-1-docker-compose-setup`
-* **実装方針**:
-  * Issueコメントに投稿した実行計画に沿って進めます。
-  * 途中で大幅な方針変更が発生した場合は、Issueコメントに追記して履歴を残します。
+* **コミットメッセージ規約**:
+  * コミットメッセージは**日本語**で記述し、対応するIssue番号を含めます。
+  * 形式: `<type>: <日本語の説明> (#<num>)`
+  * プレフィックス例: `feat:` (新機能), `fix:` (バグ修正), `docs:` (ドキュメント), `refactor:` (改善・リファクタリング), `test:` (テスト), `chore:` (メンテ等)
+  * 例: `feat: データ収集パイプラインの実装 (#1)` / `docs: プロジェクト管理ワークフローの整備 (#2)`
 
 ---
 
