@@ -78,10 +78,12 @@ description: Use this skill when planning the implementation for a specific GitH
 ```
 
 ### 5. Project ステータス (`Ready`) と Size の設定
-実行計画のコメント投稿が完了したら、[GitHub Project](https://github.com/users/walk8243/projects/6/views/1) 上で対象 Issue に対し以下を設定します。
+実行計画のコメント投稿が完了したら、[GitHub Project](https://github.com/users/walk8243/projects/6/views/1) 上のフィールドを更新します。  
+GitHub MCP サーバーには Project V2 を直接更新するツールがないため、**プロジェクト更新スクリプト（GitHub CLI 経由）** を実行して設定してください。
 
-1. **Status**: **`Ready`** に変更
-2. **Size**: 見積もった **`XS` / `S` / `M` / `L` / `XL`** を設定
+```bash
+python .agents/scripts/update_project.py --issue <num> --status Ready --size <XS/S/M/L/XL>
+```
 
 ### 6. 完了報告
 コメント投稿、Status（Ready）更新、Size 設定の完了を報告し、ユーザー承認または実装（`task-implement`）への着手を案内します。

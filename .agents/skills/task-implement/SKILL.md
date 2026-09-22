@@ -26,10 +26,11 @@ description: Use this skill when starting the implementation of an approved GitH
      ```bash
      gh issue edit <issue-number> --add-assignee "@me"
      ```
-2. **Start date の設定**:
-   - [GitHub Project](https://github.com/users/walk8243/projects/6/views/1) 上で対象 Issue の **`Start date`** フィールドに本日日付（形式: `YYYY-MM-DD`）を設定します。
-3. **Project ステータス更新**:
-   - [GitHub Project](https://github.com/users/walk8243/projects/6/views/1) 上の対象 Issue ステータスを **`In progress`** に変更します。
+2. **Start date 設定 & Project ステータス更新 (`In progress`)**:
+   - GitHub MCP サーバーには Project V2 を直接更新するツールがないため、**プロジェクト更新スクリプト（GitHub CLI 経由）** を実行して更新してください。
+   ```bash
+   python .agents/scripts/update_project.py --issue <num> --status "In progress" --start-date today
+   ```
 
 ### 3. 作業ブランチの作成・切り替え
 ブランチ命名規則に従って新しいブランチを作成します。

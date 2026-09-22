@@ -25,9 +25,11 @@ description: Use this skill when reviewing and testing a Pull Request, checking 
 * すべて問題なければ、PR にレビューコメントまたは承認（Approve）を投稿します。
 
 ### 4. Project ステータス (`In review`) と End date の更新
-* レビューおよび動作検証を通過したら、[GitHub Project](https://github.com/users/walk8243/projects/6/views/1) 上で対象 Issue に対し以下を設定します。
-  1. **Status**: **`In review`** に変更
-  2. **End date**: 本日日付（形式: `YYYY-MM-DD`）を設定
+* レビューおよび動作検証を通過したら、[GitHub Project](https://github.com/users/walk8243/projects/6/views/1) 上のフィールドを更新します。  
+  GitHub MCP サーバーには Project V2 を直接更新するツールがないため、**プロジェクト更新スクリプト（GitHub CLI 経由）** を実行して更新してください。
+  ```bash
+  python .agents/scripts/update_project.py --issue <num> --status "In review" --end-date today
+  ```
 
 ### 5. 人間による最終確認・マージの依頼（終了）
 * **エージェントはマージを実行しません。**

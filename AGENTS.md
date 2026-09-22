@@ -19,6 +19,16 @@ GitHub に対する操作（Issue・PR の起票・閲覧・更新、コメン�
 | PR 作成 | `create_pull_request` | `gh pr create` |
 | PR 閲覧・差分確認 | `pull_request_read` | `gh pr view` / `gh pr diff` |
 
+### GitHub Project (Projects V2) の更新方針
+
+GitHub MCP サーバー (`github-mcp-server`) には GitHub Project V2 のフィールド（Status, Size, Start date, End date 等）を直接操作するツールが存在しないため、**GitHub Project の更新操作にはプロジェクト更新スクリプト (`.agents/scripts/update_project.py`) または GitHub CLI (`gh api graphql`) を使用して自動更新を行ってください**。
+
+| 操作タイミング | 実行コマンド（推奨） | 目的 |
+| :--- | :--- | :--- |
+| 計画立案時 (`task-plan`) | `python .agents/scripts/update_project.py --issue <num> --status Ready --size <XS〜XL>` | Status を `Ready` にし、見積もり Size を設定 |
+| 実装着手時 (`task-implement`) | `python .agents/scripts/update_project.py --issue <num> --status "In progress" --start-date today` | Status を `In progress` にし、Start date を本日日付に設定 |
+| PRレビュー時 (`pr-review`) | `python .agents/scripts/update_project.py --issue <num> --status "In review" --end-date today` | Status を `In review` にし、End date を本日日付に設定 |
+
 ---
 
 ## 開発ワークフローの基本サイクル
