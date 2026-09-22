@@ -145,3 +145,25 @@ CREATE TABLE IF NOT EXISTS statcast.teams (
 )
 ENGINE = ReplacingMergeTree(updated_at)
 ORDER BY (team_id);
+
+-- 選手マスタテーブル定義 (全データ保持)
+CREATE TABLE IF NOT EXISTS statcast.players (
+    `player_id` UInt64,
+    `full_name` String,
+    `first_name` String,
+    `last_name` String,
+    `last_first_name` String,
+    `primary_number` Nullable(String),
+    `current_team_id` Nullable(UInt32),
+    `primary_position_code` Nullable(String),
+    `primary_position_name` Nullable(String),
+    `primary_position_type` Nullable(String),
+    `primary_position_abbreviation` LowCardinality(Nullable(String)),
+    `bat_side` LowCardinality(Nullable(String)),
+    `pitch_hand` LowCardinality(Nullable(String)),
+    `active` UInt8 DEFAULT 1,
+    `created_at` DateTime DEFAULT now(),
+    `updated_at` DateTime DEFAULT now()
+)
+ENGINE = ReplacingMergeTree(updated_at)
+ORDER BY (player_id);
