@@ -163,6 +163,9 @@ docker compose run --rm ingestion --fetch-games --season 2024
 # データの収集実行 (Ingestion - MLB打者シーズン成績の取得と RDB 登録: 打点・得点・盗塁等の公式スタッツ)
 docker compose run --rm ingestion --fetch-hitting-stats --season 2024
 
+# データの収集実行 (Ingestion - MLB投手シーズン成績の取得と RDB 登録: 勝敗・防御率・奪三振等の公式スタッツ)
+docker compose run --rm ingestion --fetch-pitching-stats --season 2024
+
 # データの収集実行 (Ingestion - 登録全選手の Statcast データ一括取得例: 上限10選手、特定期間)
 docker compose run --rm ingestion --fetch-all-statcast --limit 10 --start-date 2024-04-01 --end-date 2024-04-07
 

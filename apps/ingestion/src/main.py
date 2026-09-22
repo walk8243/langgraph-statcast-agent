@@ -27,7 +27,9 @@ from .mlb_players import (
 )
 from .mlb_stats import (
     fetch_mlb_hitting_stats,
+    fetch_mlb_pitching_stats,
     upsert_batter_season_stats_to_postgres,
+    upsert_pitcher_season_stats_to_postgres,
 )
 from .mlb_teams import (
     fetch_mlb_teams,
@@ -92,6 +94,11 @@ def main() -> None:
         "--fetch-hitting-stats",
         action="store_true",
         help="MLB Stats API から打者シーズン成績を取得し、PostgreSQL (batter_season_stats) に登録します",
+    )
+    parser.add_argument(
+        "--fetch-pitching-stats",
+        action="store_true",
+        help="MLB Stats API から投手シーズン成績を取得し、PostgreSQL (pitcher_season_stats) に登録します",
     )
     parser.add_argument(
         "--fetch-all-statcast",
@@ -204,6 +211,24 @@ def main() -> None:
         pg_upserted = upsert_batter_season_stats_to_postgres(pg_conn, splits, season=season)
         print(
             f"Successfully upserted {pg_upserted} batter season stats into PostgreSQL batter_season_stats."
+        )
+        pg_conn.close()
+        return
+
+    if args.fetch_pitching_stats:
+        season = args.season or 2024
+        print(
+            f"Fetching pitching stats from MLB Stats API (sport_id={args.sport_id}, season={season})..."
+        )
+        splits = fetch_mlb_pitching_stats(season=season, sport_id=args.sport_id)
+        print(f"Fetched {len(splits)} pitching stat records.")
+
+        print("Upserting pitching stats into PostgreSQL (pitcher_season_stats)...")
+        pg_conn = get_postgres_connection()
+        initialize_postgres_tables(pg_conn)
+        pg_upserted = upsert_pitcher_season_stats_to_postgres(pg_conn, splits, season=season)
+        print(
+            f"Successfully upserted {pg_upserted} pitcher season stats into PostgreSQL pitcher_season_stats."
         )
         pg_conn.close()
         return

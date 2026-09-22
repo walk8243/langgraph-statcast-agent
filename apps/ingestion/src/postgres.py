@@ -104,6 +104,41 @@ ALTER TABLE batter_season_stats ADD COLUMN IF NOT EXISTS stolen_bases INT NOT NU
 ALTER TABLE batter_season_stats ADD COLUMN IF NOT EXISTS caught_stealing INT NOT NULL DEFAULT 0;
 
 CREATE INDEX IF NOT EXISTS idx_batter_season_stats_year ON batter_season_stats (year);
+
+CREATE TABLE IF NOT EXISTS pitcher_season_stats (
+    player_id BIGINT NOT NULL,
+    year INT NOT NULL,
+    wins INT NOT NULL DEFAULT 0,
+    losses INT NOT NULL DEFAULT 0,
+    era NUMERIC(6, 2) NOT NULL DEFAULT 0.00,
+    games_pitched INT NOT NULL DEFAULT 0,
+    games_started INT NOT NULL DEFAULT 0,
+    complete_games INT NOT NULL DEFAULT 0,
+    shutouts INT NOT NULL DEFAULT 0,
+    saves INT NOT NULL DEFAULT 0,
+    save_opportunities INT NOT NULL DEFAULT 0,
+    holds INT NOT NULL DEFAULT 0,
+    blown_saves INT NOT NULL DEFAULT 0,
+    innings_pitched VARCHAR(10) NOT NULL DEFAULT '0.0',
+    outs INT NOT NULL DEFAULT 0,
+    hits INT NOT NULL DEFAULT 0,
+    runs INT NOT NULL DEFAULT 0,
+    earned_runs INT NOT NULL DEFAULT 0,
+    home_runs INT NOT NULL DEFAULT 0,
+    walks INT NOT NULL DEFAULT 0,
+    intentional_walks INT NOT NULL DEFAULT 0,
+    strikeouts INT NOT NULL DEFAULT 0,
+    hit_by_pitch INT NOT NULL DEFAULT 0,
+    whip NUMERIC(6, 2) NOT NULL DEFAULT 0.00,
+    batting_average_against NUMERIC(5, 3) NOT NULL DEFAULT 0.000,
+    batters_faced INT NOT NULL DEFAULT 0,
+    number_of_pitches INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (player_id, year)
+);
+
+CREATE INDEX IF NOT EXISTS idx_pitcher_season_stats_year ON pitcher_season_stats (year);
 """
 
 
