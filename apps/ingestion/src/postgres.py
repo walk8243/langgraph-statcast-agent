@@ -26,7 +26,7 @@ def get_postgres_connection(
     )
 
 
-DEFAULT_TEAMS_DDL = """
+DEFAULT_INIT_DDL = """
 CREATE TABLE IF NOT EXISTS teams (
     team_id BIGINT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -34,6 +34,18 @@ CREATE TABLE IF NOT EXISTS teams (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS players (
+    player_id BIGINT PRIMARY KEY,
+    name_en VARCHAR(255) NOT NULL,
+    name_ja VARCHAR(255),
+    team_id BIGINT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE players ADD COLUMN IF NOT EXISTS team_id BIGINT;
+CREATE INDEX IF NOT EXISTS idx_players_team_id ON players (team_id);
 """
 
 
@@ -50,9 +62,11 @@ def initialize_tables(conn: psycopg.Connection, ddl_path: Optional[str] = None) 
             sql = f.read()
         with conn.cursor() as cur:
             cur.execute(sql)
+            cur.execute("ALTER TABLE players ADD COLUMN IF NOT EXISTS team_id BIGINT;")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_players_team_id ON players (team_id);")
         conn.commit()
     else:
         # コンテナ環境などでファイルがマウントされていない場合のフォールバック
         with conn.cursor() as cur:
-            cur.execute(DEFAULT_TEAMS_DDL)
+            cur.execute(DEFAULT_INIT_DDL)
         conn.commit()

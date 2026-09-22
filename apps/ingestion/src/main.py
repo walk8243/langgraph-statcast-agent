@@ -10,8 +10,15 @@ from dotenv import load_dotenv
 # プロジェクトルートの .env を読み込み
 load_dotenv()
 
+from .batch_statcast import ingest_all_players_statcast
 from .downloader import download_statcast_csv, load_local_csv
 from .loader import get_clickhouse_client, initialize_table, insert_statcast_data
+from .mlb_players import (
+    fetch_mlb_players,
+    initialize_clickhouse_players_table,
+    insert_players_to_clickhouse,
+    upsert_players_to_postgres,
+)
 from .mlb_teams import (
     fetch_mlb_teams,
     initialize_clickhouse_teams_table,
@@ -42,9 +49,9 @@ def main() -> None:
     )
     parser.add_argument(
         "--player-type",
-        choices=["pitcher", "batter"],
+        choices=["pitcher", "batter", "both"],
         default="pitcher",
-        help="選手種別 (pitcher または batter、デフォルト: pitcher)",
+        help="選手種別 (pitcher, batter, または both、デフォルト: pitcher)",
     )
     parser.add_argument(
         "--csv-path",
@@ -62,15 +69,30 @@ def main() -> None:
         help="MLB Stats API からチーム一覧を取得し、ClickHouse (全データ) と PostgreSQL (基本データ) に登録します",
     )
     parser.add_argument(
+        "--fetch-players",
+        action="store_true",
+        help="MLB Stats API から選手一覧を取得し、ClickHouse (全データ) と PostgreSQL (基本データ) に登録します",
+    )
+    parser.add_argument(
+        "--fetch-all-statcast",
+        action="store_true",
+        help="登録済み全選手を対象として Baseball Savant から Statcast データを一括取得・投入します",
+    )
+    parser.add_argument(
+        "--limit",
+        type=int,
+        help="一括取得処理の対象選手数の上限",
+    )
+    parser.add_argument(
         "--sport-id",
         type=int,
         default=1,
-        help="チーム取得時の競技区分ID (デフォルト: 1 = MLB)",
+        help="データ取得時の競技区分ID (デフォルト: 1 = MLB)",
     )
     parser.add_argument(
         "--season",
         type=int,
-        help="チーム取得時の対象シーズン (任意)",
+        help="データ取得時の対象シーズン (任意、デフォルト: 2024)",
     )
 
     args = parser.parse_args()
@@ -97,11 +119,58 @@ def main() -> None:
         pg_conn.close()
         return
 
+    if args.fetch_players:
+        season = args.season or 2024
+        print(
+            f"Fetching players from MLB Stats API (sport_id={args.sport_id}, season={season})..."
+        )
+        players = fetch_mlb_players(season=season, sport_id=args.sport_id)
+        print(f"Fetched {len(players)} players.")
+
+        # 1. 列指向DB (ClickHouse) へ全データ投入
+        print("Inserting full player data into ClickHouse (statcast.players)...")
+        ch_client = get_clickhouse_client()
+        ch_inserted = insert_players_to_clickhouse(ch_client, players)
+        print(f"Successfully inserted {ch_inserted} players into ClickHouse statcast.players.")
+
+        # 2. RDB (PostgreSQL) へ結合・表示用基本データを Upsert
+        print("Upserting essential player data into PostgreSQL (players)...")
+        pg_conn = get_postgres_connection()
+        initialize_postgres_tables(pg_conn)
+        pg_upserted = upsert_players_to_postgres(pg_conn, players)
+        print(f"Successfully upserted {pg_upserted} players into PostgreSQL players.")
+        pg_conn.close()
+        return
+
+    if args.fetch_all_statcast:
+        print("Starting batch Statcast ingestion for registered players...")
+        pg_conn = get_postgres_connection()
+        ch_client = get_clickhouse_client()
+        initialize_table(ch_client)
+
+        player_type = args.player_type if args.player_type != "pitcher" else "both"
+        summary = ingest_all_players_statcast(
+            pg_conn=pg_conn,
+            ch_client=ch_client,
+            start_date=args.start_date,
+            end_date=args.end_date,
+            player_type=player_type,
+            limit=args.limit,
+        )
+        print(
+            f"Batch ingestion completed! Total players processed: {summary['total_players']}, "
+            f"Total Statcast rows inserted: {summary['total_inserted']}"
+        )
+        pg_conn.close()
+        return
+
     client = get_clickhouse_client()
 
     if args.init_db:
         print("Initializing ClickHouse tables...")
         initialize_table(client)
+        initialize_clickhouse_teams_table(client)
+        initialize_clickhouse_players_table(client)
         print("ClickHouse tables initialized successfully.")
         try:
             pg_conn = get_postgres_connection()
