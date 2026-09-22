@@ -11,9 +11,11 @@ Docker Compose 上で列指向データベース、リレーショナルデー�
 本プロジェクトでは、用途に応じて以下の2つの外部データソースを組み合わせて活用します。
 
 1. **Baseball Savant (Statcast)**
+   - **Base URL**: `https://baseballsavant.mlb.com`
    - **用途**: 投球・打球単位（Pitch-by-Pitch）のトラッキングデータ取得
    - **内容**: 球速、回転数、変化量、打球初速、打球角度、着弾座標などの詳細な物理・トラッキング生データ。
 2. **MLB Stats API (公式 REST API)**
+   - **Base URL**: `https://statsapi.mlb.com`
    - **用途**: 試合日程、チーム・選手マスタ、公式記録（Box Score）等の取得
    - **内容**: 試合一覧、ロスター情報、確定した打点 (RBI)・得点 (R)・打順・交代記録などの公式集計スタッツ。
 
