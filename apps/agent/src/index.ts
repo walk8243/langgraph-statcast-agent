@@ -4,12 +4,14 @@ import { closePool } from "./db/client.js";
 
 const program = new Command();
 
+const currentYear = new Date().getFullYear().toString();
+
 program
   .name("statcast-agent")
   .description("LangGraph and Google Gemini agent for MLB player report generation")
   .version("0.1.0")
   .requiredOption("-p, --player-id <id>", "Player MLB ID (e.g. 660271 for Shohei Ohtani)")
-  .option("-y, --year <year>", "Season year", "2024")
+  .option("-y, --year <year>", "Season year (defaults to current year)", currentYear)
   .option("--dry-run", "Generate report without saving to PostgreSQL", false);
 
 async function main() {

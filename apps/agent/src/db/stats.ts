@@ -61,14 +61,71 @@ export interface PitcherSeasonStats {
 
 export interface PlayerFullStats {
   player: PlayerInfo;
-  year: number;
-  batterStats: BatterSeasonStats | null;
-  pitcherStats: PitcherSeasonStats | null;
+  targetYear: number;
+  batterStatsList: BatterSeasonStats[]; // 対象年を含む直近最大3年分 (昇順)
+  pitcherStatsList: PitcherSeasonStats[]; // 対象年を含む直近最大3年分 (昇順)
+  targetBatterStats: BatterSeasonStats | null; // 対象年の打撃成績
+  targetPitcherStats: PitcherSeasonStats | null; // 対象年の投球成績
+}
+
+function mapBatterRow(b: any): BatterSeasonStats {
+  return {
+    year: b.year,
+    games: b.games,
+    plateAppearances: b.plate_appearances,
+    atBats: b.at_bats,
+    runs: b.runs,
+    hits: b.hits,
+    doubles: b.doubles,
+    triples: b.triples,
+    homeRuns: b.home_runs,
+    rbi: b.rbi,
+    totalBases: b.total_bases,
+    strikeouts: b.strikeouts,
+    walks: b.walks,
+    intentionalWalks: b.intentional_walks,
+    hitByPitch: b.hit_by_pitch,
+    stolenBases: b.stolen_bases,
+    caughtStealing: b.caught_stealing,
+    battingAverage: Number(b.batting_average),
+    onBasePercentage: Number(b.on_base_percentage),
+    sluggingPercentage: Number(b.slugging_percentage),
+    ops: Number(b.ops),
+  };
+}
+
+function mapPitcherRow(pt: any): PitcherSeasonStats {
+  return {
+    year: pt.year,
+    wins: pt.wins,
+    losses: pt.losses,
+    era: Number(pt.era),
+    gamesPitched: pt.games_pitched,
+    gamesStarted: pt.games_started,
+    completeGames: pt.complete_games,
+    shutouts: pt.shutouts,
+    saves: pt.saves,
+    saveOpportunities: pt.save_opportunities,
+    holds: pt.holds,
+    blownSaves: pt.blown_saves,
+    inningsPitched: pt.innings_pitched,
+    outs: pt.outs,
+    hits: pt.hits,
+    runs: pt.runs,
+    earnedRuns: pt.earned_runs,
+    homeRuns: pt.home_runs,
+    walks: pt.walks,
+    strikeouts: pt.strikeouts,
+    whip: Number(pt.whip),
+    battingAverageAgainst: Number(pt.batting_average_against),
+    battersFaced: pt.batters_faced,
+    numberOfPitches: pt.number_of_pitches,
+  };
 }
 
 export async function fetchPlayerFullStats(
   playerId: number,
-  year: number
+  targetYear: number
 ): Promise<PlayerFullStats | null> {
   // 1. 選手マスタ情報取得
   const playerRes = await pool.query(
@@ -99,90 +156,43 @@ export async function fetchPlayerFullStats(
     teamName: pRow.team_name,
   };
 
-  // 2. 打者成績取得
+  // 2. 打者成績取得（対象年を含む直近最大3年間）
   const batterRes = await pool.query(
     `
     SELECT *
     FROM batter_season_stats
-    WHERE player_id = $1 AND year = $2
+    WHERE player_id = $1 AND year <= $2 AND year >= $2 - 2
+    ORDER BY year ASC
     `,
-    [playerId, year]
+    [playerId, targetYear]
   );
 
-  let batterStats: BatterSeasonStats | null = null;
-  if (batterRes.rows.length > 0) {
-    const b = batterRes.rows[0];
-    batterStats = {
-      year: b.year,
-      games: b.games,
-      plateAppearances: b.plate_appearances,
-      atBats: b.at_bats,
-      runs: b.runs,
-      hits: b.hits,
-      doubles: b.doubles,
-      triples: b.triples,
-      homeRuns: b.home_runs,
-      rbi: b.rbi,
-      totalBases: b.total_bases,
-      strikeouts: b.strikeouts,
-      walks: b.walks,
-      intentionalWalks: b.intentional_walks,
-      hitByPitch: b.hit_by_pitch,
-      stolenBases: b.stolen_bases,
-      caughtStealing: b.caught_stealing,
-      battingAverage: Number(b.batting_average),
-      onBasePercentage: Number(b.on_base_percentage),
-      sluggingPercentage: Number(b.slugging_percentage),
-      ops: Number(b.ops),
-    };
-  }
+  const batterStatsList: BatterSeasonStats[] = batterRes.rows.map(mapBatterRow);
+  const targetBatterStats =
+    batterStatsList.find((b) => b.year === targetYear) || null;
 
-  // 3. 投手成績取得
+  // 3. 投手成績取得（対象年を含む直近最大3年間）
   const pitcherRes = await pool.query(
     `
     SELECT *
     FROM pitcher_season_stats
-    WHERE player_id = $1 AND year = $2
+    WHERE player_id = $1 AND year <= $2 AND year >= $2 - 2
+    ORDER BY year ASC
     `,
-    [playerId, year]
+    [playerId, targetYear]
   );
 
-  let pitcherStats: PitcherSeasonStats | null = null;
-  if (pitcherRes.rows.length > 0) {
-    const pt = pitcherRes.rows[0];
-    pitcherStats = {
-      year: pt.year,
-      wins: pt.wins,
-      losses: pt.losses,
-      era: Number(pt.era),
-      gamesPitched: pt.games_pitched,
-      gamesStarted: pt.games_started,
-      completeGames: pt.complete_games,
-      shutouts: pt.shutouts,
-      saves: pt.saves,
-      saveOpportunities: pt.save_opportunities,
-      holds: pt.holds,
-      blownSaves: pt.blown_saves,
-      inningsPitched: pt.innings_pitched,
-      outs: pt.outs,
-      hits: pt.hits,
-      runs: pt.runs,
-      earnedRuns: pt.earned_runs,
-      homeRuns: pt.home_runs,
-      walks: pt.walks,
-      strikeouts: pt.strikeouts,
-      whip: Number(pt.whip),
-      battingAverageAgainst: Number(pt.batting_average_against),
-      battersFaced: pt.batters_faced,
-      numberOfPitches: pt.number_of_pitches,
-    };
-  }
+  const pitcherStatsList: PitcherSeasonStats[] = pitcherRes.rows.map(mapPitcherRow);
+  const targetPitcherStats =
+    pitcherStatsList.find((pt) => pt.year === targetYear) || null;
 
   return {
     player,
-    year,
-    batterStats,
-    pitcherStats,
+    targetYear,
+    batterStatsList,
+    pitcherStatsList,
+    targetBatterStats,
+    targetPitcherStats,
   };
 }
 
