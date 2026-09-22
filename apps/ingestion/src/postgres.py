@@ -49,8 +49,7 @@ CREATE INDEX IF NOT EXISTS idx_players_team_id ON players (team_id);
 
 CREATE TABLE IF NOT EXISTS games (
     game_pk BIGINT PRIMARY KEY,
-    game_date DATE NOT NULL,
-    game_date_time TIMESTAMP WITH TIME ZONE,
+    game_date_time TIMESTAMP WITH TIME ZONE NOT NULL,
     season INT NOT NULL,
     game_type VARCHAR(10),
     status VARCHAR(50),
@@ -58,13 +57,11 @@ CREATE TABLE IF NOT EXISTS games (
     away_team_id BIGINT,
     home_score INT,
     away_score INT,
-    venue_id BIGINT,
-    venue_name VARCHAR(255),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX IF NOT EXISTS idx_games_game_date ON games (game_date);
+CREATE INDEX IF NOT EXISTS idx_games_game_date_time ON games (game_date_time);
 CREATE INDEX IF NOT EXISTS idx_games_season ON games (season);
 CREATE INDEX IF NOT EXISTS idx_games_home_team_id ON games (home_team_id);
 CREATE INDEX IF NOT EXISTS idx_games_away_team_id ON games (away_team_id);

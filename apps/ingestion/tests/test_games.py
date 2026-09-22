@@ -169,8 +169,11 @@ def test_upsert_games_to_postgres():
     mock_cursor.executemany.assert_called_once()
     called_data = mock_cursor.executemany.call_args[0][1]
     assert called_data[0]["game_pk"] == 745444
+    assert called_data[0]["game_date_time"] == datetime.fromisoformat("2024-03-20T10:05:00+00:00")
     assert called_data[0]["home_team_id"] == 135
     assert called_data[0]["away_team_id"] == 119
+    assert "game_date" not in called_data[0]
+    assert "venue_id" not in called_data[0]
     mock_conn.commit.assert_called_once()
 
 

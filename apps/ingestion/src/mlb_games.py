@@ -232,16 +232,15 @@ def upsert_games_to_postgres(
 
     sql = """
     INSERT INTO games (
-        game_pk, game_date, game_date_time, season, game_type, status,
-        home_team_id, away_team_id, home_score, away_score, venue_id, venue_name,
+        game_pk, game_date_time, season, game_type, status,
+        home_team_id, away_team_id, home_score, away_score,
         updated_at
     ) VALUES (
-        %(game_pk)s, %(game_date)s, %(game_date_time)s, %(season)s, %(game_type)s, %(status)s,
-        %(home_team_id)s, %(away_team_id)s, %(home_score)s, %(away_score)s, %(venue_id)s, %(venue_name)s,
+        %(game_pk)s, %(game_date_time)s, %(season)s, %(game_type)s, %(status)s,
+        %(home_team_id)s, %(away_team_id)s, %(home_score)s, %(away_score)s,
         CURRENT_TIMESTAMP
     )
     ON CONFLICT (game_pk) DO UPDATE SET
-        game_date = EXCLUDED.game_date,
         game_date_time = EXCLUDED.game_date_time,
         season = EXCLUDED.season,
         game_type = EXCLUDED.game_type,
@@ -250,16 +249,17 @@ def upsert_games_to_postgres(
         away_team_id = EXCLUDED.away_team_id,
         home_score = EXCLUDED.home_score,
         away_score = EXCLUDED.away_score,
-        venue_id = EXCLUDED.venue_id,
-        venue_name = EXCLUDED.venue_name,
         updated_at = CURRENT_TIMESTAMP;
     """
 
-    data = [
-        {
+    data = []
+    for g in games:
+        dt = g.get("game_date_time")
+        if dt is None and g.get("game_date") is not None:
+            dt = datetime.combine(g["game_date"], datetime.min.time())
+        data.append({
             "game_pk": g.get("game_pk"),
-            "game_date": g.get("game_date"),
-            "game_date_time": g.get("game_date_time"),
+            "game_date_time": dt,
             "season": g.get("season"),
             "game_type": g.get("game_type") or "",
             "status": g.get("status") or "",
@@ -267,11 +267,7 @@ def upsert_games_to_postgres(
             "away_team_id": g.get("away_team_id"),
             "home_score": g.get("home_score"),
             "away_score": g.get("away_score"),
-            "venue_id": g.get("venue_id"),
-            "venue_name": g.get("venue_name"),
-        }
-        for g in games
-    ]
+        })
 
     with conn.cursor() as cur:
         cur.executemany(sql, data)
