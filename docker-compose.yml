@@ -130,7 +130,7 @@ services:
       - POSTGRES_USER=${POSTGRES_USER:-statcast}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-statcast_pass}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.5-flash}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-3.8-flash}
 
 volumes:
   clickhouse_data:
