@@ -157,6 +157,9 @@ docker compose run --rm ingestion --fetch-teams
 # データの収集実行 (Ingestion - MLB登録選手一覧の取得と登録)
 docker compose run --rm ingestion --fetch-players --season 2024
 
+# データの収集実行 (Ingestion - MLB試合日程・結果一覧の取得と登録)
+docker compose run --rm ingestion --fetch-games --season 2024
+
 # データの収集実行 (Ingestion - 登録全選手の Statcast データ一括取得例: 上限10選手、特定期間)
 docker compose run --rm ingestion --fetch-all-statcast --limit 10 --start-date 2024-04-01 --end-date 2024-04-07
 
