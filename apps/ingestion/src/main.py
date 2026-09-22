@@ -25,6 +25,10 @@ from .mlb_players import (
     insert_players_to_clickhouse,
     upsert_players_to_postgres,
 )
+from .mlb_stats import (
+    fetch_mlb_hitting_stats,
+    upsert_batter_season_stats_to_postgres,
+)
 from .mlb_teams import (
     fetch_mlb_teams,
     initialize_clickhouse_teams_table,
@@ -83,6 +87,11 @@ def main() -> None:
         "--fetch-games",
         action="store_true",
         help="MLB Stats API から試合日程・結果一覧を取得し、ClickHouse (全データ) と PostgreSQL (基本データ) に登録します",
+    )
+    parser.add_argument(
+        "--fetch-hitting-stats",
+        action="store_true",
+        help="MLB Stats API から打者シーズン成績を取得し、PostgreSQL (batter_season_stats) に登録します",
     )
     parser.add_argument(
         "--fetch-all-statcast",
@@ -178,6 +187,24 @@ def main() -> None:
         initialize_postgres_tables(pg_conn)
         pg_upserted = upsert_games_to_postgres(pg_conn, games)
         print(f"Successfully upserted {pg_upserted} games into PostgreSQL games.")
+        pg_conn.close()
+        return
+
+    if args.fetch_hitting_stats:
+        season = args.season or 2024
+        print(
+            f"Fetching hitting stats from MLB Stats API (sport_id={args.sport_id}, season={season})..."
+        )
+        splits = fetch_mlb_hitting_stats(season=season, sport_id=args.sport_id)
+        print(f"Fetched {len(splits)} hitting stat records.")
+
+        print("Upserting hitting stats into PostgreSQL (batter_season_stats)...")
+        pg_conn = get_postgres_connection()
+        initialize_postgres_tables(pg_conn)
+        pg_upserted = upsert_batter_season_stats_to_postgres(pg_conn, splits, season=season)
+        print(
+            f"Successfully upserted {pg_upserted} batter season stats into PostgreSQL batter_season_stats."
+        )
         pg_conn.close()
         return
 
