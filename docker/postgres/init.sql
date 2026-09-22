@@ -1,3 +1,12 @@
+-- チームマスタテーブル定義（結合キー・画面表示用）
+CREATE TABLE IF NOT EXISTS teams (
+    team_id BIGINT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    abbreviation VARCHAR(10) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- 選手マスタテーブル定義
 CREATE TABLE IF NOT EXISTS players (
     player_id BIGINT PRIMARY KEY,

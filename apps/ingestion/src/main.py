@@ -12,11 +12,18 @@ load_dotenv()
 
 from .downloader import download_statcast_csv, load_local_csv
 from .loader import get_clickhouse_client, initialize_table, insert_statcast_data
+from .mlb_teams import (
+    fetch_mlb_teams,
+    initialize_clickhouse_teams_table,
+    insert_teams_to_clickhouse,
+    upsert_teams_to_postgres,
+)
+from .postgres import get_postgres_connection, initialize_tables as initialize_postgres_tables
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Baseball Savant から Statcast データを取得し、ClickHouse に登録します。"
+        description="Baseball Savant / MLB Stats API からデータを取得し、DBに登録します。"
     )
     parser.add_argument(
         "--start-date",
@@ -47,10 +54,48 @@ def main() -> None:
     parser.add_argument(
         "--init-db",
         action="store_true",
-        help="ClickHouse テーブルの初期化のみを実行します",
+        help="DBテーブル (ClickHouse / PostgreSQL) の初期化を実行します",
+    )
+    parser.add_argument(
+        "--fetch-teams",
+        action="store_true",
+        help="MLB Stats API からチーム一覧を取得し、ClickHouse (全データ) と PostgreSQL (基本データ) に登録します",
+    )
+    parser.add_argument(
+        "--sport-id",
+        type=int,
+        default=1,
+        help="チーム取得時の競技区分ID (デフォルト: 1 = MLB)",
+    )
+    parser.add_argument(
+        "--season",
+        type=int,
+        help="チーム取得時の対象シーズン (任意)",
     )
 
     args = parser.parse_args()
+
+    if args.fetch_teams:
+        print(
+            f"Fetching teams from MLB Stats API (sport_id={args.sport_id}, season={args.season})..."
+        )
+        teams = fetch_mlb_teams(sport_id=args.sport_id, season=args.season)
+        print(f"Fetched {len(teams)} teams.")
+
+        # 1. 列指向DB (ClickHouse) へ全データ投入
+        print("Inserting full team data into ClickHouse (statcast.teams)...")
+        ch_client = get_clickhouse_client()
+        ch_inserted = insert_teams_to_clickhouse(ch_client, teams)
+        print(f"Successfully inserted {ch_inserted} teams into ClickHouse statcast.teams.")
+
+        # 2. RDB (PostgreSQL) へ結合・表示用基本データを Upsert
+        print("Upserting essential team data into PostgreSQL (teams)...")
+        pg_conn = get_postgres_connection()
+        initialize_postgres_tables(pg_conn)
+        pg_upserted = upsert_teams_to_postgres(pg_conn, teams)
+        print(f"Successfully upserted {pg_upserted} teams into PostgreSQL teams.")
+        pg_conn.close()
+        return
 
     client = get_clickhouse_client()
 
@@ -58,6 +103,13 @@ def main() -> None:
         print("Initializing ClickHouse tables...")
         initialize_table(client)
         print("ClickHouse tables initialized successfully.")
+        try:
+            pg_conn = get_postgres_connection()
+            initialize_postgres_tables(pg_conn)
+            pg_conn.close()
+            print("PostgreSQL tables initialized successfully.")
+        except Exception as e:
+            print(f"Note: PostgreSQL initialization skipped or failed: {e}")
         return
 
     # テーブルが存在しない場合は初期化

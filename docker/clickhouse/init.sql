@@ -125,3 +125,23 @@ ENGINE = ReplacingMergeTree()
 PARTITION BY toYYYYMM(game_date)
 ORDER BY (game_date, pitcher, batter, game_pk, at_bat_number, pitch_number)
 SETTINGS allow_nullable_key = 1;
+
+-- チームマスタテーブル定義 (全データ保持)
+CREATE TABLE IF NOT EXISTS statcast.teams (
+    `team_id` UInt32,
+    `name` String,
+    `abbreviation` LowCardinality(String),
+    `team_name` String,
+    `location_name` String,
+    `league_id` Nullable(UInt32),
+    `league_name` Nullable(String),
+    `division_id` Nullable(UInt32),
+    `division_name` Nullable(String),
+    `venue_id` Nullable(UInt32),
+    `venue_name` Nullable(String),
+    `active` UInt8 DEFAULT 1,
+    `created_at` DateTime DEFAULT now(),
+    `updated_at` DateTime DEFAULT now()
+)
+ENGINE = ReplacingMergeTree(updated_at)
+ORDER BY (team_id);
