@@ -167,3 +167,28 @@ CREATE TABLE IF NOT EXISTS statcast.players (
 )
 ENGINE = ReplacingMergeTree(updated_at)
 ORDER BY (player_id);
+
+-- 試合日程・結果テーブル定義 (全データ保持)
+CREATE TABLE IF NOT EXISTS statcast.games (
+    `game_pk` UInt64,
+    `game_date` Date,
+    `game_date_time` Nullable(DateTime),
+    `season` UInt16,
+    `game_type` LowCardinality(String),
+    `status` LowCardinality(String),
+    `status_code` LowCardinality(Nullable(String)),
+    `home_team_id` UInt32,
+    `home_team_name` String,
+    `away_team_id` UInt32,
+    `away_team_name` String,
+    `home_score` Nullable(UInt16),
+    `away_score` Nullable(UInt16),
+    `is_winner_home` Nullable(UInt8),
+    `is_winner_away` Nullable(UInt8),
+    `venue_id` Nullable(UInt32),
+    `venue_name` Nullable(String),
+    `created_at` DateTime DEFAULT now(),
+    `updated_at` DateTime DEFAULT now()
+)
+ENGINE = ReplacingMergeTree(updated_at)
+ORDER BY (season, game_date, game_pk);

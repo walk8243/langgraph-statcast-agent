@@ -13,6 +13,12 @@ load_dotenv()
 from .batch_statcast import ingest_all_players_statcast
 from .downloader import download_statcast_csv, load_local_csv
 from .loader import get_clickhouse_client, initialize_table, insert_statcast_data
+from .mlb_games import (
+    fetch_mlb_schedule,
+    initialize_clickhouse_games_table,
+    insert_games_to_clickhouse,
+    upsert_games_to_postgres,
+)
 from .mlb_players import (
     fetch_mlb_players,
     initialize_clickhouse_players_table,
@@ -72,6 +78,11 @@ def main() -> None:
         "--fetch-players",
         action="store_true",
         help="MLB Stats API から選手一覧を取得し、ClickHouse (全データ) と PostgreSQL (基本データ) に登録します",
+    )
+    parser.add_argument(
+        "--fetch-games",
+        action="store_true",
+        help="MLB Stats API から試合日程・結果一覧を取得し、ClickHouse (全データ) と PostgreSQL (基本データ) に登録します",
     )
     parser.add_argument(
         "--fetch-all-statcast",
@@ -142,6 +153,34 @@ def main() -> None:
         pg_conn.close()
         return
 
+    if args.fetch_games:
+        season = args.season or 2024
+        print(
+            f"Fetching schedule from MLB Stats API (sport_id={args.sport_id}, season={season}, start={args.start_date}, end={args.end_date})..."
+        )
+        games = fetch_mlb_schedule(
+            season=season,
+            sport_id=args.sport_id,
+            start_date=args.start_date,
+            end_date=args.end_date,
+        )
+        print(f"Fetched {len(games)} games.")
+
+        # 1. 列指向DB (ClickHouse) へ全データ投入
+        print("Inserting full game data into ClickHouse (statcast.games)...")
+        ch_client = get_clickhouse_client()
+        ch_inserted = insert_games_to_clickhouse(ch_client, games)
+        print(f"Successfully inserted {ch_inserted} games into ClickHouse statcast.games.")
+
+        # 2. RDB (PostgreSQL) へ結合・表示用基本データを Upsert
+        print("Upserting essential game data into PostgreSQL (games)...")
+        pg_conn = get_postgres_connection()
+        initialize_postgres_tables(pg_conn)
+        pg_upserted = upsert_games_to_postgres(pg_conn, games)
+        print(f"Successfully upserted {pg_upserted} games into PostgreSQL games.")
+        pg_conn.close()
+        return
+
     if args.fetch_all_statcast:
         print("Starting batch Statcast ingestion for registered players...")
         pg_conn = get_postgres_connection()
@@ -171,6 +210,7 @@ def main() -> None:
         initialize_table(client)
         initialize_clickhouse_teams_table(client)
         initialize_clickhouse_players_table(client)
+        initialize_clickhouse_games_table(client)
         print("ClickHouse tables initialized successfully.")
         try:
             pg_conn = get_postgres_connection()

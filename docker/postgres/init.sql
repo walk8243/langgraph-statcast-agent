@@ -19,6 +19,26 @@ CREATE TABLE IF NOT EXISTS players (
 
 CREATE INDEX IF NOT EXISTS idx_players_team_id ON players (team_id);
 
+-- 試合テーブル定義（試合メタデータ、対戦カード、スコア、チーム結合用）
+CREATE TABLE IF NOT EXISTS games (
+    game_pk BIGINT PRIMARY KEY,
+    game_date_time TIMESTAMP WITH TIME ZONE NOT NULL,
+    season INT NOT NULL,
+    game_type VARCHAR(10),
+    status VARCHAR(50),
+    home_team_id BIGINT,
+    away_team_id BIGINT,
+    home_score INT,
+    away_score INT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_games_game_date_time ON games (game_date_time);
+CREATE INDEX IF NOT EXISTS idx_games_season ON games (season);
+CREATE INDEX IF NOT EXISTS idx_games_home_team_id ON games (home_team_id);
+CREATE INDEX IF NOT EXISTS idx_games_away_team_id ON games (away_team_id);
+
 -- 打者シーズン基本指標テーブル定義
 CREATE TABLE IF NOT EXISTS batter_season_stats (
     player_id BIGINT NOT NULL,
