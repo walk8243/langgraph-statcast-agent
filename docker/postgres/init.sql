@@ -12,9 +12,12 @@ CREATE TABLE IF NOT EXISTS players (
     player_id BIGINT PRIMARY KEY,
     name_en VARCHAR(255) NOT NULL,
     name_ja VARCHAR(255),
+    team_id BIGINT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE INDEX IF NOT EXISTS idx_players_team_id ON players (team_id);
 
 -- 打者シーズン基本指標テーブル定義
 CREATE TABLE IF NOT EXISTS batter_season_stats (

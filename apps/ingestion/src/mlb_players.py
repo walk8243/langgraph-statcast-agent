@@ -169,7 +169,7 @@ def insert_players_to_clickhouse(client: Client, players: list[dict[str, Any]]) 
 def upsert_players_to_postgres(
     conn: psycopg.Connection, players: list[dict[str, Any]]
 ) -> int:
-    """選手の基本情報（ID・英名）を PostgreSQL (RDB) の players テーブルへ Upsert する
+    """選手の基本情報（ID・英名・所属チームID）を PostgreSQL (RDB) の players テーブルへ Upsert する
     ※ 既存の name_ja (日本語名) は上書きせず保持します。
 
     Args:
@@ -184,12 +184,13 @@ def upsert_players_to_postgres(
 
     sql = """
     INSERT INTO players (
-        player_id, name_en, updated_at
+        player_id, name_en, team_id, updated_at
     ) VALUES (
-        %(player_id)s, %(name_en)s, CURRENT_TIMESTAMP
+        %(player_id)s, %(name_en)s, %(team_id)s, CURRENT_TIMESTAMP
     )
     ON CONFLICT (player_id) DO UPDATE SET
         name_en = EXCLUDED.name_en,
+        team_id = EXCLUDED.team_id,
         updated_at = CURRENT_TIMESTAMP;
     """
 
@@ -197,6 +198,7 @@ def upsert_players_to_postgres(
         {
             "player_id": p.get("player_id"),
             "name_en": p.get("last_first_name") or p.get("full_name"),
+            "team_id": p.get("current_team_id"),
         }
         for p in players
     ]

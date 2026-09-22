@@ -134,12 +134,16 @@ def test_upsert_players_to_postgres():
             "player_id": 671096,
             "full_name": "Andrew Abbott",
             "last_first_name": "Abbott, Andrew",
+            "current_team_id": 113,
         }
     ]
 
     count = upsert_players_to_postgres(mock_conn, sample_players)
     assert count == 1
     mock_cursor.executemany.assert_called_once()
+    called_data = mock_cursor.executemany.call_args[0][1]
+    assert called_data[0]["team_id"] == 113
+    assert called_data[0]["name_en"] == "Abbott, Andrew"
     mock_conn.commit.assert_called_once()
 
 
