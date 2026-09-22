@@ -1,13 +1,16 @@
-"""MLB 打者シーズン成績取得および DB 登録モジュールのユニットテスト"""
+"""MLB 打者・投手シーズン成績取得および DB 登録モジュールのユニットテスト"""
 
 from unittest.mock import MagicMock, patch
 import pytest
 from src.mlb_stats import (
     fetch_mlb_hitting_stats,
+    fetch_mlb_pitching_stats,
     parse_batter_season_stat,
+    parse_pitcher_season_stat,
     safe_float,
     safe_int,
     upsert_batter_season_stats_to_postgres,
+    upsert_pitcher_season_stats_to_postgres,
 )
 
 
@@ -182,5 +185,175 @@ def test_upsert_batter_season_stats_to_postgres(sample_stats_response):
 def test_upsert_batter_season_stats_empty():
     mock_conn = MagicMock()
     count = upsert_batter_season_stats_to_postgres(mock_conn, [])
+    assert count == 0
+    mock_conn.cursor.assert_not_called()
+
+
+@pytest.fixture
+def sample_pitching_response():
+    return {
+        "stats": [
+            {
+                "type": {"displayName": "season"},
+                "group": {"displayName": "pitching"},
+                "totalSplits": 2,
+                "splits": [
+                    {
+                        "season": "2024",
+                        "stat": {
+                            "gamesPlayed": 32,
+                            "gamesPitched": 32,
+                            "gamesStarted": 32,
+                            "wins": 18,
+                            "losses": 3,
+                            "era": "2.38",
+                            "completeGames": 0,
+                            "shutouts": 0,
+                            "saves": 0,
+                            "saveOpportunities": 0,
+                            "holds": 0,
+                            "blownSaves": 0,
+                            "inningsPitched": "177.2",
+                            "outs": 533,
+                            "hits": 141,
+                            "runs": 51,
+                            "earnedRuns": 47,
+                            "homeRuns": 9,
+                            "baseOnBalls": 41,
+                            "intentionalWalks": 0,
+                            "strikeOuts": 228,
+                            "hitBatsmen": 2,
+                            "whip": "1.02",
+                            "avg": ".215",
+                            "battersFaced": 703,
+                            "numberOfPitches": 2724,
+                        },
+                        "team": {
+                            "id": 140,
+                            "name": "Texas Rangers",
+                        },
+                        "player": {
+                            "id": 668933,
+                            "fullName": "Tarik Skubal",
+                        },
+                    },
+                    {
+                        "season": "2024",
+                        "stat": {
+                            "gamesPlayed": 32,
+                            "gamesPitched": 32,
+                            "gamesStarted": 32,
+                            "wins": 18,
+                            "losses": 8,
+                            "era": "2.57",
+                            "completeGames": 1,
+                            "shutouts": 0,
+                            "saves": 0,
+                            "saveOpportunities": 0,
+                            "holds": 0,
+                            "blownSaves": 0,
+                            "inningsPitched": "185.1",
+                            "outs": 556,
+                            "hits": 150,
+                            "runs": 58,
+                            "earnedRuns": 53,
+                            "homeRuns": 18,
+                            "baseOnBalls": 43,
+                            "intentionalWalks": 0,
+                            "strikeOuts": 225,
+                            "hitBatsmen": 6,
+                            "whip": "1.04",
+                            "avg": ".219",
+                            "battersFaced": 738,
+                            "numberOfPitches": 2865,
+                        },
+                        "team": {
+                            "id": 144,
+                            "name": "Atlanta Braves",
+                        },
+                        "player": {
+                            "id": 453286,
+                            "fullName": "Chris Sale",
+                        },
+                    },
+                ],
+            }
+        ]
+    }
+
+
+def test_fetch_mlb_pitching_stats(sample_pitching_response):
+    with patch("src.mlb_stats.requests.get") as mock_get:
+        mock_resp = MagicMock()
+        mock_resp.json.return_value = sample_pitching_response
+        mock_resp.raise_for_status.return_value = None
+        mock_get.return_value = mock_resp
+
+        splits = fetch_mlb_pitching_stats(season=2024, sport_id=1)
+
+        assert len(splits) == 2
+        assert splits[0]["player"]["fullName"] == "Tarik Skubal"
+        assert splits[0]["stat"]["wins"] == 18
+        assert splits[0]["stat"]["era"] == "2.38"
+        mock_get.assert_called_once()
+
+
+def test_parse_pitcher_season_stat(sample_pitching_response):
+    split = sample_pitching_response["stats"][0]["splits"][0]
+    parsed = parse_pitcher_season_stat(split, default_season=2024)
+
+    assert parsed["player_id"] == 668933
+    assert parsed["year"] == 2024
+    assert parsed["wins"] == 18
+    assert parsed["losses"] == 3
+    assert parsed["era"] == 2.38
+    assert parsed["games_pitched"] == 32
+    assert parsed["games_started"] == 32
+    assert parsed["complete_games"] == 0
+    assert parsed["shutouts"] == 0
+    assert parsed["saves"] == 0
+    assert parsed["save_opportunities"] == 0
+    assert parsed["holds"] == 0
+    assert parsed["blown_saves"] == 0
+    assert parsed["innings_pitched"] == "177.2"
+    assert parsed["outs"] == 533
+    assert parsed["hits"] == 141
+    assert parsed["runs"] == 51
+    assert parsed["earned_runs"] == 47
+    assert parsed["home_runs"] == 9
+    assert parsed["walks"] == 41
+    assert parsed["intentional_walks"] == 0
+    assert parsed["strikeouts"] == 228
+    assert parsed["hit_by_pitch"] == 2
+    assert parsed["whip"] == 1.02
+    assert parsed["batting_average_against"] == 0.215
+    assert parsed["batters_faced"] == 703
+    assert parsed["number_of_pitches"] == 2724
+
+
+def test_upsert_pitcher_season_stats_to_postgres(sample_pitching_response):
+    mock_conn = MagicMock()
+    mock_cursor = MagicMock()
+    mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
+
+    splits = sample_pitching_response["stats"][0]["splits"]
+    count = upsert_pitcher_season_stats_to_postgres(mock_conn, splits, season=2024, ensure_players=True)
+
+    assert count == 2
+    assert mock_cursor.executemany.call_count == 2  # 1 for players, 1 for pitcher_season_stats
+    assert mock_conn.commit.call_count == 2
+
+    # Without ensure_players
+    mock_conn.reset_mock()
+    mock_cursor.reset_mock()
+    count = upsert_pitcher_season_stats_to_postgres(mock_conn, splits, season=2024, ensure_players=False)
+    assert count == 2
+    assert mock_cursor.executemany.call_count == 1  # only pitcher_season_stats
+    assert mock_conn.commit.call_count == 1
+
+
+def test_upsert_pitcher_season_stats_empty():
+    mock_conn = MagicMock()
+    count = upsert_pitcher_season_stats_to_postgres(mock_conn, [])
     assert count == 0
     mock_conn.cursor.assert_not_called()
