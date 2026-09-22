@@ -12,11 +12,13 @@ load_dotenv()
 
 from .downloader import download_statcast_csv, load_local_csv
 from .loader import get_clickhouse_client, initialize_table, insert_statcast_data
+from .mlb_teams import fetch_mlb_teams, upsert_teams
+from .postgres import get_postgres_connection, initialize_tables as initialize_postgres_tables
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Baseball Savant から Statcast データを取得し、ClickHouse に登録します。"
+        description="Baseball Savant / MLB Stats API からデータを取得し、DBに登録します。"
     )
     parser.add_argument(
         "--start-date",
@@ -47,10 +49,41 @@ def main() -> None:
     parser.add_argument(
         "--init-db",
         action="store_true",
-        help="ClickHouse テーブルの初期化のみを実行します",
+        help="DBテーブル (ClickHouse / PostgreSQL) の初期化を実行します",
+    )
+    parser.add_argument(
+        "--fetch-teams",
+        action="store_true",
+        help="MLB Stats API からチーム一覧を取得し、PostgreSQL に登録します",
+    )
+    parser.add_argument(
+        "--sport-id",
+        type=int,
+        default=1,
+        help="チーム取得時の競技区分ID (デフォルト: 1 = MLB)",
+    )
+    parser.add_argument(
+        "--season",
+        type=int,
+        help="チーム取得時の対象シーズン (任意)",
     )
 
     args = parser.parse_args()
+
+    if args.fetch_teams:
+        print("Connecting to PostgreSQL...")
+        pg_conn = get_postgres_connection()
+        print("Initializing PostgreSQL tables if not exist...")
+        initialize_postgres_tables(pg_conn)
+        print(
+            f"Fetching teams from MLB Stats API (sport_id={args.sport_id}, season={args.season})..."
+        )
+        teams = fetch_mlb_teams(sport_id=args.sport_id, season=args.season)
+        print(f"Fetched {len(teams)} teams. Upserting into PostgreSQL...")
+        upserted = upsert_teams(pg_conn, teams)
+        print(f"Successfully upserted {upserted} teams into teams table.")
+        pg_conn.close()
+        return
 
     client = get_clickhouse_client()
 
@@ -58,6 +91,13 @@ def main() -> None:
         print("Initializing ClickHouse tables...")
         initialize_table(client)
         print("ClickHouse tables initialized successfully.")
+        try:
+            pg_conn = get_postgres_connection()
+            initialize_postgres_tables(pg_conn)
+            pg_conn.close()
+            print("PostgreSQL tables initialized successfully.")
+        except Exception as e:
+            print(f"Note: PostgreSQL initialization skipped or failed: {e}")
         return
 
     # テーブルが存在しない場合は初期化

@@ -151,7 +151,10 @@ docker compose ps
 ### 4. データの取得とエージェント実行
 
 ```bash
-# 1. データの収集実行 (Ingestion - 投手データ取得例)
+# 1. データの収集実行 (Ingestion - MLBチーム一覧の取得と登録)
+docker compose run --rm ingestion --fetch-teams
+
+# データの収集実行 (Ingestion - 投手データ取得例)
 docker compose run --rm ingestion --player-id 808967 --start-date 2024-04-01 --end-date 2024-04-07
 
 # 打者データを取得する場合

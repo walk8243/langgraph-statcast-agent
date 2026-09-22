@@ -1,3 +1,21 @@
+-- チームマスタテーブル定義
+CREATE TABLE IF NOT EXISTS teams (
+    team_id BIGINT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    abbreviation VARCHAR(10) NOT NULL,
+    team_name VARCHAR(255),
+    location_name VARCHAR(255),
+    league_id INT,
+    league_name VARCHAR(255),
+    division_id INT,
+    division_name VARCHAR(255),
+    venue_id INT,
+    venue_name VARCHAR(255),
+    active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- 選手マスタテーブル定義
 CREATE TABLE IF NOT EXISTS players (
     player_id BIGINT PRIMARY KEY,
