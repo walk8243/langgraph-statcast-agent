@@ -12,7 +12,12 @@ load_dotenv()
 
 from .downloader import download_statcast_csv, load_local_csv
 from .loader import get_clickhouse_client, initialize_table, insert_statcast_data
-from .mlb_teams import fetch_mlb_teams, upsert_teams
+from .mlb_teams import (
+    fetch_mlb_teams,
+    initialize_clickhouse_teams_table,
+    insert_teams_to_clickhouse,
+    upsert_teams_to_postgres,
+)
 from .postgres import get_postgres_connection, initialize_tables as initialize_postgres_tables
 
 
@@ -54,7 +59,7 @@ def main() -> None:
     parser.add_argument(
         "--fetch-teams",
         action="store_true",
-        help="MLB Stats API からチーム一覧を取得し、PostgreSQL に登録します",
+        help="MLB Stats API からチーム一覧を取得し、ClickHouse (全データ) と PostgreSQL (基本データ) に登録します",
     )
     parser.add_argument(
         "--sport-id",
@@ -71,17 +76,24 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.fetch_teams:
-        print("Connecting to PostgreSQL...")
-        pg_conn = get_postgres_connection()
-        print("Initializing PostgreSQL tables if not exist...")
-        initialize_postgres_tables(pg_conn)
         print(
             f"Fetching teams from MLB Stats API (sport_id={args.sport_id}, season={args.season})..."
         )
         teams = fetch_mlb_teams(sport_id=args.sport_id, season=args.season)
-        print(f"Fetched {len(teams)} teams. Upserting into PostgreSQL...")
-        upserted = upsert_teams(pg_conn, teams)
-        print(f"Successfully upserted {upserted} teams into teams table.")
+        print(f"Fetched {len(teams)} teams.")
+
+        # 1. 列指向DB (ClickHouse) へ全データ投入
+        print("Inserting full team data into ClickHouse (statcast.teams)...")
+        ch_client = get_clickhouse_client()
+        ch_inserted = insert_teams_to_clickhouse(ch_client, teams)
+        print(f"Successfully inserted {ch_inserted} teams into ClickHouse statcast.teams.")
+
+        # 2. RDB (PostgreSQL) へ結合・表示用基本データを Upsert
+        print("Upserting essential team data into PostgreSQL (teams)...")
+        pg_conn = get_postgres_connection()
+        initialize_postgres_tables(pg_conn)
+        pg_upserted = upsert_teams_to_postgres(pg_conn, teams)
+        print(f"Successfully upserted {pg_upserted} teams into PostgreSQL teams.")
         pg_conn.close()
         return
 

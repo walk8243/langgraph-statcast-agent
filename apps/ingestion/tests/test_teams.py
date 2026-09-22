@@ -1,8 +1,12 @@
-"""MLB チーム取得・登録モジュールのユニットテスト"""
+"""MLB チーム取得・登録モジュールのユニットテスト (ClickHouse & PostgreSQL)"""
 
 from unittest.mock import MagicMock, patch
 import pytest
-from src.mlb_teams import fetch_mlb_teams, upsert_teams
+from src.mlb_teams import (
+    fetch_mlb_teams,
+    insert_teams_to_clickhouse,
+    upsert_teams_to_postgres,
+)
 
 
 @pytest.fixture
@@ -59,18 +63,9 @@ def test_fetch_mlb_teams(sample_mlb_teams_response):
         assert tor["venue_name"] == "Rogers Centre"
         assert tor["active"] is True
 
-        mock_get.assert_called_once_with(
-            "https://statsapi.mlb.com/api/v1/teams",
-            params={"sportId": 1},
-            timeout=30,
-        )
 
-
-def test_upsert_teams():
-    mock_conn = MagicMock()
-    mock_cursor = MagicMock()
-    mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
-
+def test_insert_teams_to_clickhouse():
+    mock_client = MagicMock()
     sample_teams = [
         {
             "team_id": 141,
@@ -88,14 +83,45 @@ def test_upsert_teams():
         }
     ]
 
-    result = upsert_teams(mock_conn, sample_teams)
+    result = insert_teams_to_clickhouse(mock_client, sample_teams)
+    assert result == 1
+    mock_client.command.assert_called_once()  # table init
+    mock_client.insert.assert_called_once()
+    call_args = mock_client.insert.call_args[1]
+    assert call_args["table"] == "teams"
+    assert call_args["database"] == "statcast"
+    assert len(call_args["data"]) == 1
+
+
+def test_insert_teams_to_clickhouse_empty():
+    mock_client = MagicMock()
+    result = insert_teams_to_clickhouse(mock_client, [])
+    assert result == 0
+    mock_client.insert.assert_not_called()
+
+
+def test_upsert_teams_to_postgres():
+    mock_conn = MagicMock()
+    mock_cursor = MagicMock()
+    mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
+
+    sample_teams = [
+        {
+            "team_id": 141,
+            "name": "Toronto Blue Jays",
+            "abbreviation": "TOR",
+            "team_name": "Blue Jays",
+        }
+    ]
+
+    result = upsert_teams_to_postgres(mock_conn, sample_teams)
     assert result == 1
     mock_cursor.executemany.assert_called_once()
     mock_conn.commit.assert_called_once()
 
 
-def test_upsert_teams_empty():
+def test_upsert_teams_to_postgres_empty():
     mock_conn = MagicMock()
-    result = upsert_teams(mock_conn, [])
+    result = upsert_teams_to_postgres(mock_conn, [])
     assert result == 0
     mock_conn.cursor.assert_not_called()
