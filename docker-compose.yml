@@ -115,6 +115,23 @@ services:
       - POSTGRES_USER=${POSTGRES_USER:-statcast}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-statcast_pass}
 
+  agent:
+    build:
+      context: ./apps/agent
+      dockerfile: Dockerfile
+    container_name: statcast-agent
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB:-statcast}
+      - POSTGRES_USER=${POSTGRES_USER:-statcast}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-statcast_pass}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.5-flash}
+
 volumes:
   clickhouse_data:
   postgres_data:

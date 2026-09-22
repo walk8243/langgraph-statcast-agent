@@ -115,3 +115,17 @@ CREATE TABLE IF NOT EXISTS pitcher_season_stats (
 
 CREATE INDEX IF NOT EXISTS idx_pitcher_season_stats_year ON pitcher_season_stats (year);
 
+-- 選手解説レポートテーブル定義（LangGraph エージェント生成結果の保存）
+CREATE TABLE IF NOT EXISTS player_reports (
+    id BIGSERIAL PRIMARY KEY,
+    player_id BIGINT NOT NULL,
+    year INT NOT NULL,
+    report_text TEXT NOT NULL,
+    model_name VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (player_id, year)
+);
+
+CREATE INDEX IF NOT EXISTS idx_player_reports_player_year ON player_reports (player_id, year);
+

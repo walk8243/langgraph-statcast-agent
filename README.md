@@ -178,8 +178,13 @@ docker compose run --rm ingestion --player-id 673548 --player-type batter --star
 # 2. データの集計実行 (Aggregation - 打者基本指標の集計と RDB 登録)
 docker compose run --rm aggregation --player-id 673548 --year 2024
 
-# 3. Agent CLI の対話起動
-docker compose run --rm agent
+# 3. Agent による選手解説文の生成実行
+# 例: 大谷翔平選手 (660271) の 2024 シーズン解説文を生成して DB 保存
+docker compose run --rm agent --player-id 660271 --year 2024
+
+# ローカル環境 (apps/agent 配下) での直接実行例
+# cd apps/agent && npm install
+# npx tsx src/index.ts --player-id 660271 --year 2024
 ```
 
 ---
@@ -202,5 +207,5 @@ docker compose run --rm agent
 * [x] Ingestion サービスの実装（Savant CSV 取得 → 列指向DB 投入）
 * [ ] Pub/Sub を経由した Aggregator のトリガー実装
 * [ ] Aggregator による指標算出（Barrel%, xwOBA 等）と RDB 格納
-* [ ] LangGraph による基本解説ワークフローの実装
+* [x] LangGraph による基本解説ワークフローの実装
 * [ ] 列指向DB へのオンデマンド深掘りクエリツールの統合
