@@ -127,6 +127,23 @@ services:
       - PUBSUB_TOPIC_STATCAST_RAW=${PUBSUB_TOPIC_STATCAST_RAW:-statcast-raw-ingested}
       - PUBSUB_SUBSCRIPTION_STATCAST_RAW=${PUBSUB_SUBSCRIPTION_STATCAST_RAW:-statcast-raw-ingested-sub}
 
+  trigger-api:
+    build:
+      context: ./apps/trigger-api
+      dockerfile: Dockerfile
+    container_name: statcast-trigger-api
+    ports:
+      - "${TRIGGER_API_PORT:-8000}:8000"
+    depends_on:
+      pubsub:
+        condition: service_healthy
+      pubsub-init:
+        condition: service_completed_successfully
+    environment:
+      - PUBSUB_EMULATOR_HOST=pubsub:8085
+      - GCP_PROJECT_ID=${GCP_PROJECT_ID:-local-statcast-project}
+      - PUBSUB_TOPIC_STATCAST_RAW=${PUBSUB_TOPIC_STATCAST_RAW:-statcast-raw-ingested}
+
   agent:
     build:
       context: ./apps/agent
