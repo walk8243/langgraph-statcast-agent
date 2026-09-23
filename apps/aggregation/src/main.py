@@ -191,10 +191,27 @@ def parse_args(args: Optional[list[str]] = None) -> argparse.Namespace:
         description="Statcast 指標集計サービス (ClickHouse -> PostgreSQL: batter_statcast_stats / pitcher_statcast_stats / pitcher_pitch_type_stats)"
     )
     parser.add_argument(
+        "--worker",
+        action="store_true",
+        help="Cloud Pub/Sub サブスクリプションを受信する常駐ワーカーモードとして起動する",
+    )
+    parser.add_argument(
+        "--project-id",
+        type=str,
+        default=None,
+        help="GCP プロジェクトID (未指定時は環境変数 GCP_PROJECT_ID または local-statcast-project)",
+    )
+    parser.add_argument(
+        "--subscription-id",
+        type=str,
+        default=None,
+        help="Pub/Sub サブスクリプションID (未指定時は環境変数 PUBSUB_SUBSCRIPTION_STATCAST_RAW または statcast-raw-ingested-sub)",
+    )
+    parser.add_argument(
         "--player-id",
         type=int,
-        required=True,
-        help="集計対象の選手ID (MLB player ID, 例: 660271)",
+        default=None,
+        help="集計対象の選手ID (MLB player ID, 例: 660271)。ワンショット実行時は必須",
     )
     parser.add_argument(
         "--year",
@@ -218,7 +235,10 @@ def parse_args(args: Optional[list[str]] = None) -> argparse.Namespace:
         action="store_true",
         help="実行前に PostgreSQL テーブルの初期化 DDL を実行する",
     )
-    return parser.parse_args(args)
+    parsed = parser.parse_args(args)
+    if not parsed.worker and parsed.player_id is None:
+        parser.error("--player-id はワンショット実行時に必須です (常駐実行時は --worker を指定してください)")
+    return parsed
 
 
 def main() -> None:
@@ -226,6 +246,15 @@ def main() -> None:
     load_dotenv()
     parsed = parse_args()
     try:
+        if parsed.worker:
+            from src.subscriber import run_subscriber
+
+            run_subscriber(
+                project_id=parsed.project_id,
+                subscription_id=parsed.subscription_id,
+            )
+            return
+
         init_db = parsed.init_db
 
         # 打者 Statcast 詳細指標集計 -> batter_statcast_stats

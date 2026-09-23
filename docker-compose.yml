@@ -98,11 +98,16 @@ services:
       context: ./apps/aggregation
       dockerfile: Dockerfile
     container_name: statcast-aggregation
+    command: ["--worker"]
     depends_on:
       clickhouse:
         condition: service_healthy
       postgres:
         condition: service_healthy
+      pubsub:
+        condition: service_healthy
+      pubsub-init:
+        condition: service_completed_successfully
     environment:
       - CLICKHOUSE_HOST=clickhouse
       - CLICKHOUSE_HTTP_PORT=8123
@@ -114,6 +119,10 @@ services:
       - POSTGRES_DB=${POSTGRES_DB:-statcast}
       - POSTGRES_USER=${POSTGRES_USER:-statcast}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-statcast_pass}
+      - PUBSUB_EMULATOR_HOST=pubsub:8085
+      - GCP_PROJECT_ID=${GCP_PROJECT_ID:-local-statcast-project}
+      - PUBSUB_TOPIC_STATCAST_RAW=${PUBSUB_TOPIC_STATCAST_RAW:-statcast-raw-ingested}
+      - PUBSUB_SUBSCRIPTION_STATCAST_RAW=${PUBSUB_SUBSCRIPTION_STATCAST_RAW:-statcast-raw-ingested-sub}
 
   agent:
     build:
