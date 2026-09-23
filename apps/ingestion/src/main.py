@@ -10,9 +10,10 @@ from dotenv import load_dotenv
 # プロジェクトルートの .env を読み込み
 load_dotenv()
 
-from .batch_statcast import ingest_all_players_statcast
+from .batch_statcast import extract_year_from_dates, ingest_all_players_statcast
 from .downloader import download_statcast_csv, load_local_csv
 from .loader import get_clickhouse_client, initialize_table, insert_statcast_data
+from .publisher import publish_statcast_raw_message
 from .mlb_games import (
     fetch_mlb_schedule,
     initialize_clickhouse_games_table,
@@ -120,6 +121,11 @@ def main() -> None:
         "--season",
         type=int,
         help="データ取得時の対象シーズン (任意、デフォルト: 2024)",
+    )
+    parser.add_argument(
+        "--no-pubsub",
+        action="store_true",
+        help="データ登録完了後の Cloud Pub/Sub への集計トリガーメッセージ発行をスキップします",
     )
 
     args = parser.parse_args()
@@ -247,6 +253,7 @@ def main() -> None:
             end_date=args.end_date,
             player_type=player_type,
             limit=args.limit,
+            enable_pubsub=not args.no_pubsub,
         )
         print(
             f"Batch ingestion completed! Total players processed: {summary['total_players']}, "
@@ -298,6 +305,15 @@ def main() -> None:
     print(f"Loaded {len(df)} rows. Inserting into ClickHouse...")
     inserted = insert_statcast_data(client, df)
     print(f"Successfully inserted {inserted} rows into statcast.statcast_raw.")
+
+    # 登録成功時、Cloud Pub/Sub へ集計メッセージを発行
+    if inserted > 0 and not args.no_pubsub and args.player_id:
+        year = extract_year_from_dates(args.start_date, args.end_date)
+        publish_statcast_raw_message(
+            player_id=args.player_id,
+            year=year,
+            player_type=args.player_type,
+        )
 
     # 登録状況のサマリーを表示
     summary = client.query(

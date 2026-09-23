@@ -11,8 +11,19 @@ import psycopg
 
 from .downloader import download_statcast_csv
 from .loader import insert_statcast_data
+from .publisher import publish_statcast_raw_message
 
 logger = logging.getLogger(__name__)
+
+
+def extract_year_from_dates(
+    start_date: Optional[str] = None, end_date: Optional[str] = None
+) -> Optional[int]:
+    """日付文字列から西暦年 (YYYY) を抽出する"""
+    for d in (start_date, end_date):
+        if d and len(d) >= 4 and d[:4].isdigit():
+            return int(d[:4])
+    return None
 
 
 def get_registered_players(
@@ -45,10 +56,12 @@ def ingest_player_statcast(
     player_type: str,
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
+    enable_pubsub: bool = True,
 ) -> int:
     """単一選手の Statcast データをダウンロードし、ClickHouse へ投入する
 
     データが存在しない選手（打席のない投手、登板のない野手など）は安全に 0 件スキップします。
+    データ登録成功時には、Cloud Pub/Sub へ集計トリガーメッセージを発行します。
 
     Returns:
         投入された行数
@@ -95,6 +108,15 @@ def ingest_player_statcast(
         player_name,
         player_type,
     )
+
+    if inserted > 0 and enable_pubsub:
+        year = extract_year_from_dates(start_date, end_date)
+        publish_statcast_raw_message(
+            player_id=player_id,
+            year=year,
+            player_type=player_type,
+        )
+
     return inserted
 
 
@@ -106,6 +128,7 @@ def ingest_all_players_statcast(
     player_type: str = "both",
     limit: Optional[int] = None,
     sleep_sec: float = 0.5,
+    enable_pubsub: bool = True,
 ) -> dict[str, int]:
     """登録済み全選手を対象として Baseball Savant から Statcast データを取得・投入する
 
@@ -140,6 +163,7 @@ def ingest_all_players_statcast(
                 player_type=ptype,
                 start_date=start_date,
                 end_date=end_date,
+                enable_pubsub=enable_pubsub,
             )
             total_inserted += rows
             if sleep_sec > 0:

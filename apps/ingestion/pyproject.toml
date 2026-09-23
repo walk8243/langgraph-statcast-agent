@@ -5,6 +5,7 @@ description = "Baseball Savant to ClickHouse Statcast Ingestion Service"
 requires-python = ">=3.10"
 dependencies = [
     "clickhouse-connect>=0.7.0",
+    "google-cloud-pubsub>=2.18.0",
     "requests>=2.31.0",
     "pandas>=2.0.0",
     "psycopg[binary]>=3.1.0",
