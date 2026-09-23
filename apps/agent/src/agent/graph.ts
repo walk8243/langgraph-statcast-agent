@@ -63,6 +63,9 @@ export function buildPrompt(stats: PlayerFullStats): string {
     pitcherStatsList,
     targetBatterStats,
     targetPitcherStats,
+    targetBatterStatcastStats = null,
+    targetPitcherStatcastStats = null,
+    targetPitcherPitchTypes = [],
   } = stats;
   const playerName = player.nameJa
     ? `${player.nameJa} (${player.nameEn})`
@@ -89,6 +92,18 @@ export function buildPrompt(stats: PlayerFullStats): string {
     prompt += `- 四球: ${targetBatterStats.walks} (敬遠: ${targetBatterStats.intentionalWalks}), 死球: ${targetBatterStats.hitByPitch}, 三振: ${targetBatterStats.strikeouts}\n\n`;
   }
 
+  // 1-2. 打者Statcast高度指標
+  if (targetBatterStatcastStats) {
+    prompt += `### 【Statcast高度指標】${targetYear}年 打球品質・トラッキングデータ\n`;
+    prompt += `- 打球数: ${targetBatterStatcastStats.battedBalls}球 (総投球数見送り・スイング等: ${targetBatterStatcastStats.pitchesSeen}球)\n`;
+    prompt += `- バレル (Barrels): ${targetBatterStatcastStats.barrels}本 (${targetBatterStatcastStats.barrelPct.toFixed(1)}%) ※理想的な角度と初速の打球割合\n`;
+    prompt += `- ハードヒット率 (HardHit%): ${targetBatterStatcastStats.hardHitPct.toFixed(1)}% (打球初速95mph以上: ${targetBatterStatcastStats.hardHitCount}本)\n`;
+    prompt += `- 平均打球初速 (Avg Exit Velocity): ${targetBatterStatcastStats.avgExitVelocity.toFixed(1)} mph\n`;
+    prompt += `- 最高打球初速 (Max Exit Velocity): ${targetBatterStatcastStats.maxExitVelocity.toFixed(1)} mph\n`;
+    prompt += `- 平均打球角度 (Avg Launch Angle): ${targetBatterStatcastStats.avgLaunchAngle.toFixed(1)}°\n`;
+    prompt += `- スイートスポット率 (SweetSpot%): ${targetBatterStatcastStats.sweetSpotPct.toFixed(1)}% (打球角度8°〜32°の割合)\n\n`;
+  }
+
   if (batterStatsList.length > 1) {
     prompt += `### 参考：打撃成績の推移（直近${batterStatsList.length}年間）\n`;
     for (const b of batterStatsList) {
@@ -109,6 +124,26 @@ export function buildPrompt(stats: PlayerFullStats): string {
     prompt += `- WHIP: ${targetPitcherStats.whip.toFixed(2)}, 被打率: ${targetPitcherStats.battingAverageAgainst.toFixed(3)}\n\n`;
   }
 
+  // 2-2. 投手Statcast高度指標
+  if (targetPitcherStatcastStats) {
+    prompt += `### 【Statcast高度指標】${targetYear}年 投球トラッキングデータ\n`;
+    prompt += `- 総投球数: ${targetPitcherStatcastStats.totalPitches}球, 被打球数: ${targetPitcherStatcastStats.battedBalls}球\n`;
+    prompt += `- 被バレル率 (Barrel%): ${targetPitcherStatcastStats.barrelPct.toFixed(1)}% (被バレル数: ${targetPitcherStatcastStats.barrelsAllowed}本)\n`;
+    prompt += `- 被ハードヒット率 (HardHit%): ${targetPitcherStatcastStats.hardHitPct.toFixed(1)}% (被ハードヒット数: ${targetPitcherStatcastStats.hardHitCount}本)\n`;
+    prompt += `- 被平均打球初速: ${targetPitcherStatcastStats.avgExitVelocity.toFixed(1)} mph\n`;
+    prompt += `- 空振り率 (Whiff%): ${targetPitcherStatcastStats.whiffPct.toFixed(1)}% (スイング数: ${targetPitcherStatcastStats.swings}, 空振り数: ${targetPitcherStatcastStats.whiffs})\n`;
+    prompt += `- CSW% (Called Strikes + Whiffs): ${targetPitcherStatcastStats.cswPct.toFixed(1)}% (見逃しストライク: ${targetPitcherStatcastStats.calledStrikes})\n\n`;
+  }
+
+  // 2-3. 球種別分析 (Pitch Arsenal)
+  if (targetPitcherPitchTypes && targetPitcherPitchTypes.length > 0) {
+    prompt += `### 【球種別分析 (Pitch Arsenal)】${targetYear}年\n`;
+    for (const pt of targetPitcherPitchTypes) {
+      prompt += `- ${pt.pitchName} (${pt.pitchType}): 投球割合 ${pt.usagePct.toFixed(1)}% (${pt.pitches}球), 平均球速 ${pt.avgSpeed.toFixed(1)} mph, 回転数 ${pt.avgSpinRate.toFixed(0)} rpm, 変化量(横: ${pt.avgPfxX.toFixed(1)} inch / 縦: ${pt.avgPfxZ.toFixed(1)} inch), 空振り率 ${pt.whiffPct.toFixed(1)}%\n`;
+    }
+    prompt += `\n`;
+  }
+
   if (pitcherStatsList.length > 1) {
     prompt += `### 参考：投球成績の推移（直近${pitcherStatsList.length}年間）\n`;
     for (const pt of pitcherStatsList) {
@@ -119,9 +154,9 @@ export function buildPrompt(stats: PlayerFullStats): string {
 
   prompt += `### 出力形式の指示\n`;
   prompt += `1. **${targetYear}年シーズンの総括・ハイライト**: このシーズンを中心とし、選手の主要な活躍や特徴をわかりやすくまとめた導入。\n`;
-  prompt += `2. **詳細分析**: 打撃または投球（二刀流の場合は両面）における優れたスタッツや指標の特徴（OPS、長打力、選球眼、走塁効率、防御率、奪三振率、制球力等）についての詳細な考察。\n`;
+  prompt += `2. **詳細分析**: 打撃または投球（二刀流の場合は両面）における優れたスタッツや指標の特徴（OPS、長打力、選球眼、走塁効率、防御率、奪三振率、制球力等）。Statcastデータが提供されている場合は、Barrel%、HardHit%、打球初速・角度、Whiff%、CSW%、球種別特徴（球速・回転数・変化量・空振り率）などのトラッキングデータを積極的に引用・分析し、選手の質の高さや投打の特徴を深く掘り下げてください。\n`;
   prompt += `3. **過去シーズンからの推移と進化**: 提供された直近複数年の推移データを踏まえ、前年からの変化や向上点、キャリアの成熟度や傾向について言及。\n`;
-  prompt += `4. **まとめ**: チームへの貢献度やシーズン全体の位置づけ。\n`;
+  prompt += `4. **まとめ**: チームへの貢献度やシーズン全体の位置づけ、今後の展望。\n`;
   prompt += `\n※ マークダウン形式で見出しや箇条書きを活用して読みやすく構成してください。`;
 
   return prompt;
@@ -152,10 +187,16 @@ export async function generateReportNode(
   try {
     const prompt = buildPrompt(state.playerStats);
     const response = await model.invoke(prompt);
-    const reportText =
-      typeof response.content === "string"
-        ? response.content
-        : JSON.stringify(response.content);
+    let reportText = "";
+    if (typeof response.content === "string") {
+      reportText = response.content;
+    } else if (Array.isArray(response.content)) {
+      reportText = response.content
+        .map((part) => (typeof part === "string" ? part : (part as any).text || ""))
+        .join("");
+    } else {
+      reportText = String(response.content);
+    }
 
     return {
       report: reportText,
