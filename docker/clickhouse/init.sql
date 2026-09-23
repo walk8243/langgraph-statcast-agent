@@ -276,7 +276,6 @@ CREATE TABLE IF NOT EXISTS statcast.boxscore_batting (
     `position_type` Nullable(String),
     `position_abbreviation` Nullable(String),
     `all_positions` Array(String),
-    `all_position_codes` Array(String),
     `batting_order` Nullable(String),
     `is_starter` UInt8,
     `is_substitute` UInt8,
@@ -328,7 +327,6 @@ CREATE TABLE IF NOT EXISTS statcast.boxscore_pitching (
     `position_type` Nullable(String),
     `position_abbreviation` Nullable(String),
     `all_positions` Array(String),
-    `all_position_codes` Array(String),
     `pitching_order` UInt8,
     `is_starter` UInt8,
     -- 投球成績
@@ -385,3 +383,21 @@ CREATE TABLE IF NOT EXISTS statcast.boxscore_pitching (
 )
 ENGINE = ReplacingMergeTree(updated_at)
 ORDER BY (game_pk, team_id, player_id);
+
+-- ボックススコア: 選手の試合別守備位置詳細テーブル定義
+CREATE TABLE IF NOT EXISTS statcast.boxscore_positions (
+    `game_pk` UInt64,
+    `team_id` UInt32,
+    `player_id` UInt64,
+    `player_name` String,
+    `position_order` UInt8,
+    `position_code` String,
+    `position_name` String,
+    `position_type` String,
+    `position_abbreviation` String,
+    `created_at` DateTime DEFAULT now(),
+    `updated_at` DateTime DEFAULT now()
+)
+ENGINE = ReplacingMergeTree(updated_at)
+ORDER BY (game_pk, team_id, player_id, position_order);
+

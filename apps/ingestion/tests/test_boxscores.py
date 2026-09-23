@@ -243,7 +243,7 @@ def test_fetch_mlb_boxscore(sample_boxscore_response):
 
 
 def test_parse_boxscore_data(sample_boxscore_response):
-    team_rows, batting_rows, pitching_rows = parse_boxscore_data(
+    team_rows, batting_rows, pitching_rows, position_rows = parse_boxscore_data(
         game_pk=823570, raw_boxscore=sample_boxscore_response
     )
 
@@ -272,7 +272,7 @@ def test_parse_boxscore_data(sample_boxscore_response):
     assert marsh["jersey_number"] == "16"
     assert marsh["position_abbreviation"] == "LF"
     assert marsh["all_positions"] == ["LF", "CF"]
-    assert marsh["all_position_codes"] == ["7", "8"]
+    assert "all_position_codes" not in marsh
     assert marsh["batting_order"] == "700"
     assert marsh["is_starter"] == 1
     assert marsh["is_substitute"] == 0
@@ -285,7 +285,6 @@ def test_parse_boxscore_data(sample_boxscore_response):
     assert lindor["home_runs"] == 1
     # allPositions 未指定時のフォールバック検証
     assert lindor["all_positions"] == ["SS"]
-    assert lindor["all_position_codes"] == ["6"]
 
     # 3. 個人投球成績の検証
     assert len(pitching_rows) == 1  # Sánchez
@@ -294,7 +293,7 @@ def test_parse_boxscore_data(sample_boxscore_response):
     assert sanchez["player_id"] == 650911
     assert sanchez["player_name"] == "Cristopher Sánchez"
     assert sanchez["all_positions"] == ["P"]
-    assert sanchez["all_position_codes"] == ["1"]
+    assert "all_position_codes" not in sanchez
     assert sanchez["pitching_order"] == 1
     assert sanchez["is_starter"] == 1
     assert sanchez["innings_pitched"] == "6.1"
@@ -303,11 +302,28 @@ def test_parse_boxscore_data(sample_boxscore_response):
     assert sanchez["wins"] == 1
     assert sanchez["note"] == "(W, 18-6)"
 
+    # 4. 守備位置詳細テーブルの検証
+    # Marsh (LF, CF), Sánchez (P), Lindor (SS) -> 計4行
+    assert len(position_rows) == 4
+    marsh_pos = [p for p in position_rows if p["player_id"] == 669016]
+    assert len(marsh_pos) == 2
+    assert marsh_pos[0]["position_order"] == 1
+    assert marsh_pos[0]["position_abbreviation"] == "LF"
+    assert marsh_pos[0]["position_code"] == "7"
+    assert marsh_pos[1]["position_order"] == 2
+    assert marsh_pos[1]["position_abbreviation"] == "CF"
+    assert marsh_pos[1]["position_code"] == "8"
+
+    sanchez_pos = [p for p in position_rows if p["player_id"] == 650911]
+    assert len(sanchez_pos) == 1
+    assert sanchez_pos[0]["position_abbreviation"] == "P"
+    assert sanchez_pos[0]["position_code"] == "1"
+
 
 def test_initialize_clickhouse_boxscore_tables():
     mock_client = MagicMock()
     initialize_clickhouse_boxscore_tables(mock_client)
-    assert mock_client.command.call_count == 3
+    assert mock_client.command.call_count == 4
 
 
 def test_insert_boxscore_to_clickhouse():
@@ -315,18 +331,19 @@ def test_insert_boxscore_to_clickhouse():
     team_rows = [{"game_pk": 823570, "team_id": 143, "runs": 7}]
     batting_rows = [{"game_pk": 823570, "player_id": 669016, "hits": 1}]
     pitching_rows = [{"game_pk": 823570, "player_id": 650911, "strike_outs": 6}]
+    position_rows = [{"game_pk": 823570, "player_id": 669016, "position_order": 1, "position_code": "7"}]
 
     counts = insert_boxscore_to_clickhouse(
-        mock_client, team_rows, batting_rows, pitching_rows
+        mock_client, team_rows, batting_rows, pitching_rows, position_rows
     )
 
-    assert counts == {"teams": 1, "batting": 1, "pitching": 1}
-    assert mock_client.insert.call_count == 3
-    # 各テーブルへの insert 呼び出しを確認
+    assert counts == {"teams": 1, "batting": 1, "pitching": 1, "positions": 1}
+    assert mock_client.insert.call_count == 4
     insert_tables = [call[1]["table"] for call in mock_client.insert.call_args_list]
     assert "boxscore_teams" in insert_tables
     assert "boxscore_batting" in insert_tables
     assert "boxscore_pitching" in insert_tables
+    assert "boxscore_positions" in insert_tables
 
 
 def test_fetch_and_insert_boxscore(sample_boxscore_response):
@@ -336,6 +353,7 @@ def test_fetch_and_insert_boxscore(sample_boxscore_response):
         assert counts["teams"] == 2
         assert counts["batting"] == 2
         assert counts["pitching"] == 1
+        assert counts["positions"] == 4
 
 
 def test_fetch_and_insert_boxscores_batch(sample_boxscore_response):
@@ -346,3 +364,4 @@ def test_fetch_and_insert_boxscores_batch(sample_boxscore_response):
         assert total["teams"] == 4
         assert total["batting"] == 4
         assert total["pitching"] == 2
+        assert total["positions"] == 8

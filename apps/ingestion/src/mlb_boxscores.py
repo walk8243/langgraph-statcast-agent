@@ -95,7 +95,6 @@ CREATE TABLE IF NOT EXISTS statcast.boxscore_batting (
     `position_type` Nullable(String),
     `position_abbreviation` Nullable(String),
     `all_positions` Array(String),
-    `all_position_codes` Array(String),
     `batting_order` Nullable(String),
     `is_starter` UInt8,
     `is_substitute` UInt8,
@@ -148,7 +147,6 @@ CREATE TABLE IF NOT EXISTS statcast.boxscore_pitching (
     `position_type` Nullable(String),
     `position_abbreviation` Nullable(String),
     `all_positions` Array(String),
-    `all_position_codes` Array(String),
     `pitching_order` UInt8,
     `is_starter` UInt8,
     -- 投球成績
@@ -207,6 +205,24 @@ ENGINE = ReplacingMergeTree(updated_at)
 ORDER BY (game_pk, team_id, player_id);
 """
 
+DEFAULT_CLICKHOUSE_BOXSCORE_POSITIONS_DDL = """
+CREATE TABLE IF NOT EXISTS statcast.boxscore_positions (
+    `game_pk` UInt64,
+    `team_id` UInt32,
+    `player_id` UInt64,
+    `player_name` String,
+    `position_order` UInt8,
+    `position_code` String,
+    `position_name` String,
+    `position_type` String,
+    `position_abbreviation` String,
+    `created_at` DateTime DEFAULT now(),
+    `updated_at` DateTime DEFAULT now()
+)
+ENGINE = ReplacingMergeTree(updated_at)
+ORDER BY (game_pk, team_id, player_id, position_order);
+"""
+
 
 def safe_int(val: Any, default: int = 0) -> int:
     """数値を安全に整数に変換する"""
@@ -236,6 +252,7 @@ def initialize_clickhouse_boxscore_tables(client: Client) -> None:
     client.command(DEFAULT_CLICKHOUSE_BOXSCORE_TEAMS_DDL)
     client.command(DEFAULT_CLICKHOUSE_BOXSCORE_BATTING_DDL)
     client.command(DEFAULT_CLICKHOUSE_BOXSCORE_PITCHING_DDL)
+    client.command(DEFAULT_CLICKHOUSE_BOXSCORE_POSITIONS_DDL)
     logger.info("Initialized ClickHouse boxscore tables")
 
 
@@ -265,20 +282,21 @@ def fetch_mlb_boxscore(
 def parse_boxscore_data(
     game_pk: int,
     raw_boxscore: dict[str, Any],
-) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
-    """Boxscore JSON をパースして、チーム成績、個人打撃成績、個人投球成績のリストを生成する
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
+    """Boxscore JSON をパースして、チーム成績、個人打撃成績、個人投球成績、守備位置詳細のリストを生成する
 
     Args:
         game_pk: 試合ID
         raw_boxscore: MLB Stats API の Boxscore レスポンス辞書
 
     Returns:
-        (team_rows, batting_rows, pitching_rows) のタプル
+        (team_rows, batting_rows, pitching_rows, position_rows) のタプル
     """
     teams_data = raw_boxscore.get("teams", {})
     team_rows: list[dict[str, Any]] = []
     batting_rows: list[dict[str, Any]] = []
     pitching_rows: list[dict[str, Any]] = []
+    position_rows: list[dict[str, Any]] = []
 
     for is_home, side in [(0, "away"), (1, "home")]:
         team_entry = teams_data.get(side, {})
@@ -387,16 +405,9 @@ def parse_boxscore_data(
                 for pos in all_positions_raw
                 if pos and (pos.get("abbreviation") or pos.get("name") or pos.get("code"))
             ]
-            all_position_codes = [
-                str(pos.get("code"))
-                for pos in all_positions_raw
-                if pos and pos.get("code") is not None
-            ]
             # allPositions が空の場合のフォールバック
             if not all_positions and pos_abbrev:
                 all_positions = [pos_abbrev]
-            if not all_position_codes and pos_code:
-                all_position_codes = [str(pos_code)]
 
             batting_order = p_val.get("battingOrder")
             game_status = p_val.get("gameStatus", {})
@@ -420,7 +431,6 @@ def parse_boxscore_data(
                     "position_type": pos_type,
                     "position_abbreviation": pos_abbrev,
                     "all_positions": all_positions,
-                    "all_position_codes": all_position_codes,
                     "batting_order": batting_order,
                     "is_starter": is_starter,
                     "is_substitute": is_sub,
@@ -457,12 +467,16 @@ def parse_boxscore_data(
                 batting_rows.append(b_row)
 
             # 個人投球成績: stats.pitching が存在し、登板がある場合
-            if player_pitching and (
-                player_pitching.get("gamesPitched")
-                or player_pitching.get("inningsPitched")
-                or player_pitching.get("numberOfPitches")
-                or player_id in pitcher_order_map
-            ):
+            is_pitcher_played = (
+                player_pitching
+                and (
+                    player_pitching.get("gamesPitched")
+                    or player_pitching.get("inningsPitched")
+                    or player_pitching.get("numberOfPitches")
+                    or player_id in pitcher_order_map
+                )
+            )
+            if is_pitcher_played:
                 pitch_order = pitcher_order_map.get(player_id, 0)
                 is_p_starter = 1 if safe_int(player_pitching.get("gamesStarted")) == 1 or pitch_order == 1 else 0
 
@@ -477,7 +491,6 @@ def parse_boxscore_data(
                     "position_type": pos_type,
                     "position_abbreviation": pos_abbrev,
                     "all_positions": all_positions,
-                    "all_position_codes": all_position_codes,
                     "pitching_order": pitch_order,
                     "is_starter": is_p_starter,
                     "summary": player_pitching.get("summary"),
@@ -531,7 +544,36 @@ def parse_boxscore_data(
                 }
                 pitching_rows.append(p_row)
 
-    return team_rows, batting_rows, pitching_rows
+            # 3. 守備位置詳細テーブル (position_rows)
+            # 試合に出場した選手（打者出場、打順あり、登板あり等）を対象
+            if player_batting or batting_order or is_pitcher_played:
+                if all_positions_raw:
+                    for p_idx, pos_item in enumerate(all_positions_raw, start=1):
+                        position_rows.append({
+                            "game_pk": game_pk,
+                            "team_id": team_id,
+                            "player_id": player_id,
+                            "player_name": player_name,
+                            "position_order": p_idx,
+                            "position_code": str(pos_item.get("code") or ""),
+                            "position_name": str(pos_item.get("name") or ""),
+                            "position_type": str(pos_item.get("type") or ""),
+                            "position_abbreviation": str(pos_item.get("abbreviation") or ""),
+                        })
+                elif pos_code or pos_abbrev:
+                    position_rows.append({
+                        "game_pk": game_pk,
+                        "team_id": team_id,
+                        "player_id": player_id,
+                        "player_name": player_name,
+                        "position_order": 1,
+                        "position_code": str(pos_code or ""),
+                        "position_name": str(pos_name or ""),
+                        "position_type": str(pos_type or ""),
+                        "position_abbreviation": str(pos_abbrev or ""),
+                    })
+
+    return team_rows, batting_rows, pitching_rows, position_rows
 
 
 def insert_boxscore_to_clickhouse(
@@ -539,6 +581,7 @@ def insert_boxscore_to_clickhouse(
     team_rows: list[dict[str, Any]],
     batting_rows: list[dict[str, Any]],
     pitching_rows: list[dict[str, Any]],
+    position_rows: Optional[list[dict[str, Any]]] = None,
 ) -> dict[str, int]:
     """Boxscore の各データを ClickHouse (列指向DB) に一括挿入する
 
@@ -547,12 +590,13 @@ def insert_boxscore_to_clickhouse(
         team_rows: チーム成績の辞書リスト
         batting_rows: 個人打撃成績の辞書リスト
         pitching_rows: 個人投球成績の辞書リスト
+        position_rows: 守備位置詳細の辞書リスト
 
     Returns:
-        テーブルごとの登録件数 {"teams": int, "batting": int, "pitching": int}
+        テーブルごとの登録件数 {"teams": int, "batting": int, "pitching": int, "positions": int}
     """
     initialize_clickhouse_boxscore_tables(client)
-    counts = {"teams": 0, "batting": 0, "pitching": 0}
+    counts = {"teams": 0, "batting": 0, "pitching": 0, "positions": 0}
 
     # 1. チーム成績挿入
     if team_rows:
@@ -593,6 +637,19 @@ def insert_boxscore_to_clickhouse(
         counts["pitching"] = len(pitching_rows)
         logger.info("Inserted %d rows into statcast.boxscore_pitching", len(pitching_rows))
 
+    # 4. 守備位置詳細挿入
+    if position_rows:
+        cols_positions = list(position_rows[0].keys())
+        data_positions = [[row[col] for col in cols_positions] for row in position_rows]
+        client.insert(
+            table="boxscore_positions",
+            data=data_positions,
+            column_names=cols_positions,
+            database="statcast",
+        )
+        counts["positions"] = len(position_rows)
+        logger.info("Inserted %d rows into statcast.boxscore_positions", len(position_rows))
+
     return counts
 
 
@@ -614,14 +671,17 @@ def fetch_and_insert_boxscore(
         登録件数辞書
     """
     raw_data = fetch_mlb_boxscore(game_pk=game_pk, base_url=base_url, timeout=timeout)
-    team_rows, batting_rows, pitching_rows = parse_boxscore_data(game_pk, raw_data)
-    counts = insert_boxscore_to_clickhouse(client, team_rows, batting_rows, pitching_rows)
+    team_rows, batting_rows, pitching_rows, position_rows = parse_boxscore_data(game_pk, raw_data)
+    counts = insert_boxscore_to_clickhouse(
+        client, team_rows, batting_rows, pitching_rows, position_rows
+    )
     logger.info(
-        "Successfully ingested boxscore for game %d (teams: %d, batting: %d, pitching: %d)",
+        "Successfully ingested boxscore for game %d (teams: %d, batting: %d, pitching: %d, positions: %d)",
         game_pk,
         counts["teams"],
         counts["batting"],
         counts["pitching"],
+        counts["positions"],
     )
     return counts
 
@@ -643,7 +703,7 @@ def fetch_and_insert_boxscores_batch(
     Returns:
         合計登録件数辞書
     """
-    total_counts = {"games": 0, "teams": 0, "batting": 0, "pitching": 0}
+    total_counts = {"games": 0, "teams": 0, "batting": 0, "pitching": 0, "positions": 0}
     for pk in game_pks:
         try:
             counts = fetch_and_insert_boxscore(
@@ -656,6 +716,7 @@ def fetch_and_insert_boxscores_batch(
             total_counts["teams"] += counts["teams"]
             total_counts["batting"] += counts["batting"]
             total_counts["pitching"] += counts["pitching"]
+            total_counts["positions"] += counts["positions"]
         except Exception as e:
             logger.error("Failed to fetch or insert boxscore for game_pk %d: %s", pk, e)
 

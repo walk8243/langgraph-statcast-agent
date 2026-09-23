@@ -309,7 +309,7 @@ def main() -> None:
         counts = fetch_and_insert_boxscore(client, args.game_pk)
         print(
             f"Successfully ingested boxscore for game {args.game_pk}: "
-            f"Teams: {counts['teams']}, Batting: {counts['batting']}, Pitching: {counts['pitching']}"
+            f"Teams: {counts['teams']}, Batting: {counts['batting']}, Pitching: {counts['pitching']}, Positions: {counts['positions']}"
         )
         return
 
@@ -332,7 +332,7 @@ def main() -> None:
         total_counts = fetch_and_insert_boxscores_batch(client, game_pks)
         print(
             f"Successfully ingested {total_counts['games']} games' boxscores: "
-            f"Teams: {total_counts['teams']}, Batting: {total_counts['batting']}, Pitching: {total_counts['pitching']}"
+            f"Teams: {total_counts['teams']}, Batting: {total_counts['batting']}, Pitching: {total_counts['pitching']}, Positions: {total_counts['positions']}"
         )
         return
 
