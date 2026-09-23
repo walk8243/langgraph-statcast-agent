@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from typing import Any, Optional
 from clickhouse_connect.driver.client import Client
 import requests
@@ -655,6 +656,8 @@ def fetch_and_insert_boxscores_batch(
     game_pks: list[int],
     base_url: str = MLB_STATS_API_BASE_URL,
     timeout: int = 30,
+    interval: float = 0.0,
+    skip_existing: bool = False,
 ) -> dict[str, int]:
     """指定した複数の game_pk の Boxscore を取得して ClickHouse に一括登録する
 
@@ -663,13 +666,38 @@ def fetch_and_insert_boxscores_batch(
         game_pks: 試合IDのリスト
         base_url: APIベースURL
         timeout: タイムアウト秒数
+        interval: 試合間の待機秒数 (デフォルト: 0.0)
+        skip_existing: True の場合、既に ClickHouse に存在する game_pk をスキップ
 
     Returns:
         合計登録件数辞書
     """
-    total_counts = {"games": 0, "teams": 0, "batting": 0, "pitching": 0, "positions": 0}
-    for pk in game_pks:
+    if skip_existing:
         try:
+            existing_rows = client.query(
+                "SELECT DISTINCT game_pk FROM statcast.boxscore_teams"
+            ).result_rows
+            existing_pks = {row[0] for row in existing_rows}
+            original_len = len(game_pks)
+            game_pks = [pk for pk in game_pks if pk not in existing_pks]
+            logger.info(
+                "Filtered out %d already ingested games. %d remaining.",
+                original_len - len(game_pks),
+                len(game_pks),
+            )
+            print(
+                f"Skipping {original_len - len(game_pks)} already ingested games. {len(game_pks)} games to process.",
+                flush=True,
+            )
+        except Exception as e:
+            logger.warning("Could not check existing games in ClickHouse: %s", e)
+
+    total_counts = {"games": 0, "teams": 0, "batting": 0, "pitching": 0, "positions": 0}
+    total_to_process = len(game_pks)
+
+    for idx, pk in enumerate(game_pks, start=1):
+        try:
+            print(f"[{idx}/{total_to_process}] Ingesting boxscore for game_pk={pk}...", flush=True)
             counts = fetch_and_insert_boxscore(
                 client=client,
                 game_pk=pk,
@@ -681,8 +709,18 @@ def fetch_and_insert_boxscores_batch(
             total_counts["batting"] += counts["batting"]
             total_counts["pitching"] += counts["pitching"]
             total_counts["positions"] += counts["positions"]
+            print(
+                f"[{idx}/{total_to_process}] Ingested game_pk={pk} (teams: {counts['teams']}, "
+                f"batting: {counts['batting']}, pitching: {counts['pitching']}, positions: {counts['positions']})",
+                flush=True,
+            )
         except Exception as e:
             logger.error("Failed to fetch or insert boxscore for game_pk %d: %s", pk, e)
+            print(f"[{idx}/{total_to_process}] Error for game_pk={pk}: {e}", flush=True)
+
+        if interval > 0 and idx < total_to_process:
+            logger.info("Waiting %.1f seconds before next game...", interval)
+            time.sleep(interval)
 
     logger.info("Batch boxscore ingestion complete: %s", total_counts)
     return total_counts
