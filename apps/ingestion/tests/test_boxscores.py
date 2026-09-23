@@ -268,7 +268,7 @@ def test_parse_boxscore_data(sample_boxscore_response):
     marsh = next(b for b in batting_rows if b["player_id"] == 669016)
     assert marsh["game_pk"] == 823570
     assert marsh["team_id"] == 143
-    assert marsh["player_name"] == "Brandon Marsh"
+    assert "player_name" not in marsh
     assert marsh["jersey_number"] == "16"
     assert marsh["position_abbreviation"] == "LF"
     assert marsh["all_positions"] == ["LF", "CF"]
@@ -291,7 +291,7 @@ def test_parse_boxscore_data(sample_boxscore_response):
     sanchez = pitching_rows[0]
     assert sanchez["game_pk"] == 823570
     assert sanchez["player_id"] == 650911
-    assert sanchez["player_name"] == "Cristopher Sánchez"
+    assert "player_name" not in sanchez
     assert sanchez["all_positions"] == ["P"]
     assert "all_position_codes" not in sanchez
     assert sanchez["pitching_order"] == 1

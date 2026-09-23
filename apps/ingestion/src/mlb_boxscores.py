@@ -88,7 +88,6 @@ CREATE TABLE IF NOT EXISTS statcast.boxscore_batting (
     `game_pk` UInt64,
     `team_id` UInt32,
     `player_id` UInt64,
-    `player_name` String,
     `jersey_number` Nullable(String),
     `position_code` Nullable(String),
     `position_name` Nullable(String),
@@ -140,7 +139,6 @@ CREATE TABLE IF NOT EXISTS statcast.boxscore_pitching (
     `game_pk` UInt64,
     `team_id` UInt32,
     `player_id` UInt64,
-    `player_name` String,
     `jersey_number` Nullable(String),
     `position_code` Nullable(String),
     `position_name` Nullable(String),
@@ -210,7 +208,6 @@ CREATE TABLE IF NOT EXISTS statcast.boxscore_positions (
     `game_pk` UInt64,
     `team_id` UInt32,
     `player_id` UInt64,
-    `player_name` String,
     `position_order` UInt8,
     `position_code` String,
     `position_name` String,
@@ -391,7 +388,6 @@ def parse_boxscore_data(
             player_id = safe_int(person.get("id"))
             if not player_id:
                 continue
-            player_name = person.get("fullName", "")
             jersey_number = p_val.get("jerseyNumber")
             position = p_val.get("position", {})
             pos_code = position.get("code")
@@ -424,7 +420,6 @@ def parse_boxscore_data(
                     "game_pk": game_pk,
                     "team_id": team_id,
                     "player_id": player_id,
-                    "player_name": player_name,
                     "jersey_number": jersey_number,
                     "position_code": pos_code,
                     "position_name": pos_name,
@@ -484,7 +479,6 @@ def parse_boxscore_data(
                     "game_pk": game_pk,
                     "team_id": team_id,
                     "player_id": player_id,
-                    "player_name": player_name,
                     "jersey_number": jersey_number,
                     "position_code": pos_code,
                     "position_name": pos_name,
@@ -553,7 +547,6 @@ def parse_boxscore_data(
                             "game_pk": game_pk,
                             "team_id": team_id,
                             "player_id": player_id,
-                            "player_name": player_name,
                             "position_order": p_idx,
                             "position_code": str(pos_item.get("code") or ""),
                             "position_name": str(pos_item.get("name") or ""),
@@ -565,7 +558,6 @@ def parse_boxscore_data(
                         "game_pk": game_pk,
                         "team_id": team_id,
                         "player_id": player_id,
-                        "player_name": player_name,
                         "position_order": 1,
                         "position_code": str(pos_code or ""),
                         "position_name": str(pos_name or ""),
