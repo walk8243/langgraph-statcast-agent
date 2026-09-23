@@ -316,21 +316,23 @@ export function TeamRosterClient({
               {group.players.map((player) => {
                 const batsThrows = formatBatsThrows(player.bat_side, player.pitch_hand);
                 const jerseyNum = player.primary_number ? `#${player.primary_number}` : "-";
+                const mainName = player.name_ja || player.name_en;
+                const subName = player.name_ja ? player.name_en : null;
 
                 return (
                   <Card key={player.player_id} className={styles.playerCard}>
                     <CardHeader
                       header={
-                        <div style={{ display: "flex", alignItems: "center", columnGap: "8px" }}>
-                          <Text weight="semibold" size={400}>
-                            {player.name_en}
-                          </Text>
-                          {player.name_ja && (
-                            <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>
-                              ({player.name_ja})
-                            </Caption1>
-                          )}
-                        </div>
+                        <Text weight="semibold" size={400}>
+                          {mainName}
+                        </Text>
+                      }
+                      description={
+                        subName ? (
+                          <Caption1 style={{ color: tokens.colorNeutralForeground2 }}>
+                            {subName}
+                          </Caption1>
+                        ) : undefined
                       }
                       action={
                         <Badge
