@@ -113,13 +113,61 @@ def get_project_metadata(owner: str, project_number: int) -> tuple[str, dict[str
         return FALLBACK_PROJECT_ID, FALLBACK_FIELDS
 
 
-def find_item_id_for_issue(owner: str, project_number: int, issue_number: int) -> Optional[str]:
+DEFAULT_REPO = "langgraph-statcast-agent"
+
+
+def find_item_id_for_issue(owner: str, project_number: int, issue_number: int, repo: str = DEFAULT_REPO) -> Optional[str]:
     """Issue番号から ProjectV2 の Item ID を検索する"""
+    # 1. リポジトリの Issue / PR から projectItems を直接検索
+    query_direct = """
+    query($owner: String!, $repo: String!, $number: Int!) {
+      repository(owner: $owner, name: $repo) {
+        issueOrPullRequest(number: $number) {
+          ... on Issue {
+            projectItems(first: 10) {
+              nodes {
+                id
+                project {
+                  ... on ProjectV2 {
+                    number
+                  }
+                }
+              }
+            }
+          }
+          ... on PullRequest {
+            projectItems(first: 10) {
+              nodes {
+                id
+                project {
+                  ... on ProjectV2 {
+                    number
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    """
+    try:
+        data = run_gh_graphql(query_direct, {"owner": owner, "repo": repo, "number": issue_number})
+        content = data.get("data", {}).get("repository", {}).get("issueOrPullRequest")
+        if content:
+            items = content.get("projectItems", {}).get("nodes", [])
+            for item in items:
+                if item.get("project", {}).get("number") == project_number:
+                    return item["id"]
+    except Exception:
+        pass
+
+    # 2. フォールバック: プロジェクト側から items を検索
     query = """
     query($owner: String!, $number: Int!) {
       user(login: $owner) {
         projectV2(number: $number) {
-          items(last: 50) {
+          items(last: 100) {
             nodes {
               id
               content {
