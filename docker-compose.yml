@@ -92,6 +92,9 @@ services:
       - POSTGRES_DB=${POSTGRES_DB:-statcast}
       - POSTGRES_USER=${POSTGRES_USER:-statcast}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-statcast_pass}
+      - PUBSUB_EMULATOR_HOST=pubsub:8085
+      - GCP_PROJECT_ID=${GCP_PROJECT_ID:-local-statcast-project}
+      - PUBSUB_TOPIC_STATCAST_RAW=${PUBSUB_TOPIC_STATCAST_RAW:-statcast-raw-ingested}
 
   aggregation:
     build:
