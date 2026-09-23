@@ -269,10 +269,12 @@ def test_parse_boxscore_data(sample_boxscore_response):
     assert marsh["game_pk"] == 823570
     assert marsh["team_id"] == 143
     assert "player_name" not in marsh
+    assert "position_code" not in marsh
+    assert "position_name" not in marsh
+    assert "position_type" not in marsh
+    assert "position_abbreviation" not in marsh
+    assert "all_positions" not in marsh
     assert marsh["jersey_number"] == "16"
-    assert marsh["position_abbreviation"] == "LF"
-    assert marsh["all_positions"] == ["LF", "CF"]
-    assert "all_position_codes" not in marsh
     assert marsh["batting_order"] == "700"
     assert marsh["is_starter"] == 1
     assert marsh["is_substitute"] == 0
@@ -283,8 +285,6 @@ def test_parse_boxscore_data(sample_boxscore_response):
     lindor = next(b for b in batting_rows if b["player_id"] == 222222)
     assert lindor["team_id"] == 121
     assert lindor["home_runs"] == 1
-    # allPositions 未指定時のフォールバック検証
-    assert lindor["all_positions"] == ["SS"]
 
     # 3. 個人投球成績の検証
     assert len(pitching_rows) == 1  # Sánchez
@@ -292,8 +292,11 @@ def test_parse_boxscore_data(sample_boxscore_response):
     assert sanchez["game_pk"] == 823570
     assert sanchez["player_id"] == 650911
     assert "player_name" not in sanchez
-    assert sanchez["all_positions"] == ["P"]
-    assert "all_position_codes" not in sanchez
+    assert "position_code" not in sanchez
+    assert "position_name" not in sanchez
+    assert "position_type" not in sanchez
+    assert "position_abbreviation" not in sanchez
+    assert "all_positions" not in sanchez
     assert sanchez["pitching_order"] == 1
     assert sanchez["is_starter"] == 1
     assert sanchez["innings_pitched"] == "6.1"
