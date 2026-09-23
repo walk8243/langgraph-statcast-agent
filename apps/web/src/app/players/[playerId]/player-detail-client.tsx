@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
   Title1,
   Title2,
@@ -198,6 +199,8 @@ const useStyles = makeStyles({
       borderCollapse: "collapse",
       marginTop: "16px",
       marginBottom: "16px",
+      display: "block",
+      overflowX: "auto",
     },
     "& th, & td": {
       ...shorthands.border("1px", "solid", tokens.colorNeutralStroke2),
@@ -375,7 +378,9 @@ export default function PlayerDetailClient({
 
             {/* Report Markdown Content */}
             <div className={styles.markdownContainer}>
-              <ReactMarkdown>{latestReport.report_text}</ReactMarkdown>
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {latestReport.report_text}
+              </ReactMarkdown>
             </div>
           </div>
         )}
