@@ -23,9 +23,24 @@ CREATE TABLE IF NOT EXISTS players (
     name_en VARCHAR(255) NOT NULL,
     name_ja VARCHAR(255),
     team_id BIGINT,
+    primary_number VARCHAR(10),
+    primary_position_code VARCHAR(10),
+    primary_position_name VARCHAR(50),
+    primary_position_type VARCHAR(50),
+    primary_position_abbreviation VARCHAR(10),
+    bat_side VARCHAR(10),
+    pitch_hand VARCHAR(10),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE players ADD COLUMN IF NOT EXISTS primary_number VARCHAR(10);
+ALTER TABLE players ADD COLUMN IF NOT EXISTS primary_position_code VARCHAR(10);
+ALTER TABLE players ADD COLUMN IF NOT EXISTS primary_position_name VARCHAR(50);
+ALTER TABLE players ADD COLUMN IF NOT EXISTS primary_position_type VARCHAR(50);
+ALTER TABLE players ADD COLUMN IF NOT EXISTS primary_position_abbreviation VARCHAR(10);
+ALTER TABLE players ADD COLUMN IF NOT EXISTS bat_side VARCHAR(10);
+ALTER TABLE players ADD COLUMN IF NOT EXISTS pitch_hand VARCHAR(10);
 
 CREATE INDEX IF NOT EXISTS idx_players_team_id ON players (team_id);
 
