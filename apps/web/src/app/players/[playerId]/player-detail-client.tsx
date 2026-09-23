@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import {
@@ -14,10 +14,6 @@ import {
   Card,
   CardHeader,
   Badge,
-  TabList,
-  Tab,
-  SelectTabEvent,
-  SelectTabData,
   Table,
   TableHeader,
   TableRow,
@@ -29,6 +25,7 @@ import {
   tokens,
   Text,
 } from "@fluentui/react-components";
+
 import {
   ArrowLeft16Regular,
   Bot24Regular,
@@ -101,11 +98,11 @@ const useStyles = makeStyles({
     gap: "10px",
   },
   teamLink: {
+    display: "inline-flex",
+    alignItems: "center",
     textDecoration: "none",
-    color: tokens.colorBrandForeground1,
-    fontWeight: tokens.fontWeightSemibold,
     ":hover": {
-      textDecoration: "underline",
+      opacity: 0.85,
     },
   },
   contentSection: {
@@ -266,13 +263,8 @@ export default function PlayerDetailClient({
 }: PlayerDetailClientProps) {
   const styles = useStyles();
 
-  // 年度切り替え用 state
-  const availableReportYears = reports.map((r) => r.year);
-  const [selectedReportYear, setSelectedReportYear] = useState<number | null>(
-    availableReportYears.length > 0 ? availableReportYears[0] : null
-  );
-
-  const currentReport = reports.find((r) => r.year === selectedReportYear) ?? null;
+  // 最新の1件のみ使用（ORDER BY year DESC でソート済み）
+  const latestReport = reports.length > 0 ? reports[0] : null;
 
   const batsThrows = formatBatsThrows(player.bat_side, player.pitch_hand);
   const mainName = player.name_ja || player.name_en;
@@ -348,7 +340,7 @@ export default function PlayerDetailClient({
           <Title2>AI解説レポート (Statcast Agent)</Title2>
         </div>
 
-        {reports.length === 0 ? (
+        {!latestReport ? (
           <div className={styles.emptyReportCard}>
             <Bot24Regular style={{ fontSize: "40px", color: tokens.colorNeutralForeground3 }} />
             <Title3>AI解説レポートはまだ生成されていません</Title3>
@@ -362,49 +354,33 @@ export default function PlayerDetailClient({
           </div>
         ) : (
           <div className={styles.reportCard}>
-            {/* Report Header: Year Selector & Meta */}
+            {/* Report Header: Year Badge & Meta */}
             <div className={styles.reportHeader}>
-              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <Text weight="semibold">対象シーズン:</Text>
-                <TabList
-                  selectedValue={selectedReportYear ? String(selectedReportYear) : undefined}
-                  onTabSelect={(_e: SelectTabEvent, data: SelectTabData) => {
-                    setSelectedReportYear(Number(data.value));
-                  }}
-                >
-                  {reports.map((report) => (
-                    <Tab key={report.year} value={String(report.year)}>
-                      {report.year}年
-                    </Tab>
-                  ))}
-                </TabList>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <Badge appearance="filled" color="brand" icon={<Calendar20Regular />}>
+                  {latestReport.year}年シーズン
+                </Badge>
+                <Text weight="semibold">最新解説レポート</Text>
               </div>
 
-              {currentReport && (
-                <div className={styles.reportMetaRow}>
-                  <Badge appearance="tint" color="informative" icon={<Bot24Regular />}>
-                    Model: {currentReport.model_name}
-                  </Badge>
-                  <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>
-                    作成日: {new Date(currentReport.created_at).toLocaleDateString("ja-JP")}
-                  </Caption1>
-                </div>
-              )}
+              <div className={styles.reportMetaRow}>
+                <Badge appearance="tint" color="informative" icon={<Bot24Regular />}>
+                  Model: {latestReport.model_name}
+                </Badge>
+                <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>
+                  作成日: {new Date(latestReport.created_at).toLocaleDateString("ja-JP")}
+                </Caption1>
+              </div>
             </div>
 
             {/* Report Markdown Content */}
-            {currentReport ? (
-              <div className={styles.markdownContainer}>
-                <ReactMarkdown>{currentReport.report_text}</ReactMarkdown>
-              </div>
-            ) : (
-              <div style={{ padding: "20px 0", color: tokens.colorNeutralForeground3 }}>
-                選択された年度のレポートが見つかりません。
-              </div>
-            )}
+            <div className={styles.markdownContainer}>
+              <ReactMarkdown>{latestReport.report_text}</ReactMarkdown>
+            </div>
           </div>
         )}
       </section>
+
 
       {/* Season Stats Section: Batter */}
       {batterStats.length > 0 && (
@@ -490,7 +466,8 @@ export default function PlayerDetailClient({
                   <TableRow>
                     <TableHeaderCell>年度</TableHeaderCell>
                     <TableHeaderCell>防御率 (ERA)</TableHeaderCell>
-                    <TableHeaderCell>勝 - 敗</TableHeaderCell>
+                    <TableHeaderCell>勝 (W)</TableHeaderCell>
+                    <TableHeaderCell>負 (L)</TableHeaderCell>
                     <TableHeaderCell>奪三振 (SO)</TableHeaderCell>
                     <TableHeaderCell>WHIP</TableHeaderCell>
                     <TableHeaderCell>登板 (G)</TableHeaderCell>
@@ -515,7 +492,10 @@ export default function PlayerDetailClient({
                         {Number(stat.era).toFixed(2)}
                       </TableCell>
                       <TableCell className={styles.highlightCell}>
-                        {stat.wins} - {stat.losses}
+                        {stat.wins}
+                      </TableCell>
+                      <TableCell className={styles.highlightCell}>
+                        {stat.losses}
                       </TableCell>
                       <TableCell className={styles.highlightCell}>
                         {stat.strikeouts}
@@ -539,6 +519,7 @@ export default function PlayerDetailClient({
                   ))}
                 </TableBody>
               </Table>
+
             </div>
           </div>
         </section>
