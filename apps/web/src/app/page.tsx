@@ -159,7 +159,7 @@ export default function HomePage() {
             iconPosition="after"
             size="large"
           >
-            チーム一覧画面へ (Issue #28)
+            チーム一覧画面へ
           </Button>
           <Button appearance="secondary" size="large">
             システム概要
@@ -174,7 +174,7 @@ export default function HomePage() {
             image={<PeopleTeam24Regular className={styles.cardHeaderIcon} />}
             header={<Text weight="semibold">MLB チーム・選手一覧</Text>}
             description={<Caption1>マスターデータ閲覧</Caption1>}
-            action={<Badge color="informative">Next: #28</Badge>}
+            action={<Badge color="informative">Upcoming</Badge>}
           />
           <div className={styles.cardContent}>
             <Body1>
@@ -257,7 +257,7 @@ export default function HomePage() {
       {/* Footer */}
       <footer className={styles.footer}>
         <Caption1>
-          langgraph-statcast-agent &bull; Next.js 16 + React 19 + Fluent UI v9 &bull; Issue #32
+          langgraph-statcast-agent &bull; Next.js 16 + React 19 + Fluent UI v9
         </Caption1>
       </footer>
     </main>
