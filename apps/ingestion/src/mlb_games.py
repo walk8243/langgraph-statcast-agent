@@ -41,6 +41,7 @@ ORDER BY (season, game_date, game_pk);
 def fetch_mlb_schedule(
     season: int = 2024,
     sport_id: int = 1,
+    game_type: Optional[str] = None,
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
     base_url: str = MLB_STATS_API_BASE_URL,
@@ -51,6 +52,7 @@ def fetch_mlb_schedule(
     Args:
         season: 対象シーズン (デフォルト: 2024)
         sport_id: 競技区分ID (デフォルト: 1 = MLB)
+        game_type: 試合区分 (R: レギュラー, S: オープン戦, etc.)
         start_date: 開始日 (YYYY-MM-DD, 任意)
         end_date: 終了日 (YYYY-MM-DD, 任意)
         base_url: APIベースURL
@@ -64,6 +66,8 @@ def fetch_mlb_schedule(
         "sportId": sport_id,
         "season": season,
     }
+    if game_type:
+        params["gameType"] = game_type
     if start_date:
         params["startDate"] = start_date
     if end_date:

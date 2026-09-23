@@ -147,6 +147,29 @@ def main() -> None:
         action="store_true",
         help="指定したシーズン／期間の全試合の Boxscore を MLB Stats API から一括取得し、ClickHouse (列指向DB) に登録します",
     )
+    parser.add_argument(
+        "--game-type",
+        type=str,
+        default=None,
+        help="試合種別 (R: レギュラーシーズン, S: オープン戦, P: ポストシーズン等)",
+    )
+    parser.add_argument(
+        "--interval",
+        type=float,
+        default=0.0,
+        help="試合間の待機秒数 (デフォルト: 0.0)",
+    )
+    parser.add_argument(
+        "--skip-existing",
+        action="store_true",
+        help="既に登録済みの試合をスキップします",
+    )
+    parser.add_argument(
+        "--status",
+        type=str,
+        default=None,
+        help="試合ステータスでフィルタ (例: Final)",
+    )
 
     args = parser.parse_args()
 
@@ -317,22 +340,35 @@ def main() -> None:
         season = args.season or 2024
         print(
             f"Fetching schedule for boxscores batch (sport_id={args.sport_id}, season={season}, "
-            f"start_date={args.start_date}, end_date={args.end_date})..."
+            f"game_type={args.game_type}, start_date={args.start_date}, end_date={args.end_date})..."
         )
         games = fetch_mlb_schedule(
             season=season,
             sport_id=args.sport_id,
+            game_type=args.game_type,
             start_date=args.start_date,
             end_date=args.end_date,
         )
+        if args.status:
+            games = [g for g in games if args.status.lower() in (g.get("status") or "").lower()]
         game_pks = [g["game_pk"] for g in games if g.get("game_pk")]
         if args.limit:
             game_pks = game_pks[:args.limit]
-        print(f"Found {len(game_pks)} games. Ingesting boxscores...")
-        total_counts = fetch_and_insert_boxscores_batch(client, game_pks)
+        print(
+            f"Found {len(game_pks)} games. Ingesting boxscores "
+            f"(interval={args.interval}s, skip_existing={args.skip_existing})...",
+            flush=True,
+        )
+        total_counts = fetch_and_insert_boxscores_batch(
+            client=client,
+            game_pks=game_pks,
+            interval=args.interval,
+            skip_existing=args.skip_existing,
+        )
         print(
             f"Successfully ingested {total_counts['games']} games' boxscores: "
-            f"Teams: {total_counts['teams']}, Batting: {total_counts['batting']}, Pitching: {total_counts['pitching']}, Positions: {total_counts['positions']}"
+            f"Teams: {total_counts['teams']}, Batting: {total_counts['batting']}, Pitching: {total_counts['pitching']}, Positions: {total_counts['positions']}",
+            flush=True,
         )
         return
 

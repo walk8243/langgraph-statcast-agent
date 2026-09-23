@@ -368,3 +368,30 @@ def test_fetch_and_insert_boxscores_batch(sample_boxscore_response):
         assert total["batting"] == 4
         assert total["pitching"] == 2
         assert total["positions"] == 8
+
+
+def test_fetch_and_insert_boxscores_batch_with_skip_existing(sample_boxscore_response):
+    mock_client = MagicMock()
+    mock_client.query.return_value.result_rows = [(823570,)]
+    with patch("src.mlb_boxscores.fetch_mlb_boxscore", return_value=sample_boxscore_response) as mock_fetch:
+        total = fetch_and_insert_boxscores_batch(
+            mock_client, game_pks=[823570, 823571], skip_existing=True
+        )
+        assert total["games"] == 1
+        assert mock_fetch.call_count == 1
+        assert mock_fetch.call_args[1]["game_pk"] == 823571
+
+
+def test_fetch_and_insert_boxscores_batch_with_interval(sample_boxscore_response):
+    mock_client = MagicMock()
+    with (
+        patch("src.mlb_boxscores.fetch_mlb_boxscore", return_value=sample_boxscore_response),
+        patch("src.mlb_boxscores.time.sleep") as mock_sleep,
+    ):
+        total = fetch_and_insert_boxscores_batch(
+            mock_client, game_pks=[823570, 823571], interval=30.0
+        )
+        assert total["games"] == 2
+        assert mock_sleep.call_count == 1
+        mock_sleep.assert_called_with(30.0)
+

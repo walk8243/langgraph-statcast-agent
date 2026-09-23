@@ -102,6 +102,32 @@ def test_fetch_mlb_schedule(sample_schedule_response):
         )
 
 
+def test_fetch_mlb_schedule_with_game_type(sample_schedule_response):
+    with patch("src.mlb_games.requests.get") as mock_get:
+        mock_resp = MagicMock()
+        mock_resp.json.return_value = sample_schedule_response
+        mock_resp.raise_for_status.return_value = None
+        mock_get.return_value = mock_resp
+
+        games = fetch_mlb_schedule(
+            season=2026,
+            sport_id=1,
+            game_type="R",
+        )
+
+        assert len(games) == 1
+        mock_get.assert_called_once_with(
+            "https://statsapi.mlb.com/api/v1/schedule",
+            params={
+                "sportId": 1,
+                "season": 2026,
+                "gameType": "R",
+            },
+            timeout=30,
+        )
+
+
+
 def test_insert_games_to_clickhouse():
     mock_client = MagicMock()
     sample_games = [
