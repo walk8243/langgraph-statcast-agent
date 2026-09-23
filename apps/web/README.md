@@ -69,3 +69,16 @@ npm run start
 # リント実行
 npm run lint
 ```
+
+### Docker Compose での実行
+
+リポジトリルートから以下のコマンドで Web サービスを起動できます。
+
+```bash
+# Web サービスをビルドして起動
+docker compose up -d --build web
+
+# ログ確認
+docker compose logs -f web
+```
+
