@@ -127,14 +127,13 @@ services:
       - PUBSUB_TOPIC_STATCAST_RAW=${PUBSUB_TOPIC_STATCAST_RAW:-statcast-raw-ingested}
       - PUBSUB_SUBSCRIPTION_STATCAST_RAW=${PUBSUB_SUBSCRIPTION_STATCAST_RAW:-statcast-raw-ingested-sub}
 
-  aggregation-api:
+  trigger-api:
     build:
-      context: ./apps/aggregation
+      context: ./apps/trigger-api
       dockerfile: Dockerfile
-    container_name: statcast-aggregation-api
-    command: ["--api", "--port", "8000"]
+    container_name: statcast-trigger-api
     ports:
-      - "${AGGREGATION_API_PORT:-8000}:8000"
+      - "${TRIGGER_API_PORT:-8000}:8000"
     depends_on:
       pubsub:
         condition: service_healthy
