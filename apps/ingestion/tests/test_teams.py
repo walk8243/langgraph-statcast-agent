@@ -111,6 +111,10 @@ def test_upsert_teams_to_postgres():
             "name": "Toronto Blue Jays",
             "abbreviation": "TOR",
             "team_name": "Blue Jays",
+            "league_id": 103,
+            "league_name": "American League",
+            "division_id": 201,
+            "division_name": "American League East",
         }
     ]
 
