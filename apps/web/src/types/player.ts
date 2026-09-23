@@ -95,3 +95,51 @@ export interface PlayerReport {
   updated_at: string;
 }
 
+export interface BatterStatcastStat {
+  player_id: number;
+  year: number;
+  pitches_seen: number;
+  batted_balls: number;
+  barrels: number;
+  barrel_pct: string | number;
+  hard_hit_count: number;
+  hard_hit_pct: string | number;
+  avg_exit_velocity: string | number;
+  max_exit_velocity: string | number;
+  avg_launch_angle: string | number;
+  sweet_spot_pct: string | number;
+}
+
+export interface PitcherStatcastStat {
+  player_id: number;
+  year: number;
+  total_pitches: number;
+  batted_balls: number;
+  barrels_allowed: number;
+  barrel_pct: string | number;
+  hard_hit_count: number;
+  hard_hit_pct: string | number;
+  avg_exit_velocity: string | number;
+  swings: number;
+  whiffs: number;
+  whiff_pct: string | number;
+  called_strikes: number;
+  csw_pct: string | number;
+}
+
+export interface PitcherPitchTypeStat {
+  player_id: number;
+  year: number;
+  pitch_type: string;
+  pitch_name: string;
+  pitches: number;
+  usage_pct: string | number;
+  avg_speed: string | number;
+  avg_spin_rate: string | number;
+  avg_pfx_x: string | number;
+  avg_pfx_z: string | number;
+  swings: number;
+  whiffs: number;
+  whiff_pct: string | number;
+}
+

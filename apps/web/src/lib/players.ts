@@ -6,6 +6,9 @@ import {
   BatterSeasonStat,
   PitcherSeasonStat,
   PlayerReport,
+  BatterStatcastStat,
+  PitcherStatcastStat,
+  PitcherPitchTypeStat,
 } from "@/types/player";
 
 export { groupPlayersByPosition, formatBatsThrows } from "./player-utils";
@@ -196,6 +199,105 @@ export async function getPlayerReportsByPlayerId(
      FROM player_reports
      WHERE player_id = $1
      ORDER BY year DESC`,
+    [playerId]
+  );
+
+  return result.rows;
+}
+
+/**
+ * 選手IDから最新年度の打者 Statcast 指標を取得する
+ */
+export async function getLatestBatterStatcastStatsByPlayerId(
+  playerId: number
+): Promise<BatterStatcastStat | null> {
+  const result = await query<BatterStatcastStat>(
+    `SELECT
+       player_id,
+       year,
+       pitches_seen,
+       batted_balls,
+       barrels,
+       barrel_pct,
+       hard_hit_count,
+       hard_hit_pct,
+       avg_exit_velocity,
+       max_exit_velocity,
+       avg_launch_angle,
+       sweet_spot_pct
+     FROM batter_statcast_stats
+     WHERE player_id = $1
+     ORDER BY year DESC
+     LIMIT 1`,
+    [playerId]
+  );
+
+  return result.rows[0] ?? null;
+}
+
+/**
+ * 選手IDから最新年度の投手 Statcast 総合指標を取得する
+ */
+export async function getLatestPitcherStatcastStatsByPlayerId(
+  playerId: number
+): Promise<PitcherStatcastStat | null> {
+  const result = await query<PitcherStatcastStat>(
+    `SELECT
+       player_id,
+       year,
+       total_pitches,
+       batted_balls,
+       barrels_allowed,
+       barrel_pct,
+       hard_hit_count,
+       hard_hit_pct,
+       avg_exit_velocity,
+       swings,
+       whiffs,
+       whiff_pct,
+       called_strikes,
+       csw_pct
+     FROM pitcher_statcast_stats
+     WHERE player_id = $1
+     ORDER BY year DESC
+     LIMIT 1`,
+    [playerId]
+  );
+
+  return result.rows[0] ?? null;
+}
+
+/**
+ * 選手IDから最新年度の投手球種別 Statcast 指標一覧（投球数降順）を取得する
+ */
+export async function getLatestPitcherPitchTypeStatsByPlayerId(
+  playerId: number
+): Promise<PitcherPitchTypeStat[]> {
+  const result = await query<PitcherPitchTypeStat>(
+    `SELECT
+       player_id,
+       year,
+       pitch_type,
+       pitch_name,
+       pitches,
+       usage_pct,
+       avg_speed,
+       avg_spin_rate,
+       avg_pfx_x,
+       avg_pfx_z,
+       swings,
+       whiffs,
+       whiff_pct
+     FROM pitcher_pitch_type_stats
+     WHERE player_id = $1
+       AND year = (
+         SELECT year
+         FROM pitcher_pitch_type_stats
+         WHERE player_id = $1
+         ORDER BY year DESC
+         LIMIT 1
+       )
+     ORDER BY pitches DESC`,
     [playerId]
   );
 
