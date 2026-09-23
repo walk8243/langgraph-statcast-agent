@@ -187,14 +187,11 @@ export function TeamRosterClient({
           const matchNameEn = p.name_en.toLowerCase().includes(query);
           const matchNameJa = p.name_ja ? p.name_ja.toLowerCase().includes(query) : false;
           const matchNumber = p.primary_number ? p.primary_number.includes(query) : false;
-          const matchPos = p.primary_position_abbreviation
-            ? p.primary_position_abbreviation.toLowerCase().includes(query)
-            : false;
           const matchPosName = p.primary_position_name
             ? p.primary_position_name.toLowerCase().includes(query)
             : false;
 
-          return matchNameEn || matchNameJa || matchNumber || matchPos || matchPosName;
+          return matchNameEn || matchNameJa || matchNumber || matchPosName;
         });
 
         return {
@@ -335,11 +332,6 @@ export function TeamRosterClient({
                           )}
                         </div>
                       }
-                      description={
-                        <Caption1 style={{ color: tokens.colorNeutralForeground2 }}>
-                          {player.primary_position_name || "選手"}
-                        </Caption1>
-                      }
                       action={
                         <Badge
                           className={styles.jerseyBadge}
@@ -353,18 +345,12 @@ export function TeamRosterClient({
 
                     <div className={styles.playerDetails}>
                       <div className={styles.detailRow}>
-                        <span className={styles.detailLabel}>ポジション略称:</span>
-                        <Badge size="small" appearance="outline">
-                          {player.primary_position_abbreviation || "-"}
-                        </Badge>
+                        <span className={styles.detailLabel}>ポジション:</span>
+                        <Text size={200}>{player.primary_position_name || "-"}</Text>
                       </div>
                       <div className={styles.detailRow}>
                         <span className={styles.detailLabel}>投打:</span>
                         <Text size={200}>{batsThrows}</Text>
-                      </div>
-                      <div className={styles.detailRow}>
-                        <span className={styles.detailLabel}>選手ID:</span>
-                        <Caption1>{player.player_id}</Caption1>
                       </div>
                     </div>
 
