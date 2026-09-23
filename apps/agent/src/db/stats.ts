@@ -59,6 +59,54 @@ export interface PitcherSeasonStats {
   numberOfPitches: number;
 }
 
+export interface BatterStatcastStats {
+  playerId: number;
+  year: number;
+  pitchesSeen: number;
+  battedBalls: number;
+  barrels: number;
+  barrelPct: number;
+  hardHitCount: number;
+  hardHitPct: number;
+  avgExitVelocity: number;
+  maxExitVelocity: number;
+  avgLaunchAngle: number;
+  sweetSpotPct: number;
+}
+
+export interface PitcherStatcastStats {
+  playerId: number;
+  year: number;
+  totalPitches: number;
+  battedBalls: number;
+  barrelsAllowed: number;
+  barrelPct: number;
+  hardHitCount: number;
+  hardHitPct: number;
+  avgExitVelocity: number;
+  swings: number;
+  whiffs: number;
+  whiffPct: number;
+  calledStrikes: number;
+  cswPct: number;
+}
+
+export interface PitcherPitchTypeStat {
+  playerId: number;
+  year: number;
+  pitchType: string;
+  pitchName: string;
+  pitches: number;
+  usagePct: number;
+  avgSpeed: number;
+  avgSpinRate: number;
+  avgPfxX: number;
+  avgPfxZ: number;
+  swings: number;
+  whiffs: number;
+  whiffPct: number;
+}
+
 export interface PlayerFullStats {
   player: PlayerInfo;
   targetYear: number;
@@ -66,6 +114,9 @@ export interface PlayerFullStats {
   pitcherStatsList: PitcherSeasonStats[]; // 対象年を含む直近最大3年分 (昇順)
   targetBatterStats: BatterSeasonStats | null; // 対象年の打撃成績
   targetPitcherStats: PitcherSeasonStats | null; // 対象年の投球成績
+  targetBatterStatcastStats: BatterStatcastStats | null; // 対象年の打撃Statcast指標
+  targetPitcherStatcastStats: PitcherStatcastStats | null; // 対象年の投球Statcast指標
+  targetPitcherPitchTypes: PitcherPitchTypeStat[]; // 対象年の球種別Statcast指標 (投球数降順)
 }
 
 function mapBatterRow(b: any): BatterSeasonStats {
@@ -120,6 +171,60 @@ function mapPitcherRow(pt: any): PitcherSeasonStats {
     battingAverageAgainst: Number(pt.batting_average_against),
     battersFaced: pt.batters_faced,
     numberOfPitches: pt.number_of_pitches,
+  };
+}
+
+function mapBatterStatcastRow(b: any): BatterStatcastStats {
+  return {
+    playerId: Number(b.player_id),
+    year: Number(b.year),
+    pitchesSeen: Number(b.pitches_seen),
+    battedBalls: Number(b.batted_balls),
+    barrels: Number(b.barrels),
+    barrelPct: Number(b.barrel_pct),
+    hardHitCount: Number(b.hard_hit_count),
+    hardHitPct: Number(b.hard_hit_pct),
+    avgExitVelocity: Number(b.avg_exit_velocity),
+    maxExitVelocity: Number(b.max_exit_velocity),
+    avgLaunchAngle: Number(b.avg_launch_angle),
+    sweetSpotPct: Number(b.sweet_spot_pct),
+  };
+}
+
+function mapPitcherStatcastRow(pt: any): PitcherStatcastStats {
+  return {
+    playerId: Number(pt.player_id),
+    year: Number(pt.year),
+    totalPitches: Number(pt.total_pitches),
+    battedBalls: Number(pt.batted_balls),
+    barrelsAllowed: Number(pt.barrels_allowed),
+    barrelPct: Number(pt.barrel_pct),
+    hardHitCount: Number(pt.hard_hit_count),
+    hardHitPct: Number(pt.hard_hit_pct),
+    avgExitVelocity: Number(pt.avg_exit_velocity),
+    swings: Number(pt.swings),
+    whiffs: Number(pt.whiffs),
+    whiffPct: Number(pt.whiff_pct),
+    calledStrikes: Number(pt.called_strikes),
+    cswPct: Number(pt.csw_pct),
+  };
+}
+
+function mapPitcherPitchTypeRow(p: any): PitcherPitchTypeStat {
+  return {
+    playerId: Number(p.player_id),
+    year: Number(p.year),
+    pitchType: p.pitch_type,
+    pitchName: p.pitch_name,
+    pitches: Number(p.pitches),
+    usagePct: Number(p.usage_pct),
+    avgSpeed: Number(p.avg_speed),
+    avgSpinRate: Number(p.avg_spin_rate),
+    avgPfxX: Number(p.avg_pfx_x),
+    avgPfxZ: Number(p.avg_pfx_z),
+    swings: Number(p.swings),
+    whiffs: Number(p.whiffs),
+    whiffPct: Number(p.whiff_pct),
   };
 }
 
@@ -186,6 +291,48 @@ export async function fetchPlayerFullStats(
   const targetPitcherStats =
     pitcherStatsList.find((pt) => pt.year === targetYear) || null;
 
+  // 4. 打者Statcast指標取得（対象年）
+  const batterStatcastRes = await pool.query(
+    `
+    SELECT *
+    FROM batter_statcast_stats
+    WHERE player_id = $1 AND year = $2
+    `,
+    [playerId, targetYear]
+  );
+  const targetBatterStatcastStats =
+    batterStatcastRes.rows.length > 0
+      ? mapBatterStatcastRow(batterStatcastRes.rows[0])
+      : null;
+
+  // 5. 投手Statcast指標取得（対象年）
+  const pitcherStatcastRes = await pool.query(
+    `
+    SELECT *
+    FROM pitcher_statcast_stats
+    WHERE player_id = $1 AND year = $2
+    `,
+    [playerId, targetYear]
+  );
+  const targetPitcherStatcastStats =
+    pitcherStatcastRes.rows.length > 0
+      ? mapPitcherStatcastRow(pitcherStatcastRes.rows[0])
+      : null;
+
+  // 6. 投手球種別Statcast指標取得（対象年、投球数降順）
+  const pitcherPitchTypeRes = await pool.query(
+    `
+    SELECT *
+    FROM pitcher_pitch_type_stats
+    WHERE player_id = $1 AND year = $2
+    ORDER BY pitches DESC
+    `,
+    [playerId, targetYear]
+  );
+  const targetPitcherPitchTypes = pitcherPitchTypeRes.rows.map(
+    mapPitcherPitchTypeRow
+  );
+
   return {
     player,
     targetYear,
@@ -193,6 +340,9 @@ export async function fetchPlayerFullStats(
     pitcherStatsList,
     targetBatterStats,
     targetPitcherStats,
+    targetBatterStatcastStats,
+    targetPitcherStatcastStats,
+    targetPitcherPitchTypes,
   };
 }
 
