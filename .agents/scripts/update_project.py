@@ -44,8 +44,35 @@ FALLBACK_FIELDS = {
 }
 
 
+import os
+
+
 def run_gh_graphql(query: str, variables: Optional[dict[str, Any]] = None) -> dict[str, Any]:
-    """GitHub CLI (gh api graphql) を実行して JSON レスポンスを取得する"""
+    """GitHub GraphQL API を実行して JSON レスポンスを取得する (curl.exe + GH_TOKEN 優先、gh CLI フォールバック)"""
+    token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
+    if token:
+        try:
+            payload = json.dumps({"query": query, "variables": variables or {}})
+            cmd = [
+                "curl.exe",
+                "-s",
+                "-H",
+                f"Authorization: Bearer {token}",
+                "-H",
+                "Content-Type: application/json",
+                "-d",
+                payload,
+                "https://api.github.com/graphql",
+            ]
+            result = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8")
+            if result.returncode == 0 and result.stdout.strip():
+                res_data = json.loads(result.stdout)
+                if "errors" in res_data:
+                    raise RuntimeError(f"GraphQL error: {res_data['errors']}")
+                return res_data
+        except Exception as e:
+            pass
+
     cmd = ["gh", "api", "graphql", "-f", f"query={query}"]
     if variables:
         for k, v in variables.items():
