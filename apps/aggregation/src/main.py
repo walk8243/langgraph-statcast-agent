@@ -188,7 +188,7 @@ def aggregate_pitcher_statcast(
 def parse_args(args: Optional[list[str]] = None) -> argparse.Namespace:
     """コマンドライン引数をパースする"""
     parser = argparse.ArgumentParser(
-        description="Statcast 指標集計サービス (ClickHouse -> PostgreSQL)"
+        description="Statcast 指標集計サービス (ClickHouse -> PostgreSQL: batter_statcast_stats / pitcher_statcast_stats / pitcher_pitch_type_stats)"
     )
     parser.add_argument(
         "--player-id",
@@ -205,18 +205,13 @@ def parse_args(args: Optional[list[str]] = None) -> argparse.Namespace:
     parser.add_argument(
         "--player-type",
         choices=["batter", "pitcher", "both"],
-        default="batter",
-        help="選手タイプ (batter, pitcher, both, デフォルト: batter)",
+        default="both",
+        help="集計対象の選手タイプ (batter, pitcher, both, デフォルト: both)",
     )
     parser.add_argument(
-        "--statcast",
+        "--legacy-basic-stats",
         action="store_true",
-        help="Statcast 詳細指標（打球指標・投球指標・球種別スタッツ）を集計する",
-    )
-    parser.add_argument(
-        "--all",
-        action="store_true",
-        help="基本指標および Statcast 詳細指標の両方を集計する",
+        help="【旧仕様】ClickHouse 生データから打者基本指標を集計して batter_season_stats へ保存する（通常は MLB Stats API Ingestion を使用するため非推奨）",
     )
     parser.add_argument(
         "--init-db",
@@ -233,17 +228,8 @@ def main() -> None:
     try:
         init_db = parsed.init_db
 
-        # 打者基本指標集計（--statcast 単独指定でない場合、かつ batter または both）
-        if (not parsed.statcast or parsed.all) and parsed.player_type in ("batter", "both"):
-            aggregate_batter(
-                player_id=parsed.player_id,
-                year=parsed.year,
-                init_db=init_db,
-            )
-            init_db = False
-
-        # 打者 Statcast 詳細指標集計
-        if (parsed.statcast or parsed.all) and parsed.player_type in ("batter", "both"):
+        # 打者 Statcast 詳細指標集計 -> batter_statcast_stats
+        if parsed.player_type in ("batter", "both"):
             aggregate_batter_statcast(
                 player_id=parsed.player_id,
                 year=parsed.year,
@@ -251,9 +237,18 @@ def main() -> None:
             )
             init_db = False
 
-        # 投手 Statcast 詳細指標集計
-        if (parsed.statcast or parsed.all or parsed.player_type == "pitcher") and parsed.player_type in ("pitcher", "both"):
+        # 投手 Statcast 詳細指標集計 -> pitcher_statcast_stats, pitcher_pitch_type_stats
+        if parsed.player_type in ("pitcher", "both"):
             aggregate_pitcher_statcast(
+                player_id=parsed.player_id,
+                year=parsed.year,
+                init_db=init_db,
+            )
+            init_db = False
+
+        # 旧基本指標の集計（明示的に指定された場合のみ実行）
+        if parsed.legacy_basic_stats and parsed.player_type in ("batter", "both"):
+            aggregate_batter(
                 player_id=parsed.player_id,
                 year=parsed.year,
                 init_db=init_db,
@@ -266,4 +261,5 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
 
