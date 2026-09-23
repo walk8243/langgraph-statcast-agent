@@ -196,6 +196,17 @@ def parse_args(args: Optional[list[str]] = None) -> argparse.Namespace:
         help="Cloud Pub/Sub サブスクリプションを受信する常駐ワーカーモードとして起動する",
     )
     parser.add_argument(
+        "--api",
+        action="store_true",
+        help="Cloud Pub/Sub へ集計要求を送信する REST API サーバーとして起動する",
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=8000,
+        help="REST API サーバーの待受ポート (デフォルト: 8000)",
+    )
+    parser.add_argument(
         "--project-id",
         type=str,
         default=None,
@@ -236,8 +247,8 @@ def parse_args(args: Optional[list[str]] = None) -> argparse.Namespace:
         help="実行前に PostgreSQL テーブルの初期化 DDL を実行する",
     )
     parsed = parser.parse_args(args)
-    if not parsed.worker and parsed.player_id is None:
-        parser.error("--player-id はワンショット実行時に必須です (常駐実行時は --worker を指定してください)")
+    if not (parsed.worker or parsed.api) and parsed.player_id is None:
+        parser.error("--player-id はワンショット実行時に必須です (常駐実行時は --worker または --api を指定してください)")
     return parsed
 
 
@@ -246,6 +257,13 @@ def main() -> None:
     load_dotenv()
     parsed = parse_args()
     try:
+        if parsed.api:
+            import uvicorn
+
+            logger.info(f"Aggregation REST API サーバーを起動します (port={parsed.port})...")
+            uvicorn.run("src.api:app", host="0.0.0.0", port=parsed.port)
+            return
+
         if parsed.worker:
             from src.subscriber import run_subscriber
 
