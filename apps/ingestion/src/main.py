@@ -14,6 +14,11 @@ from .batch_statcast import extract_year_from_dates, ingest_all_players_statcast
 from .downloader import download_statcast_csv, load_local_csv
 from .loader import get_clickhouse_client, initialize_table, insert_statcast_data
 from .publisher import publish_statcast_raw_message
+from .mlb_boxscores import (
+    fetch_and_insert_boxscore,
+    fetch_and_insert_boxscores_batch,
+    initialize_clickhouse_boxscore_tables,
+)
 from .mlb_games import (
     fetch_mlb_schedule,
     initialize_clickhouse_games_table,
@@ -126,6 +131,21 @@ def main() -> None:
         "--no-pubsub",
         action="store_true",
         help="データ登録完了後の Cloud Pub/Sub への集計トリガーメッセージ発行をスキップします",
+    )
+    parser.add_argument(
+        "--game-pk",
+        type=int,
+        help="対象試合ID (MLB gamePk)",
+    )
+    parser.add_argument(
+        "--fetch-boxscore",
+        action="store_true",
+        help="指定した --game-pk の Boxscore を MLB Stats API から取得し、ClickHouse (列指向DB) に登録します",
+    )
+    parser.add_argument(
+        "--fetch-boxscores",
+        action="store_true",
+        help="指定したシーズン／期間の全試合の Boxscore を MLB Stats API から一括取得し、ClickHouse (列指向DB) に登録します",
     )
 
     args = parser.parse_args()
@@ -270,6 +290,7 @@ def main() -> None:
         initialize_clickhouse_teams_table(client)
         initialize_clickhouse_players_table(client)
         initialize_clickhouse_games_table(client)
+        initialize_clickhouse_boxscore_tables(client)
         print("ClickHouse tables initialized successfully.")
         try:
             pg_conn = get_postgres_connection()
@@ -278,6 +299,41 @@ def main() -> None:
             print("PostgreSQL tables initialized successfully.")
         except Exception as e:
             print(f"Note: PostgreSQL initialization skipped or failed: {e}")
+        return
+
+    if args.fetch_boxscore:
+        if not args.game_pk:
+            print("Error: --game-pk is required when using --fetch-boxscore")
+            sys.exit(1)
+        print(f"Fetching boxscore for game {args.game_pk} from MLB Stats API...")
+        counts = fetch_and_insert_boxscore(client, args.game_pk)
+        print(
+            f"Successfully ingested boxscore for game {args.game_pk}: "
+            f"Teams: {counts['teams']}, Batting: {counts['batting']}, Pitching: {counts['pitching']}, Positions: {counts['positions']}"
+        )
+        return
+
+    if args.fetch_boxscores:
+        season = args.season or 2024
+        print(
+            f"Fetching schedule for boxscores batch (sport_id={args.sport_id}, season={season}, "
+            f"start_date={args.start_date}, end_date={args.end_date})..."
+        )
+        games = fetch_mlb_schedule(
+            season=season,
+            sport_id=args.sport_id,
+            start_date=args.start_date,
+            end_date=args.end_date,
+        )
+        game_pks = [g["game_pk"] for g in games if g.get("game_pk")]
+        if args.limit:
+            game_pks = game_pks[:args.limit]
+        print(f"Found {len(game_pks)} games. Ingesting boxscores...")
+        total_counts = fetch_and_insert_boxscores_batch(client, game_pks)
+        print(
+            f"Successfully ingested {total_counts['games']} games' boxscores: "
+            f"Teams: {total_counts['teams']}, Batting: {total_counts['batting']}, Pitching: {total_counts['pitching']}, Positions: {total_counts['positions']}"
+        )
         return
 
     # テーブルが存在しない場合は初期化
