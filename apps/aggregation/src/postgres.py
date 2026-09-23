@@ -7,7 +7,12 @@ from typing import Optional
 import psycopg
 from psycopg.rows import dict_row
 
-from src.aggregator import BatterSeasonStats
+from src.aggregator import (
+    BatterSeasonStats,
+    BatterStatcastStats,
+    PitcherPitchTypeStats,
+    PitcherStatcastStats,
+)
 
 
 def get_postgres_connection(
@@ -120,3 +125,171 @@ def upsert_batter_season_stats(
     with conn.cursor() as cur:
         cur.execute(query, stats.model_dump())
     conn.commit()
+
+
+def upsert_batter_statcast_stats(
+    conn: psycopg.Connection, stats: BatterStatcastStats
+) -> None:
+    """打者の Statcast 詳細指標を PostgreSQL に保存・更新（Upsert）する"""
+    query = """
+    INSERT INTO batter_statcast_stats (
+        player_id,
+        year,
+        pitches_seen,
+        batted_balls,
+        barrels,
+        barrel_pct,
+        hard_hit_count,
+        hard_hit_pct,
+        avg_exit_velocity,
+        max_exit_velocity,
+        avg_launch_angle,
+        sweet_spot_pct,
+        updated_at
+    ) VALUES (
+        %(player_id)s,
+        %(year)s,
+        %(pitches_seen)s,
+        %(batted_balls)s,
+        %(barrels)s,
+        %(barrel_pct)s,
+        %(hard_hit_count)s,
+        %(hard_hit_pct)s,
+        %(avg_exit_velocity)s,
+        %(max_exit_velocity)s,
+        %(avg_launch_angle)s,
+        %(sweet_spot_pct)s,
+        CURRENT_TIMESTAMP
+    )
+    ON CONFLICT (player_id, year) DO UPDATE SET
+        pitches_seen = EXCLUDED.pitches_seen,
+        batted_balls = EXCLUDED.batted_balls,
+        barrels = EXCLUDED.barrels,
+        barrel_pct = EXCLUDED.barrel_pct,
+        hard_hit_count = EXCLUDED.hard_hit_count,
+        hard_hit_pct = EXCLUDED.hard_hit_pct,
+        avg_exit_velocity = EXCLUDED.avg_exit_velocity,
+        max_exit_velocity = EXCLUDED.max_exit_velocity,
+        avg_launch_angle = EXCLUDED.avg_launch_angle,
+        sweet_spot_pct = EXCLUDED.sweet_spot_pct,
+        updated_at = CURRENT_TIMESTAMP;
+    """
+
+    with conn.cursor() as cur:
+        cur.execute(query, stats.model_dump())
+    conn.commit()
+
+
+def upsert_pitcher_statcast_stats(
+    conn: psycopg.Connection, stats: PitcherStatcastStats
+) -> None:
+    """投手の Statcast 総合指標を PostgreSQL に保存・更新（Upsert）する"""
+    query = """
+    INSERT INTO pitcher_statcast_stats (
+        player_id,
+        year,
+        total_pitches,
+        batted_balls,
+        barrels_allowed,
+        barrel_pct,
+        hard_hit_count,
+        hard_hit_pct,
+        avg_exit_velocity,
+        swings,
+        whiffs,
+        whiff_pct,
+        called_strikes,
+        csw_pct,
+        updated_at
+    ) VALUES (
+        %(player_id)s,
+        %(year)s,
+        %(total_pitches)s,
+        %(batted_balls)s,
+        %(barrels_allowed)s,
+        %(barrel_pct)s,
+        %(hard_hit_count)s,
+        %(hard_hit_pct)s,
+        %(avg_exit_velocity)s,
+        %(swings)s,
+        %(whiffs)s,
+        %(whiff_pct)s,
+        %(called_strikes)s,
+        %(csw_pct)s,
+        CURRENT_TIMESTAMP
+    )
+    ON CONFLICT (player_id, year) DO UPDATE SET
+        total_pitches = EXCLUDED.total_pitches,
+        batted_balls = EXCLUDED.batted_balls,
+        barrels_allowed = EXCLUDED.barrels_allowed,
+        barrel_pct = EXCLUDED.barrel_pct,
+        hard_hit_count = EXCLUDED.hard_hit_count,
+        hard_hit_pct = EXCLUDED.hard_hit_pct,
+        avg_exit_velocity = EXCLUDED.avg_exit_velocity,
+        swings = EXCLUDED.swings,
+        whiffs = EXCLUDED.whiffs,
+        whiff_pct = EXCLUDED.whiff_pct,
+        called_strikes = EXCLUDED.called_strikes,
+        csw_pct = EXCLUDED.csw_pct,
+        updated_at = CURRENT_TIMESTAMP;
+    """
+
+    with conn.cursor() as cur:
+        cur.execute(query, stats.model_dump())
+    conn.commit()
+
+
+def upsert_pitcher_pitch_type_stats(
+    conn: psycopg.Connection, stats: PitcherPitchTypeStats
+) -> None:
+    """投手の球種別 Statcast 指標を PostgreSQL に保存・更新（Upsert）する"""
+    query = """
+    INSERT INTO pitcher_pitch_type_stats (
+        player_id,
+        year,
+        pitch_type,
+        pitch_name,
+        pitches,
+        usage_pct,
+        avg_speed,
+        avg_spin_rate,
+        avg_pfx_x,
+        avg_pfx_z,
+        swings,
+        whiffs,
+        whiff_pct,
+        updated_at
+    ) VALUES (
+        %(player_id)s,
+        %(year)s,
+        %(pitch_type)s,
+        %(pitch_name)s,
+        %(pitches)s,
+        %(usage_pct)s,
+        %(avg_speed)s,
+        %(avg_spin_rate)s,
+        %(avg_pfx_x)s,
+        %(avg_pfx_z)s,
+        %(swings)s,
+        %(whiffs)s,
+        %(whiff_pct)s,
+        CURRENT_TIMESTAMP
+    )
+    ON CONFLICT (player_id, year, pitch_type) DO UPDATE SET
+        pitch_name = EXCLUDED.pitch_name,
+        pitches = EXCLUDED.pitches,
+        usage_pct = EXCLUDED.usage_pct,
+        avg_speed = EXCLUDED.avg_speed,
+        avg_spin_rate = EXCLUDED.avg_spin_rate,
+        avg_pfx_x = EXCLUDED.avg_pfx_x,
+        avg_pfx_z = EXCLUDED.avg_pfx_z,
+        swings = EXCLUDED.swings,
+        whiffs = EXCLUDED.whiffs,
+        whiff_pct = EXCLUDED.whiff_pct,
+        updated_at = CURRENT_TIMESTAMP;
+    """
+
+    with conn.cursor() as cur:
+        cur.execute(query, stats.model_dump())
+    conn.commit()
+
