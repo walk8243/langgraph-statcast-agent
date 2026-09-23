@@ -35,12 +35,17 @@ import {
   Calendar20Regular,
   Info20Regular,
   Sparkle20Regular,
+  Target20Regular,
+  DataTrending24Regular,
 } from "@fluentui/react-icons";
 import {
   PlayerDetail,
   BatterSeasonStat,
   PitcherSeasonStat,
   PlayerReport,
+  BatterStatcastStat,
+  PitcherStatcastStat,
+  PitcherPitchTypeStat,
 } from "@/types/player";
 import { formatBatsThrows } from "@/lib/player-utils";
 
@@ -249,6 +254,36 @@ const useStyles = makeStyles({
     marginTop: "8px",
     display: "inline-block",
   },
+  metricsGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+    gap: "16px",
+    marginTop: "16px",
+  },
+  metricCard: {
+    ...shorthands.padding("16px"),
+    backgroundColor: tokens.colorNeutralBackground2,
+    ...shorthands.borderRadius(tokens.borderRadiusMedium),
+    ...shorthands.border("1px", "solid", tokens.colorNeutralStroke3),
+    display: "flex",
+    flexDirection: "column",
+    rowGap: "6px",
+  },
+  metricLabel: {
+    fontSize: "12px",
+    color: tokens.colorNeutralForeground3,
+    fontWeight: "600",
+    textTransform: "uppercase",
+  },
+  metricValue: {
+    fontSize: "24px",
+    fontWeight: "700",
+    color: tokens.colorNeutralForeground1,
+  },
+  metricSubtext: {
+    fontSize: "12px",
+    color: tokens.colorNeutralForeground2,
+  },
 });
 
 interface PlayerDetailClientProps {
@@ -256,6 +291,9 @@ interface PlayerDetailClientProps {
   batterStats: BatterSeasonStat[];
   pitcherStats: PitcherSeasonStat[];
   reports: PlayerReport[];
+  latestBatterStatcast?: BatterStatcastStat | null;
+  latestPitcherStatcast?: PitcherStatcastStat | null;
+  latestPitchTypeStats?: PitcherPitchTypeStat[];
 }
 
 export default function PlayerDetailClient({
@@ -263,6 +301,9 @@ export default function PlayerDetailClient({
   batterStats,
   pitcherStats,
   reports,
+  latestBatterStatcast,
+  latestPitcherStatcast,
+  latestPitchTypeStats = [],
 }: PlayerDetailClientProps) {
   const styles = useStyles();
 
@@ -386,6 +427,85 @@ export default function PlayerDetailClient({
         )}
       </section>
 
+      {/* Statcast Batter Metrics Section */}
+      {latestBatterStatcast && (
+        <section className={styles.contentSection}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <DataTrending24Regular style={{ color: tokens.colorBrandForeground1 }} />
+            <Title2>最新 Statcast 打球指標</Title2>
+            <Badge appearance="filled" color="brand">
+              {latestBatterStatcast.year}年
+            </Badge>
+          </div>
+
+          <div className={styles.statsCard}>
+            <div className={styles.metricsGrid}>
+              <div className={styles.metricCard}>
+                <Caption1 className={styles.metricLabel}>Barrel% (バレル率)</Caption1>
+                <Text className={styles.metricValue}>
+                  {Number(latestBatterStatcast.barrel_pct).toFixed(1)}%
+                </Text>
+                <Caption1 className={styles.metricSubtext}>
+                  {latestBatterStatcast.barrels} / {latestBatterStatcast.batted_balls} 打球
+                </Caption1>
+              </div>
+
+              <div className={styles.metricCard}>
+                <Caption1 className={styles.metricLabel}>HardHit% (ハードヒット率)</Caption1>
+                <Text className={styles.metricValue}>
+                  {Number(latestBatterStatcast.hard_hit_pct).toFixed(1)}%
+                </Text>
+                <Caption1 className={styles.metricSubtext}>
+                  {latestBatterStatcast.hard_hit_count} / {latestBatterStatcast.batted_balls} 打球 (95+ mph)
+                </Caption1>
+              </div>
+
+              <div className={styles.metricCard}>
+                <Caption1 className={styles.metricLabel}>平均打球初速 (Avg EV)</Caption1>
+                <Text className={styles.metricValue}>
+                  {Number(latestBatterStatcast.avg_exit_velocity).toFixed(1)}{" "}
+                  <span style={{ fontSize: "14px", fontWeight: "normal" }}>mph</span>
+                </Text>
+                <Caption1 className={styles.metricSubtext}>MLB平均 約88-89 mph</Caption1>
+              </div>
+
+              <div className={styles.metricCard}>
+                <Caption1 className={styles.metricLabel}>最高打球初速 (Max EV)</Caption1>
+                <Text className={styles.metricValue}>
+                  {Number(latestBatterStatcast.max_exit_velocity).toFixed(1)}{" "}
+                  <span style={{ fontSize: "14px", fontWeight: "normal" }}>mph</span>
+                </Text>
+                <Caption1 className={styles.metricSubtext}>シーズン最速打球</Caption1>
+              </div>
+
+              <div className={styles.metricCard}>
+                <Caption1 className={styles.metricLabel}>平均打球角度 (Launch Angle)</Caption1>
+                <Text className={styles.metricValue}>
+                  {Number(latestBatterStatcast.avg_launch_angle).toFixed(1)}°
+                </Text>
+                <Caption1 className={styles.metricSubtext}>適正範囲: 10°〜25°</Caption1>
+              </div>
+
+              <div className={styles.metricCard}>
+                <Caption1 className={styles.metricLabel}>SweetSpot% (適正角度率)</Caption1>
+                <Text className={styles.metricValue}>
+                  {Number(latestBatterStatcast.sweet_spot_pct).toFixed(1)}%
+                </Text>
+                <Caption1 className={styles.metricSubtext}>8°〜32°の打球割合</Caption1>
+              </div>
+            </div>
+
+            <div style={{ marginTop: "16px", display: "flex", gap: "16px", flexWrap: "wrap" }}>
+              <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>
+                総打球数 (Batted Balls): <strong>{latestBatterStatcast.batted_balls}</strong>
+              </Caption1>
+              <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>
+                見た投球数 (Pitches Seen): <strong>{latestBatterStatcast.pitches_seen}</strong>
+              </Caption1>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Season Stats Section: Batter */}
       {batterStats.length > 0 && (
@@ -453,6 +573,143 @@ export default function PlayerDetailClient({
               </Table>
             </div>
           </div>
+        </section>
+      )}
+
+      {/* Statcast Pitcher & Pitch Type Metrics Section */}
+      {(latestPitcherStatcast || latestPitchTypeStats.length > 0) && (
+        <section className={styles.contentSection}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <Target20Regular style={{ color: tokens.colorBrandForeground1 }} />
+            <Title2>最新 Statcast 投球・球種別指標</Title2>
+            <Badge appearance="filled" color="brand">
+              {latestPitcherStatcast?.year || latestPitchTypeStats[0]?.year}年
+            </Badge>
+          </div>
+
+          {latestPitcherStatcast && (
+            <div className={styles.statsCard}>
+              <Title3>投球品質サマリー</Title3>
+              <div className={styles.metricsGrid}>
+                <div className={styles.metricCard}>
+                  <Caption1 className={styles.metricLabel}>Whiff% (空振り率)</Caption1>
+                  <Text className={styles.metricValue}>
+                    {Number(latestPitcherStatcast.whiff_pct).toFixed(1)}%
+                  </Text>
+                  <Caption1 className={styles.metricSubtext}>
+                    {latestPitcherStatcast.whiffs} 空振り / {latestPitcherStatcast.swings} スイング
+                  </Caption1>
+                </div>
+
+                <div className={styles.metricCard}>
+                  <Caption1 className={styles.metricLabel}>CSW% (見逃し+空振り率)</Caption1>
+                  <Text className={styles.metricValue}>
+                    {Number(latestPitcherStatcast.csw_pct).toFixed(1)}%
+                  </Text>
+                  <Caption1 className={styles.metricSubtext}>
+                    Called + Swinging Strikes / 投球数
+                  </Caption1>
+                </div>
+
+                <div className={styles.metricCard}>
+                  <Caption1 className={styles.metricLabel}>被Barrel% (被バレル率)</Caption1>
+                  <Text className={styles.metricValue}>
+                    {Number(latestPitcherStatcast.barrel_pct).toFixed(1)}%
+                  </Text>
+                  <Caption1 className={styles.metricSubtext}>
+                    {latestPitcherStatcast.barrels_allowed} / {latestPitcherStatcast.batted_balls} 被打球
+                  </Caption1>
+                </div>
+
+                <div className={styles.metricCard}>
+                  <Caption1 className={styles.metricLabel}>被HardHit% (被ハードヒット率)</Caption1>
+                  <Text className={styles.metricValue}>
+                    {Number(latestPitcherStatcast.hard_hit_pct).toFixed(1)}%
+                  </Text>
+                  <Caption1 className={styles.metricSubtext}>
+                    {latestPitcherStatcast.hard_hit_count} / {latestPitcherStatcast.batted_balls} 被打球
+                  </Caption1>
+                </div>
+
+                <div className={styles.metricCard}>
+                  <Caption1 className={styles.metricLabel}>被平均打球初速 (Avg EV against)</Caption1>
+                  <Text className={styles.metricValue}>
+                    {Number(latestPitcherStatcast.avg_exit_velocity).toFixed(1)}{" "}
+                    <span style={{ fontSize: "14px", fontWeight: "normal" }}>mph</span>
+                  </Text>
+                  <Caption1 className={styles.metricSubtext}>許容打球の平均初速</Caption1>
+                </div>
+              </div>
+
+              <div style={{ marginTop: "16px", display: "flex", gap: "16px", flexWrap: "wrap" }}>
+                <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>
+                  総投球数 (Total Pitches): <strong>{latestPitcherStatcast.total_pitches}</strong>
+                </Caption1>
+                <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>
+                  スイング数 (Swings): <strong>{latestPitcherStatcast.swings}</strong>
+                </Caption1>
+                <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>
+                  空振り数 (Whiffs): <strong>{latestPitcherStatcast.whiffs}</strong>
+                </Caption1>
+                <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>
+                  見逃しストライク (Called Strikes): <strong>{latestPitcherStatcast.called_strikes}</strong>
+                </Caption1>
+              </div>
+            </div>
+          )}
+
+          {latestPitchTypeStats.length > 0 && (
+            <div className={styles.statsCard}>
+              <Title3>球種別スタッツ (Pitch Arsenal)</Title3>
+              <div className={styles.tableWrapper}>
+                <Table aria-label="Pitcher pitch types stats table">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHeaderCell>球種</TableHeaderCell>
+                      <TableHeaderCell>投球数</TableHeaderCell>
+                      <TableHeaderCell>投球割合</TableHeaderCell>
+                      <TableHeaderCell>平均球速</TableHeaderCell>
+                      <TableHeaderCell>平均回転数</TableHeaderCell>
+                      <TableHeaderCell>水平変化量</TableHeaderCell>
+                      <TableHeaderCell>垂直変化量</TableHeaderCell>
+                      <TableHeaderCell>Whiff% (空振り率)</TableHeaderCell>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {latestPitchTypeStats.map((stat) => (
+                      <TableRow key={stat.pitch_type}>
+                        <TableCell>
+                          <Body1Strong>{stat.pitch_name || stat.pitch_type}</Body1Strong>{" "}
+                          <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>
+                            ({stat.pitch_type})
+                          </Caption1>
+                        </TableCell>
+                        <TableCell>{stat.pitches}</TableCell>
+                        <TableCell className={styles.highlightCell}>
+                          {Number(stat.usage_pct).toFixed(1)}%
+                        </TableCell>
+                        <TableCell className={styles.highlightCell}>
+                          {Number(stat.avg_speed).toFixed(1)} mph
+                        </TableCell>
+                        <TableCell>{Math.round(Number(stat.avg_spin_rate))} rpm</TableCell>
+                        <TableCell>
+                          {Number(stat.avg_pfx_x) > 0 ? "+" : ""}
+                          {Number(stat.avg_pfx_x).toFixed(1)}&quot;
+                        </TableCell>
+                        <TableCell>
+                          {Number(stat.avg_pfx_z) > 0 ? "+" : ""}
+                          {Number(stat.avg_pfx_z).toFixed(1)}&quot;
+                        </TableCell>
+                        <TableCell className={styles.highlightCell}>
+                          {Number(stat.whiff_pct).toFixed(1)}%
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          )}
         </section>
       )}
 
@@ -531,15 +788,23 @@ export default function PlayerDetailClient({
       )}
 
       {/* No Stats Fallback */}
-      {batterStats.length === 0 && pitcherStats.length === 0 && (
-        <Card className={styles.statsCard}>
-          <CardHeader
-            image={<Info20Regular />}
-            header={<Text weight="semibold">シーズン成績データ</Text>}
-            description={<Caption1>現在登録されている打撃・投球のシーズン成績データはありません。</Caption1>}
-          />
-        </Card>
-      )}
+      {batterStats.length === 0 &&
+        pitcherStats.length === 0 &&
+        !latestBatterStatcast &&
+        !latestPitcherStatcast &&
+        latestPitchTypeStats.length === 0 && (
+          <Card className={styles.statsCard}>
+            <CardHeader
+              image={<Info20Regular />}
+              header={<Text weight="semibold">シーズン成績データ</Text>}
+              description={
+                <Caption1>
+                  現在登録されている打撃・投球のシーズン成績データはありません。
+                </Caption1>
+              }
+            />
+          </Card>
+        )}
 
     </div>
   );

@@ -5,6 +5,9 @@ import {
   getBatterSeasonStatsByPlayerId,
   getPitcherSeasonStatsByPlayerId,
   getPlayerReportsByPlayerId,
+  getLatestBatterStatcastStatsByPlayerId,
+  getLatestPitcherStatcastStatsByPlayerId,
+  getLatestPitcherPitchTypeStatsByPlayerId,
 } from "@/lib/players";
 import PlayerDetailClient from "./player-detail-client";
 
@@ -57,10 +60,20 @@ export default async function PlayerDetailPage({
     notFound();
   }
 
-  const [batterStats, pitcherStats, reports] = await Promise.all([
+  const [
+    batterStats,
+    pitcherStats,
+    reports,
+    latestBatterStatcast,
+    latestPitcherStatcast,
+    latestPitchTypeStats,
+  ] = await Promise.all([
     getBatterSeasonStatsByPlayerId(playerIdNum),
     getPitcherSeasonStatsByPlayerId(playerIdNum),
     getPlayerReportsByPlayerId(playerIdNum),
+    getLatestBatterStatcastStatsByPlayerId(playerIdNum),
+    getLatestPitcherStatcastStatsByPlayerId(playerIdNum),
+    getLatestPitcherPitchTypeStatsByPlayerId(playerIdNum),
   ]);
 
   return (
@@ -69,6 +82,9 @@ export default async function PlayerDetailPage({
       batterStats={batterStats}
       pitcherStats={pitcherStats}
       reports={reports}
+      latestBatterStatcast={latestBatterStatcast}
+      latestPitcherStatcast={latestPitcherStatcast}
+      latestPitchTypeStats={latestPitchTypeStats}
     />
   );
 }
