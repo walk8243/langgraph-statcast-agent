@@ -94,6 +94,8 @@ CREATE TABLE IF NOT EXISTS statcast.boxscore_batting (
     `position_name` Nullable(String),
     `position_type` Nullable(String),
     `position_abbreviation` Nullable(String),
+    `all_positions` Array(String),
+    `all_position_codes` Array(String),
     `batting_order` Nullable(String),
     `is_starter` UInt8,
     `is_substitute` UInt8,
@@ -145,6 +147,8 @@ CREATE TABLE IF NOT EXISTS statcast.boxscore_pitching (
     `position_name` Nullable(String),
     `position_type` Nullable(String),
     `position_abbreviation` Nullable(String),
+    `all_positions` Array(String),
+    `all_position_codes` Array(String),
     `pitching_order` UInt8,
     `is_starter` UInt8,
     -- 投球成績
@@ -377,6 +381,23 @@ def parse_boxscore_data(
             pos_type = position.get("type")
             pos_abbrev = position.get("abbreviation")
 
+            all_positions_raw = p_val.get("allPositions", [])
+            all_positions = [
+                pos.get("abbreviation") or pos.get("name") or str(pos.get("code"))
+                for pos in all_positions_raw
+                if pos and (pos.get("abbreviation") or pos.get("name") or pos.get("code"))
+            ]
+            all_position_codes = [
+                str(pos.get("code"))
+                for pos in all_positions_raw
+                if pos and pos.get("code") is not None
+            ]
+            # allPositions が空の場合のフォールバック
+            if not all_positions and pos_abbrev:
+                all_positions = [pos_abbrev]
+            if not all_position_codes and pos_code:
+                all_position_codes = [str(pos_code)]
+
             batting_order = p_val.get("battingOrder")
             game_status = p_val.get("gameStatus", {})
             is_sub = 1 if game_status.get("isSubstitute") else 0
@@ -398,6 +419,8 @@ def parse_boxscore_data(
                     "position_name": pos_name,
                     "position_type": pos_type,
                     "position_abbreviation": pos_abbrev,
+                    "all_positions": all_positions,
+                    "all_position_codes": all_position_codes,
                     "batting_order": batting_order,
                     "is_starter": is_starter,
                     "is_substitute": is_sub,
@@ -453,6 +476,8 @@ def parse_boxscore_data(
                     "position_name": pos_name,
                     "position_type": pos_type,
                     "position_abbreviation": pos_abbrev,
+                    "all_positions": all_positions,
+                    "all_position_codes": all_position_codes,
                     "pitching_order": pitch_order,
                     "is_starter": is_p_starter,
                     "summary": player_pitching.get("summary"),

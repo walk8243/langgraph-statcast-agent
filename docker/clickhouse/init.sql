@@ -275,6 +275,8 @@ CREATE TABLE IF NOT EXISTS statcast.boxscore_batting (
     `position_name` Nullable(String),
     `position_type` Nullable(String),
     `position_abbreviation` Nullable(String),
+    `all_positions` Array(String),
+    `all_position_codes` Array(String),
     `batting_order` Nullable(String),
     `is_starter` UInt8,
     `is_substitute` UInt8,
@@ -325,6 +327,8 @@ CREATE TABLE IF NOT EXISTS statcast.boxscore_pitching (
     `position_name` Nullable(String),
     `position_type` Nullable(String),
     `position_abbreviation` Nullable(String),
+    `all_positions` Array(String),
+    `all_position_codes` Array(String),
     `pitching_order` UInt8,
     `is_starter` UInt8,
     -- 投球成績

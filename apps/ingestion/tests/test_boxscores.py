@@ -93,6 +93,10 @@ def sample_boxscore_response():
                             "type": "Outfielder",
                             "abbreviation": "LF",
                         },
+                        "allPositions": [
+                            {"code": "7", "name": "Outfielder", "type": "Outfielder", "abbreviation": "LF"},
+                            {"code": "8", "name": "Outfielder", "type": "Outfielder", "abbreviation": "CF"},
+                        ],
                         "battingOrder": "700",
                         "gameStatus": {"isSubstitute": False},
                         "stats": {
@@ -126,6 +130,9 @@ def sample_boxscore_response():
                             "type": "Pitcher",
                             "abbreviation": "P",
                         },
+                        "allPositions": [
+                            {"code": "1", "name": "Pitcher", "type": "Pitcher", "abbreviation": "P"},
+                        ],
                         "stats": {
                             "pitching": {
                                 "note": "(W, 18-6)",
@@ -264,6 +271,8 @@ def test_parse_boxscore_data(sample_boxscore_response):
     assert marsh["player_name"] == "Brandon Marsh"
     assert marsh["jersey_number"] == "16"
     assert marsh["position_abbreviation"] == "LF"
+    assert marsh["all_positions"] == ["LF", "CF"]
+    assert marsh["all_position_codes"] == ["7", "8"]
     assert marsh["batting_order"] == "700"
     assert marsh["is_starter"] == 1
     assert marsh["is_substitute"] == 0
@@ -274,6 +283,9 @@ def test_parse_boxscore_data(sample_boxscore_response):
     lindor = next(b for b in batting_rows if b["player_id"] == 222222)
     assert lindor["team_id"] == 121
     assert lindor["home_runs"] == 1
+    # allPositions 未指定時のフォールバック検証
+    assert lindor["all_positions"] == ["SS"]
+    assert lindor["all_position_codes"] == ["6"]
 
     # 3. 個人投球成績の検証
     assert len(pitching_rows) == 1  # Sánchez
@@ -281,6 +293,8 @@ def test_parse_boxscore_data(sample_boxscore_response):
     assert sanchez["game_pk"] == 823570
     assert sanchez["player_id"] == 650911
     assert sanchez["player_name"] == "Cristopher Sánchez"
+    assert sanchez["all_positions"] == ["P"]
+    assert sanchez["all_position_codes"] == ["1"]
     assert sanchez["pitching_order"] == 1
     assert sanchez["is_starter"] == 1
     assert sanchez["innings_pitched"] == "6.1"
