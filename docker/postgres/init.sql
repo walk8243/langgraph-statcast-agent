@@ -154,3 +154,70 @@ CREATE TABLE IF NOT EXISTS player_reports (
 
 CREATE INDEX IF NOT EXISTS idx_player_reports_player_year ON player_reports (player_id, year);
 
+-- 打者 Statcast 詳細指標テーブル定義
+CREATE TABLE IF NOT EXISTS batter_statcast_stats (
+    player_id BIGINT NOT NULL,
+    year INT NOT NULL,
+    pitches_seen INT NOT NULL DEFAULT 0,
+    batted_balls INT NOT NULL DEFAULT 0,
+    barrels INT NOT NULL DEFAULT 0,
+    barrel_pct NUMERIC(5, 2) NOT NULL DEFAULT 0.00,
+    hard_hit_count INT NOT NULL DEFAULT 0,
+    hard_hit_pct NUMERIC(5, 2) NOT NULL DEFAULT 0.00,
+    avg_exit_velocity NUMERIC(5, 2) NOT NULL DEFAULT 0.00,
+    max_exit_velocity NUMERIC(5, 2) NOT NULL DEFAULT 0.00,
+    avg_launch_angle NUMERIC(5, 2) NOT NULL DEFAULT 0.00,
+    sweet_spot_pct NUMERIC(5, 2) NOT NULL DEFAULT 0.00,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (player_id, year)
+);
+
+CREATE INDEX IF NOT EXISTS idx_batter_statcast_stats_year ON batter_statcast_stats (year);
+
+-- 投手 Statcast 総合詳細指標テーブル定義
+CREATE TABLE IF NOT EXISTS pitcher_statcast_stats (
+    player_id BIGINT NOT NULL,
+    year INT NOT NULL,
+    total_pitches INT NOT NULL DEFAULT 0,
+    batted_balls INT NOT NULL DEFAULT 0,
+    barrels_allowed INT NOT NULL DEFAULT 0,
+    barrel_pct NUMERIC(5, 2) NOT NULL DEFAULT 0.00,
+    hard_hit_count INT NOT NULL DEFAULT 0,
+    hard_hit_pct NUMERIC(5, 2) NOT NULL DEFAULT 0.00,
+    avg_exit_velocity NUMERIC(5, 2) NOT NULL DEFAULT 0.00,
+    swings INT NOT NULL DEFAULT 0,
+    whiffs INT NOT NULL DEFAULT 0,
+    whiff_pct NUMERIC(5, 2) NOT NULL DEFAULT 0.00,
+    called_strikes INT NOT NULL DEFAULT 0,
+    csw_pct NUMERIC(5, 2) NOT NULL DEFAULT 0.00,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (player_id, year)
+);
+
+CREATE INDEX IF NOT EXISTS idx_pitcher_statcast_stats_year ON pitcher_statcast_stats (year);
+
+-- 投手球種別 Statcast 指標テーブル定義
+CREATE TABLE IF NOT EXISTS pitcher_pitch_type_stats (
+    player_id BIGINT NOT NULL,
+    year INT NOT NULL,
+    pitch_type VARCHAR(10) NOT NULL,
+    pitch_name VARCHAR(50) NOT NULL DEFAULT '',
+    pitches INT NOT NULL DEFAULT 0,
+    usage_pct NUMERIC(5, 2) NOT NULL DEFAULT 0.00,
+    avg_speed NUMERIC(5, 2) NOT NULL DEFAULT 0.00,
+    avg_spin_rate NUMERIC(6, 1) NOT NULL DEFAULT 0.0,
+    avg_pfx_x NUMERIC(5, 2) NOT NULL DEFAULT 0.00,
+    avg_pfx_z NUMERIC(5, 2) NOT NULL DEFAULT 0.00,
+    swings INT NOT NULL DEFAULT 0,
+    whiffs INT NOT NULL DEFAULT 0,
+    whiff_pct NUMERIC(5, 2) NOT NULL DEFAULT 0.00,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (player_id, year, pitch_type)
+);
+
+CREATE INDEX IF NOT EXISTS idx_pitcher_pitch_type_stats_player_year ON pitcher_pitch_type_stats (player_id, year);
+
+
