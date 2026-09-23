@@ -168,13 +168,17 @@ def upsert_teams_to_postgres(conn: psycopg.Connection, teams: list[dict[str, Any
 
     sql = """
     INSERT INTO teams (
-        team_id, name, abbreviation, updated_at
+        team_id, name, abbreviation, league_id, league_name, division_id, division_name, updated_at
     ) VALUES (
-        %(team_id)s, %(name)s, %(abbreviation)s, CURRENT_TIMESTAMP
+        %(team_id)s, %(name)s, %(abbreviation)s, %(league_id)s, %(league_name)s, %(division_id)s, %(division_name)s, CURRENT_TIMESTAMP
     )
     ON CONFLICT (team_id) DO UPDATE SET
         name = EXCLUDED.name,
         abbreviation = EXCLUDED.abbreviation,
+        league_id = EXCLUDED.league_id,
+        league_name = EXCLUDED.league_name,
+        division_id = EXCLUDED.division_id,
+        division_name = EXCLUDED.division_name,
         updated_at = CURRENT_TIMESTAMP;
     """
 

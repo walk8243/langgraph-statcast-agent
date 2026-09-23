@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import {
   Title1,
   Title2,
@@ -153,14 +154,16 @@ export default function HomePage() {
         </Body1>
 
         <div className={styles.heroButtons}>
-          <Button
-            appearance="primary"
-            icon={<ArrowRight16Regular />}
-            iconPosition="after"
-            size="large"
-          >
-            チーム一覧画面へ
-          </Button>
+          <Link href="/teams" style={{ textDecoration: "none" }}>
+            <Button
+              appearance="primary"
+              icon={<ArrowRight16Regular />}
+              iconPosition="after"
+              size="large"
+            >
+              チーム一覧画面へ
+            </Button>
+          </Link>
           <Button appearance="secondary" size="large">
             システム概要
           </Button>
@@ -174,7 +177,7 @@ export default function HomePage() {
             image={<PeopleTeam24Regular className={styles.cardHeaderIcon} />}
             header={<Text weight="semibold">MLB チーム・選手一覧</Text>}
             description={<Caption1>マスターデータ閲覧</Caption1>}
-            action={<Badge color="informative">Upcoming</Badge>}
+            action={<Badge color="success">Available</Badge>}
           />
           <div className={styles.cardContent}>
             <Body1>
@@ -182,9 +185,11 @@ export default function HomePage() {
             </Body1>
           </div>
           <CardFooter>
-            <Button appearance="subtle" icon={<ArrowRight16Regular />} iconPosition="after">
-              詳細を確認
-            </Button>
+            <Link href="/teams" style={{ textDecoration: "none" }}>
+              <Button appearance="subtle" icon={<ArrowRight16Regular />} iconPosition="after">
+                チーム一覧を見る
+              </Button>
+            </Link>
           </CardFooter>
         </Card>
 
