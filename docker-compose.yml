@@ -26,6 +26,8 @@ services:
       - GCP_PROJECT_ID=${GCP_PROJECT_ID:-local-statcast-project}
       - PUBSUB_TOPIC_STATCAST_RAW=${PUBSUB_TOPIC_STATCAST_RAW:-statcast-raw-ingested}
       - PUBSUB_SUBSCRIPTION_STATCAST_RAW=${PUBSUB_SUBSCRIPTION_STATCAST_RAW:-statcast-raw-ingested-sub}
+      - PUBSUB_TOPIC_LIVE_EVENTS=${PUBSUB_TOPIC_LIVE_EVENTS:-mlb-live-events}
+      - PUBSUB_SUBSCRIPTION_LIVE_EVENTS=${PUBSUB_SUBSCRIPTION_LIVE_EVENTS:-mlb-live-events-sub}
     volumes:
       - ./docker/pubsub/init-topics.sh:/init-topics.sh:ro
     entrypoint: ["/bin/bash", "/init-topics.sh"]
