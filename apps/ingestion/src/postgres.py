@@ -163,8 +163,6 @@ CREATE TABLE IF NOT EXISTS live_linescores (
     first_base_runner_id BIGINT REFERENCES players(player_id) ON DELETE SET NULL,
     second_base_runner_id BIGINT REFERENCES players(player_id) ON DELETE SET NULL,
     third_base_runner_id BIGINT REFERENCES players(player_id) ON DELETE SET NULL,
-    current_batter_id BIGINT REFERENCES players(player_id) ON DELETE SET NULL,
-    current_pitcher_id BIGINT REFERENCES players(player_id) ON DELETE SET NULL,
     home_score INT NOT NULL DEFAULT 0,
     away_score INT NOT NULL DEFAULT 0,
     home_hits INT NOT NULL DEFAULT 0,
