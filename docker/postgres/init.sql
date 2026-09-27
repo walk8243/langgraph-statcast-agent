@@ -228,9 +228,6 @@ CREATE INDEX IF NOT EXISTS idx_pitcher_pitch_type_stats_player_year ON pitcher_p
 CREATE TABLE IF NOT EXISTS live_linescores (
     game_pk BIGINT PRIMARY KEY REFERENCES games(game_pk) ON DELETE CASCADE,
     current_inning INT NOT NULL DEFAULT 1,
-    current_inning_ordinal VARCHAR(10) DEFAULT '1st',
-    inning_state VARCHAR(20) DEFAULT 'Top',
-    inning_half VARCHAR(10) DEFAULT 'top',
     is_top_inning BOOLEAN NOT NULL DEFAULT TRUE,
     scheduled_innings INT DEFAULT 9,
     balls INT NOT NULL DEFAULT 0,
