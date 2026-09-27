@@ -8,7 +8,7 @@ services:
     environment:
       - PUBSUB_PROJECT_ID=${GCP_PROJECT_ID:-local-statcast-project}
     healthcheck:
-      test: ["CMD-SHELL", "curl -s -f http://localhost:8085 || exit 1"]
+      test: [ "CMD-SHELL", "curl -s -f http://localhost:8085 || exit 1" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -30,7 +30,7 @@ services:
       - PUBSUB_SUBSCRIPTION_LIVE_EVENTS=${PUBSUB_SUBSCRIPTION_LIVE_EVENTS:-mlb-live-events-sub}
     volumes:
       - ./docker/pubsub/init-topics.sh:/init-topics.sh:ro
-    entrypoint: ["/bin/bash", "/init-topics.sh"]
+    entrypoint: [ "/bin/bash", "/init-topics.sh" ]
     restart: "no"
 
   clickhouse:
@@ -48,7 +48,7 @@ services:
       - clickhouse_data:/var/lib/clickhouse
       - ./docker/clickhouse/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8123/ping || exit 1"]
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8123/ping || exit 1" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -67,7 +67,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-statcast} -d ${POSTGRES_DB:-statcast}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-statcast} -d ${POSTGRES_DB:-statcast}" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -103,7 +103,7 @@ services:
       context: ./apps/aggregation
       dockerfile: Dockerfile
     container_name: statcast-aggregation
-    command: ["--worker"]
+    command: [ "--worker" ]
     depends_on:
       clickhouse:
         condition: service_healthy
@@ -128,6 +128,30 @@ services:
       - GCP_PROJECT_ID=${GCP_PROJECT_ID:-local-statcast-project}
       - PUBSUB_TOPIC_STATCAST_RAW=${PUBSUB_TOPIC_STATCAST_RAW:-statcast-raw-ingested}
       - PUBSUB_SUBSCRIPTION_STATCAST_RAW=${PUBSUB_SUBSCRIPTION_STATCAST_RAW:-statcast-raw-ingested-sub}
+
+  live-worker:
+    build:
+      context: ./apps/live-worker
+      dockerfile: Dockerfile
+    container_name: statcast-live-worker
+    depends_on:
+      postgres:
+        condition: service_healthy
+      pubsub:
+        condition: service_healthy
+      pubsub-init:
+        condition: service_completed_successfully
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB:-statcast}
+      - POSTGRES_USER=${POSTGRES_USER:-statcast}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-statcast_pass}
+      - PUBSUB_EMULATOR_HOST=pubsub:8085
+      - GCP_PROJECT_ID=${GCP_PROJECT_ID:-local-statcast-project}
+      - PUBSUB_TOPIC_LIVE_EVENTS=${PUBSUB_TOPIC_LIVE_EVENTS:-mlb-live-events}
+      - POLL_INTERVAL_SECONDS=${POLL_INTERVAL_SECONDS:-10.0}
+      - TARGET_GAME_PKS=${TARGET_GAME_PKS:-}
 
   trigger-api:
     build:
