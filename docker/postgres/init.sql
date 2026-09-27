@@ -220,4 +220,104 @@ CREATE TABLE IF NOT EXISTS pitcher_pitch_type_stats (
 
 CREATE INDEX IF NOT EXISTS idx_pitcher_pitch_type_stats_player_year ON pitcher_pitch_type_stats (player_id, year);
 
+-- ========================================================
+-- 試合速報用テーブル群 (Real-time Live Game Data)
+-- ========================================================
 
+-- 試合進行・スコアボード状況テーブル
+CREATE TABLE IF NOT EXISTS live_linescores (
+    game_pk BIGINT PRIMARY KEY REFERENCES games(game_pk) ON DELETE CASCADE,
+    current_inning INT NOT NULL DEFAULT 1,
+    is_top_inning BOOLEAN NOT NULL DEFAULT TRUE,
+    scheduled_innings INT DEFAULT 9,
+    balls INT NOT NULL DEFAULT 0,
+    strikes INT NOT NULL DEFAULT 0,
+    outs INT NOT NULL DEFAULT 0,
+    home_score INT NOT NULL DEFAULT 0,
+    away_score INT NOT NULL DEFAULT 0,
+    home_hits INT NOT NULL DEFAULT 0,
+    away_hits INT NOT NULL DEFAULT 0,
+    home_errors INT NOT NULL DEFAULT 0,
+    away_errors INT NOT NULL DEFAULT 0,
+    innings_json JSONB DEFAULT '[]'::jsonb,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 打席ごとの結果情報テーブル
+CREATE TABLE IF NOT EXISTS live_plays (
+    game_pk BIGINT NOT NULL REFERENCES games(game_pk) ON DELETE CASCADE,
+    at_bat_index INT NOT NULL,
+    inning INT NOT NULL,
+    half_inning VARCHAR(10) NOT NULL,
+    is_top_inning BOOLEAN NOT NULL,
+    batter_id BIGINT NOT NULL REFERENCES players(player_id) ON DELETE CASCADE,
+    pitcher_id BIGINT NOT NULL REFERENCES players(player_id) ON DELETE CASCADE,
+    first_base_runner_id BIGINT REFERENCES players(player_id) ON DELETE SET NULL,
+    second_base_runner_id BIGINT REFERENCES players(player_id) ON DELETE SET NULL,
+    third_base_runner_id BIGINT REFERENCES players(player_id) ON DELETE SET NULL,
+    event VARCHAR(100),
+    event_type VARCHAR(100),
+    description TEXT,
+    rbi INT NOT NULL DEFAULT 0,
+    away_score INT NOT NULL DEFAULT 0,
+    home_score INT NOT NULL DEFAULT 0,
+    is_scoring_play BOOLEAN NOT NULL DEFAULT FALSE,
+    is_out BOOLEAN NOT NULL DEFAULT FALSE,
+    is_complete BOOLEAN NOT NULL DEFAULT FALSE,
+    start_time TIMESTAMP WITH TIME ZONE,
+    end_time TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (game_pk, at_bat_index)
+);
+
+CREATE INDEX IF NOT EXISTS idx_live_plays_game_inning ON live_plays (game_pk, inning);
+CREATE INDEX IF NOT EXISTS idx_live_plays_batter ON live_plays (batter_id);
+CREATE INDEX IF NOT EXISTS idx_live_plays_pitcher ON live_plays (pitcher_id);
+
+-- 1球ごとの投球・Statcast情報テーブル
+CREATE TABLE IF NOT EXISTS live_pitches (
+    game_pk BIGINT NOT NULL,
+    at_bat_index INT NOT NULL,
+    pitch_number INT NOT NULL,
+    play_id VARCHAR(50),
+    pitch_type VARCHAR(10),
+    pitch_name VARCHAR(50),
+    start_speed NUMERIC(5, 2),
+    end_speed NUMERIC(5, 2),
+    zone INT,
+    p_x NUMERIC(6, 3),
+    p_z NUMERIC(6, 3),
+    spin_rate NUMERIC(6, 1),
+    spin_direction INT,
+    break_angle NUMERIC(5, 2),
+    break_vertical NUMERIC(5, 2),
+    break_vertical_induced NUMERIC(5, 2),
+    break_horizontal NUMERIC(5, 2),
+    call_code VARCHAR(10),
+    call_description VARCHAR(50),
+    description TEXT,
+    balls INT NOT NULL DEFAULT 0,
+    strikes INT NOT NULL DEFAULT 0,
+    outs INT NOT NULL DEFAULT 0,
+    is_strike BOOLEAN NOT NULL DEFAULT FALSE,
+    is_ball BOOLEAN NOT NULL DEFAULT FALSE,
+    is_in_play BOOLEAN NOT NULL DEFAULT FALSE,
+    is_pitch BOOLEAN NOT NULL DEFAULT TRUE,
+    launch_speed NUMERIC(5, 2),
+    launch_angle NUMERIC(5, 2),
+    total_distance INT,
+    trajectory VARCHAR(50),
+    hardness VARCHAR(20),
+    hit_location VARCHAR(10),
+    coord_x NUMERIC(6, 2),
+    coord_y NUMERIC(6, 2),
+    start_time TIMESTAMP WITH TIME ZONE,
+    end_time TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (game_pk, at_bat_index, pitch_number),
+    FOREIGN KEY (game_pk, at_bat_index) REFERENCES live_plays(game_pk, at_bat_index) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_live_pitches_game_play ON live_pitches (game_pk, at_bat_index);
