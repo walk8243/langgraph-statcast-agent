@@ -224,6 +224,7 @@ services:
       - POSTGRES_DB=${POSTGRES_DB:-statcast}
       - POSTGRES_USER=${POSTGRES_USER:-statcast}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-statcast_pass}
+      - NEXT_PUBLIC_LIVE_API_URL=${NEXT_PUBLIC_LIVE_API_URL:-http://localhost:8001}
 
 volumes:
   clickhouse_data:
