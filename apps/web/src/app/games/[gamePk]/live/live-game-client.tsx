@@ -249,7 +249,6 @@ export default function LiveGameClient({ initialData }: LiveGameClientProps) {
     gameStatus,
     connectionStatus,
     lastEventTime,
-    reconnect,
     currentPlay,
     latestPitch,
   } = useLiveEvents({
@@ -367,15 +366,8 @@ export default function LiveGameClient({ initialData }: LiveGameClientProps) {
             試合一覧に戻る
           </Button>
         </Link>
-        <div style={{ display: "flex", alignItems: "center", columnGap: "8px" }}>
+        <div>
           {renderConnectionBadge()}
-          <Button
-            appearance="subtle"
-            size="small"
-            icon={<ArrowSync24Regular />}
-            onClick={() => reconnect()}
-            title="手動でSSE再接続"
-          />
         </div>
       </nav>
 
