@@ -25,6 +25,7 @@ import {
   ArrowRight16Regular,
   CheckmarkCircle20Filled,
   ArrowSync24Regular,
+  Sport24Regular,
 } from "@fluentui/react-icons";
 
 const useStyles = makeStyles({
@@ -154,24 +155,52 @@ export default function HomePage() {
         </Body1>
 
         <div className={styles.heroButtons}>
-          <Link href="/teams" style={{ textDecoration: "none" }}>
+          <Link href="/games" style={{ textDecoration: "none" }}>
             <Button
               appearance="primary"
+              icon={<Sport24Regular />}
+              iconPosition="after"
+              size="large"
+            >
+              試合速報 (Live)
+            </Button>
+          </Link>
+          <Link href="/teams" style={{ textDecoration: "none" }}>
+            <Button
+              appearance="secondary"
               icon={<ArrowRight16Regular />}
               iconPosition="after"
               size="large"
             >
-              チーム一覧画面へ
+              チーム一覧
             </Button>
           </Link>
-          <Button appearance="secondary" size="large">
-            システム概要
-          </Button>
         </div>
       </section>
 
       {/* Feature Cards Grid */}
       <section className={styles.grid}>
+        <Card className={styles.card}>
+          <CardHeader
+            image={<Sport24Regular className={styles.cardHeaderIcon} />}
+            header={<Text weight="semibold">MLB リアルタイム試合速報</Text>}
+            description={<Caption1>SSE配信 &amp; 一球速報</Caption1>}
+            action={<Badge color="danger">Live SSE</Badge>}
+          />
+          <div className={styles.cardContent}>
+            <Body1>
+              進行中の試合を自動検知し、Server-Sent Events によるリアルタイム更新でスコアボード、BSOカウント、一球速報（Statcast指標・ストライクゾーン）を配信します。
+            </Body1>
+          </div>
+          <CardFooter>
+            <Link href="/games" style={{ textDecoration: "none" }}>
+              <Button appearance="subtle" icon={<ArrowRight16Regular />} iconPosition="after">
+                試合速報を見る
+              </Button>
+            </Link>
+          </CardFooter>
+        </Card>
+
         <Card className={styles.card}>
           <CardHeader
             image={<PeopleTeam24Regular className={styles.cardHeaderIcon} />}
@@ -202,7 +231,7 @@ export default function HomePage() {
           />
           <div className={styles.cardContent}>
             <Body1>
-              Next.js サーバー側から直接 PostgreSQL（teams, players, player_reports テーブル）へ高速アクセス。別途バックエンドAPIサーバーなしでシームレスに連携。
+              Next.js サーバー側から直接 PostgreSQL（teams, players, live_linescores 等）へ高速アクセス。初期表示を高速SSRでレンダリングします。
             </Body1>
           </div>
           <CardFooter>
