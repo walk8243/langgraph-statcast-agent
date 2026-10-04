@@ -24,7 +24,6 @@ import {
   ArrowRight16Regular,
   ArrowLeft16Regular,
   CheckmarkCircle20Filled,
-  Calendar20Regular,
 } from "@fluentui/react-icons";
 import { GameHeaderInfo } from "@/types/game";
 
@@ -65,11 +64,6 @@ const useStyles = makeStyles({
     alignItems: "center",
     gap: "12px",
     flexWrap: "wrap",
-  },
-  dateDisplay: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
   },
   dateInput: {
     minWidth: "150px",
@@ -169,13 +163,6 @@ export default function GamesClient({ games, currentDate, latestDate }: GamesCli
         </Link>
 
         <div className={styles.dateNavCenter}>
-          <div className={styles.dateDisplay}>
-            <Calendar20Regular style={{ color: tokens.colorBrandForeground1 }} />
-            <Text weight="semibold" size={400}>
-              {formatDateJa(currentDate)} (日本時間)
-            </Text>
-          </div>
-
           <Input
             type="date"
             value={currentDate}
