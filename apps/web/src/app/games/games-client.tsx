@@ -72,6 +72,10 @@ const useStyles = makeStyles({
     backgroundColor: tokens.colorNeutralBackground2,
     ...shorthands.borderRadius(tokens.borderRadiusSmall),
   },
+  statusBadge: {
+    whiteSpace: "nowrap",
+    flexShrink: 0,
+  },
 });
 
 interface GamesClientProps {
@@ -138,15 +142,15 @@ export default function GamesClient({ games }: GamesClientProps) {
                     }
                     action={
                       isLive ? (
-                        <Badge appearance="filled" color="danger">
+                        <Badge appearance="filled" color="danger" className={styles.statusBadge}>
                           LIVE 進行中
                         </Badge>
                       ) : isFinal ? (
-                        <Badge appearance="tint" color="success" icon={<CheckmarkCircle20Filled />}>
+                        <Badge appearance="tint" color="success" icon={<CheckmarkCircle20Filled />} className={styles.statusBadge}>
                           試合終了
                         </Badge>
                       ) : (
-                        <Badge appearance="outline" color="informative">
+                        <Badge appearance="outline" color="informative" className={styles.statusBadge}>
                           {g.status}
                         </Badge>
                       )
