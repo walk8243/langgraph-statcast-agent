@@ -4,6 +4,7 @@ import {
   extractGameInfo,
   extractLinescoreRecord,
   extractPlayersFromFeed,
+  extractPlayRecord,
   LiveGameTracker,
 } from "../src/extractor.js";
 
@@ -156,8 +157,16 @@ describe("extractor", () => {
     const diff1 = extractDiff(mockFeedData, tracker);
     expect(diff1.linescore).not.toBeNull();
     expect(diff1.plays.length).toBe(1);
+    expect(diff1.plays[0].batter_id).toBe(660271);
+    expect(diff1.plays[0].batter_name).toBe("Shohei Ohtani");
+    expect(diff1.plays[0].pitcher_id).toBe(543037);
+    expect(diff1.plays[0].pitcher_name).toBe("Gerrit Cole");
     expect(diff1.pitches.length).toBe(1);
     expect(diff1.events.length).toBe(3);
+    expect(diff1.events.find((e) => e.event_type === "play")?.data).toMatchObject({
+      batter_name: "Shohei Ohtani",
+      pitcher_name: "Gerrit Cole",
+    });
 
     // 2回目 (差分なし)
     const diff2 = extractDiff(mockFeedData, tracker);
@@ -206,5 +215,37 @@ describe("extractor", () => {
     expect(diff3.pitches[0].pitch_number).toBe(2);
     expect(diff3.pitches[0].pitch_type).toBe("SL");
     expect(diff3.events.length).toBe(2); // linescore, pitch
+  });
+
+  it("extractPlayRecord extracts names from matchup and falls back to gameData.players", () => {
+    // 1. matchup からの直接抽出
+    const play1 = {
+      about: { atBatIndex: 0, inning: 1, halfInning: "top", isTopInning: true },
+      matchup: {
+        batter: { id: 660271, fullName: "Shohei Ohtani" },
+        pitcher: { id: 543037, fullName: "Gerrit Cole" },
+      },
+    };
+    const record1 = extractPlayRecord(824703, play1);
+    expect(record1.batter_name).toBe("Shohei Ohtani");
+    expect(record1.pitcher_name).toBe("Gerrit Cole");
+
+    // 2. matchup に名前がなく gameData.players からフォールバック解決する場合
+    const play2 = {
+      about: { atBatIndex: 1, inning: 1, halfInning: "top", isTopInning: true },
+      matchup: {
+        batter: { id: 660271 },
+        pitcher: { id: 543037 },
+      },
+    };
+    const gameData = {
+      players: {
+        ID660271: { id: 660271, fullName: "Shohei Ohtani" },
+        ID543037: { id: 543037, fullName: "Gerrit Cole" },
+      },
+    };
+    const record2 = extractPlayRecord(824703, play2, gameData);
+    expect(record2.batter_name).toBe("Shohei Ohtani");
+    expect(record2.pitcher_name).toBe("Gerrit Cole");
   });
 });

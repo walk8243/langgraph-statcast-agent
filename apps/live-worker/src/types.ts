@@ -46,7 +46,9 @@ export interface LivePlayRecord {
   half_inning: string;
   is_top_inning: boolean;
   batter_id: number;
+  batter_name?: string | null;
   pitcher_id: number;
+  pitcher_name?: string | null;
   first_base_runner_id: number | null;
   second_base_runner_id: number | null;
   third_base_runner_id: number | null;
