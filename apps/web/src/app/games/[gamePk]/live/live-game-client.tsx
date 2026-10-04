@@ -332,8 +332,21 @@ export default function LiveGameClient({ initialData }: LiveGameClientProps) {
     ? activePitches[activePitches.length - 1]
     : latestPitch;
 
+  // Game state determination
+  const isGameLive = (() => {
+    const s = (gameStatus || game.status || "").toLowerCase();
+    return s.includes("progress") || s.includes("live");
+  })();
+
+  const isGameFinal = (() => {
+    const s = (gameStatus || game.status || "").toLowerCase();
+    return s.includes("final") || s.includes("game over");
+  })();
+
   // Inning string (e.g. "9回表", "試合終了", etc.)
-  const currentInningLabel = linescore
+  const currentInningLabel = isGameFinal
+    ? "試合終了"
+    : linescore
     ? `${linescore.current_inning}回${linescore.is_top_inning ? "表" : "裏"}`
     : "試合前";
 
@@ -481,80 +494,82 @@ export default function LiveGameClient({ initialData }: LiveGameClientProps) {
           </div>
         </div>
 
-        {/* Count Bar & Runners */}
-        <div className={styles.bsoRow}>
-          {/* Balls */}
-          <div className={styles.bsoItem}>
-            <Text weight="bold">B</Text>
-            <div className={styles.countDots}>
-              {[1, 2, 3].map((b) => (
-                <div
-                  key={`b-${b}`}
-                  className={`${styles.dot} ${
-                    (linescore?.balls || 0) >= b ? styles.ballDotActive : ""
-                  }`}
-                />
-              ))}
+        {/* Count Bar & Runners (Live only) */}
+        {isGameLive && (
+          <div className={styles.bsoRow}>
+            {/* Balls */}
+            <div className={styles.bsoItem}>
+              <Text weight="bold">B</Text>
+              <div className={styles.countDots}>
+                {[1, 2, 3].map((b) => (
+                  <div
+                    key={`b-${b}`}
+                    className={`${styles.dot} ${
+                      (linescore?.balls || 0) >= b ? styles.ballDotActive : ""
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
 
-          {/* Strikes */}
-          <div className={styles.bsoItem}>
-            <Text weight="bold">S</Text>
-            <div className={styles.countDots}>
-              {[1, 2].map((s) => (
-                <div
-                  key={`s-${s}`}
-                  className={`${styles.dot} ${
-                    (linescore?.strikes || 0) >= s ? styles.strikeDotActive : ""
-                  }`}
-                />
-              ))}
+            {/* Strikes */}
+            <div className={styles.bsoItem}>
+              <Text weight="bold">S</Text>
+              <div className={styles.countDots}>
+                {[1, 2].map((s) => (
+                  <div
+                    key={`s-${s}`}
+                    className={`${styles.dot} ${
+                      (linescore?.strikes || 0) >= s ? styles.strikeDotActive : ""
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
 
-          {/* Outs */}
-          <div className={styles.bsoItem}>
-            <Text weight="bold">O</Text>
-            <div className={styles.countDots}>
-              {[1, 2].map((o) => (
-                <div
-                  key={`o-${o}`}
-                  className={`${styles.dot} ${
-                    (linescore?.outs || 0) >= o ? styles.outDotActive : ""
-                  }`}
-                />
-              ))}
+            {/* Outs */}
+            <div className={styles.bsoItem}>
+              <Text weight="bold">O</Text>
+              <div className={styles.countDots}>
+                {[1, 2].map((o) => (
+                  <div
+                    key={`o-${o}`}
+                    className={`${styles.dot} ${
+                      (linescore?.outs || 0) >= o ? styles.outDotActive : ""
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
 
-          {/* Diamond Base Runner Graphic */}
-          <div className={styles.bsoItem}>
-            <div className={styles.diamondContainer} title="出塁状況">
-              {/* 2nd Base */}
-              <div
-                className={`${styles.baseSquare} ${
-                  hasRunner2B ? styles.baseActive : ""
-                }`}
-                style={{ top: "4px", left: "23px" }}
-              />
-              {/* 3rd Base */}
-              <div
-                className={`${styles.baseSquare} ${
-                  hasRunner3B ? styles.baseActive : ""
-                }`}
-                style={{ top: "23px", left: "4px" }}
-              />
-              {/* 1st Base */}
-              <div
-                className={`${styles.baseSquare} ${
-                  hasRunner1B ? styles.baseActive : ""
-                }`}
-                style={{ top: "23px", left: "42px" }}
-              />
+            {/* Diamond Base Runner Graphic */}
+            <div className={styles.bsoItem}>
+              <div className={styles.diamondContainer} title="出塁状況">
+                {/* 2nd Base */}
+                <div
+                  className={`${styles.baseSquare} ${
+                    hasRunner2B ? styles.baseActive : ""
+                  }`}
+                  style={{ top: "4px", left: "23px" }}
+                />
+                {/* 3rd Base */}
+                <div
+                  className={`${styles.baseSquare} ${
+                    hasRunner3B ? styles.baseActive : ""
+                  }`}
+                  style={{ top: "23px", left: "4px" }}
+                />
+                {/* 1st Base */}
+                <div
+                  className={`${styles.baseSquare} ${
+                    hasRunner1B ? styles.baseActive : ""
+                  }`}
+                  style={{ top: "23px", left: "42px" }}
+                />
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         <div className={styles.gameMetaRow}>
           <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>
