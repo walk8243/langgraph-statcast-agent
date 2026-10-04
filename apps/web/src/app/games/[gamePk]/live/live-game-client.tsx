@@ -626,7 +626,9 @@ export default function LiveGameClient({ initialData }: LiveGameClientProps) {
                       <Body1Strong>{game.away_team_abbr}</Body1Strong>
                     </TableCell>
                     {inningsHeaderArray.map((inningNum) => {
-                      const innData = linescore?.innings?.find((i) => i.inning === inningNum);
+                      const innData = linescore?.innings?.find(
+                        (i) => (i.inning ?? i.num) === inningNum
+                      );
                       const isCurrent =
                         linescore &&
                         linescore.current_inning === inningNum &&
@@ -661,7 +663,9 @@ export default function LiveGameClient({ initialData }: LiveGameClientProps) {
                       <Body1Strong>{game.home_team_abbr}</Body1Strong>
                     </TableCell>
                     {inningsHeaderArray.map((inningNum) => {
-                      const innData = linescore?.innings?.find((i) => i.inning === inningNum);
+                      const innData = linescore?.innings?.find(
+                        (i) => (i.inning ?? i.num) === inningNum
+                      );
                       const isCurrent =
                         linescore &&
                         linescore.current_inning === inningNum &&

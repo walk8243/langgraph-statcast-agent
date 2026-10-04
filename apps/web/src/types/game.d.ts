@@ -28,9 +28,12 @@ export interface InningScores {
   runs: number | null;
   hits?: number | null;
   errors?: number | null;
+  leftOnBase?: number | null;
 }
 
 export interface InningDetail {
+  num?: number;
+  ordinalNum?: string;
   inning: number;
   home: InningScores;
   away: InningScores;

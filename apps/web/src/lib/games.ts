@@ -81,10 +81,33 @@ export async function getLiveLinescore(gamePk: number): Promise<LiveLinescore | 
   const row = result.rows[0];
   let parsedInnings: InningDetail[] = [];
   try {
+    let rawInnings: any[] = [];
     if (typeof row.innings_json === "string") {
-      parsedInnings = JSON.parse(row.innings_json);
+      rawInnings = JSON.parse(row.innings_json);
     } else if (Array.isArray(row.innings_json)) {
-      parsedInnings = row.innings_json;
+      rawInnings = row.innings_json;
+    }
+    if (Array.isArray(rawInnings)) {
+      parsedInnings = rawInnings.map((item: any) => {
+        const innNum = Number(item.inning ?? item.num ?? 0);
+        return {
+          ...item,
+          num: item.num !== undefined ? Number(item.num) : innNum,
+          inning: innNum,
+          home: {
+            runs: item.home?.runs !== undefined && item.home?.runs !== null ? Number(item.home.runs) : null,
+            hits: item.home?.hits !== undefined && item.home?.hits !== null ? Number(item.home.hits) : null,
+            errors: item.home?.errors !== undefined && item.home?.errors !== null ? Number(item.home.errors) : null,
+            leftOnBase: item.home?.leftOnBase !== undefined && item.home?.leftOnBase !== null ? Number(item.home.leftOnBase) : null,
+          },
+          away: {
+            runs: item.away?.runs !== undefined && item.away?.runs !== null ? Number(item.away.runs) : null,
+            hits: item.away?.hits !== undefined && item.away?.hits !== null ? Number(item.away.hits) : null,
+            errors: item.away?.errors !== undefined && item.away?.errors !== null ? Number(item.away.errors) : null,
+            leftOnBase: item.away?.leftOnBase !== undefined && item.away?.leftOnBase !== null ? Number(item.away.leftOnBase) : null,
+          },
+        };
+      });
     }
   } catch {
     parsedInnings = [];
