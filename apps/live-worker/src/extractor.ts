@@ -162,7 +162,11 @@ export function extractLinescoreRecord(
   return { record, hashKey };
 }
 
-export function extractPlayRecord(gamePk: number, play: Record<string, any>): LivePlayRecord {
+export function extractPlayRecord(
+  gamePk: number,
+  play: Record<string, any>,
+  gameData?: Record<string, any>
+): LivePlayRecord {
   const about = play.about || {};
   const result = play.result || {};
   const matchup = play.matchup || {};
@@ -175,6 +179,15 @@ export function extractPlayRecord(gamePk: number, play: Record<string, any>): Li
   const batterId = safeInt(matchup.batter?.id) ?? 0;
   const pitcherId = safeInt(matchup.pitcher?.id) ?? 0;
 
+  const batterName =
+    matchup.batter?.fullName ||
+    (batterId ? gameData?.players?.[`ID${batterId}`]?.fullName : null) ||
+    null;
+  const pitcherName =
+    matchup.pitcher?.fullName ||
+    (pitcherId ? gameData?.players?.[`ID${pitcherId}`]?.fullName : null) ||
+    null;
+
   const firstRunner = matchup.postOnFirst || {};
   const secondRunner = matchup.postOnSecond || {};
   const thirdRunner = matchup.postOnThird || {};
@@ -186,7 +199,9 @@ export function extractPlayRecord(gamePk: number, play: Record<string, any>): Li
     half_inning: halfInning,
     is_top_inning: isTopInning,
     batter_id: batterId,
+    batter_name: batterName,
     pitcher_id: pitcherId,
+    pitcher_name: pitcherName,
     first_base_runner_id: safeInt(firstRunner.id),
     second_base_runner_id: safeInt(secondRunner.id),
     third_base_runner_id: safeInt(thirdRunner.id),
@@ -336,7 +351,7 @@ export function extractDiff(
     const atBatIndex = safeInt(play.about?.atBatIndex);
     if (atBatIndex === null) continue;
 
-    const playRecord = extractPlayRecord(gamePk, play);
+    const playRecord = extractPlayRecord(gamePk, play, feedData.gameData);
     const playSignature = `${playRecord.is_complete}:${playRecord.event}:${playRecord.description}`;
 
     const prevSignature = tracker.last_plays_state.get(atBatIndex);

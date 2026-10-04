@@ -168,16 +168,60 @@ export function useLiveEvents({
         const atBatIndex = Number(rawPlay.at_bat_index);
         setPlays((prevPlays) => {
           const index = prevPlays.findIndex((p) => p.at_bat_index === atBatIndex);
+          const batterId = Number(rawPlay.batter_id);
+          const pitcherId = Number(rawPlay.pitcher_id);
+
+          const resolvePlayerName = (
+            rawName: unknown,
+            playerId: number,
+            isBatter: boolean
+          ): string => {
+            if (rawName && typeof rawName === "string" && rawName.trim() !== "") {
+              return rawName;
+            }
+            if (index >= 0) {
+              const currentName = isBatter ? prevPlays[index].batter_name : prevPlays[index].pitcher_name;
+              if (
+                currentName &&
+                currentName !== "現在打席中" &&
+                currentName !== "登板中" &&
+                !currentName.startsWith("打者 ") &&
+                !currentName.startsWith("投手 ")
+              ) {
+                return currentName;
+              }
+            }
+            // 既存の他打席から同一選手IDの名前を逆引き
+            if (playerId > 0) {
+              const matchedPlay = prevPlays.find((p) =>
+                isBatter ? p.batter_id === playerId : p.pitcher_id === playerId
+              );
+              if (matchedPlay) {
+                const matchedName = isBatter ? matchedPlay.batter_name : matchedPlay.pitcher_name;
+                if (
+                  matchedName &&
+                  matchedName !== "現在打席中" &&
+                  matchedName !== "登板中" &&
+                  !matchedName.startsWith("打者 ") &&
+                  !matchedName.startsWith("投手 ")
+                ) {
+                  return matchedName;
+                }
+              }
+            }
+            return isBatter ? `打者 ${playerId}` : `投手 ${playerId}`;
+          };
+
           const updatedPlay: LivePlay = {
             game_pk: Number(rawPlay.game_pk || gamePk),
             at_bat_index: atBatIndex,
             inning: Number(rawPlay.inning || 1),
             half_inning: String(rawPlay.half_inning || "top"),
             is_top_inning: Boolean(rawPlay.is_top_inning),
-            batter_id: Number(rawPlay.batter_id),
-            batter_name: rawPlay.batter_name ? String(rawPlay.batter_name) : (index >= 0 ? prevPlays[index].batter_name : `打者 ${rawPlay.batter_id}`),
-            pitcher_id: Number(rawPlay.pitcher_id),
-            pitcher_name: rawPlay.pitcher_name ? String(rawPlay.pitcher_name) : (index >= 0 ? prevPlays[index].pitcher_name : `投手 ${rawPlay.pitcher_id}`),
+            batter_id: batterId,
+            batter_name: resolvePlayerName(rawPlay.batter_name, batterId, true),
+            pitcher_id: pitcherId,
+            pitcher_name: resolvePlayerName(rawPlay.pitcher_name, pitcherId, false),
             first_base_runner_id: rawPlay.first_base_runner_id ? Number(rawPlay.first_base_runner_id) : null,
             second_base_runner_id: rawPlay.second_base_runner_id ? Number(rawPlay.second_base_runner_id) : null,
             third_base_runner_id: rawPlay.third_base_runner_id ? Number(rawPlay.third_base_runner_id) : null,
