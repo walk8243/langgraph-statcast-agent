@@ -14,7 +14,6 @@ import {
   CardFooter,
   Badge,
   Text,
-  Input,
   makeStyles,
   shorthands,
   tokens,
@@ -24,6 +23,7 @@ import {
   ArrowRight16Regular,
   ArrowLeft16Regular,
   CheckmarkCircle20Filled,
+  Calendar20Regular,
 } from "@fluentui/react-icons";
 import { GameHeaderInfo } from "@/types/game";
 
@@ -65,9 +65,6 @@ const useStyles = makeStyles({
     gap: "12px",
     flexWrap: "wrap",
   },
-  dateInput: {
-    minWidth: "150px",
-  },
   grid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))",
@@ -107,6 +104,17 @@ function getAdjacentDate(dateStr: string, offsetDays: number): string {
   return d.toISOString().slice(0, 10);
 }
 
+function formatDateShortJa(dateStr: string): string {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const d = new Date(Date.UTC(year, month - 1, day));
+  const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
+  const weekday = weekdays[d.getUTCDay()];
+  const yyyy = String(year);
+  const mm = String(month).padStart(2, "0");
+  const dd = String(day).padStart(2, "0");
+  return `${yyyy}/${mm}/${dd} (${weekday})`;
+}
+
 function formatDateJa(dateStr: string): string {
   const [year, month, day] = dateStr.split("-").map(Number);
   const d = new Date(Date.UTC(year, month - 1, day));
@@ -124,6 +132,7 @@ interface GamesClientProps {
 export default function GamesClient({ games, currentDate, latestDate }: GamesClientProps) {
   const styles = useStyles();
   const router = useRouter();
+  const dateInputRef = React.useRef<HTMLInputElement>(null);
 
   const prevDate = getAdjacentDate(currentDate, -1);
   const nextDate = getAdjacentDate(currentDate, 1);
@@ -132,6 +141,16 @@ export default function GamesClient({ games, currentDate, latestDate }: GamesCli
     const val = e.target.value;
     if (val && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
       router.push(`/games?date=${val}`);
+    }
+  };
+
+  const handleOpenPicker = () => {
+    if (dateInputRef.current) {
+      if (typeof dateInputRef.current.showPicker === "function") {
+        dateInputRef.current.showPicker();
+      } else {
+        dateInputRef.current.focus();
+      }
     }
   };
 
@@ -163,13 +182,33 @@ export default function GamesClient({ games, currentDate, latestDate }: GamesCli
         </Link>
 
         <div className={styles.dateNavCenter}>
-          <Input
-            type="date"
-            value={currentDate}
-            onChange={handleDateChange}
-            className={styles.dateInput}
-            aria-label="試合日付の選択 (日本時間)"
-          />
+          <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+            <Button
+              appearance="outline"
+              icon={<Calendar20Regular />}
+              onClick={handleOpenPicker}
+              aria-label={`試合日付の選択: ${formatDateShortJa(currentDate)}`}
+            >
+              {formatDateShortJa(currentDate)}
+            </Button>
+            <input
+              ref={dateInputRef}
+              type="date"
+              value={currentDate}
+              onChange={handleDateChange}
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                opacity: 0,
+                pointerEvents: "none",
+              }}
+              tabIndex={-1}
+              aria-hidden="true"
+            />
+          </div>
 
           {latestDate && latestDate !== currentDate && (
             <Link href={`/games?date=${latestDate}`} style={{ textDecoration: "none" }}>
@@ -179,6 +218,7 @@ export default function GamesClient({ games, currentDate, latestDate }: GamesCli
             </Link>
           )}
         </div>
+
 
         <Link href={`/games?date=${nextDate}`} style={{ textDecoration: "none" }}>
           <Button appearance="outline" icon={<ArrowRight16Regular />} iconPosition="after">
