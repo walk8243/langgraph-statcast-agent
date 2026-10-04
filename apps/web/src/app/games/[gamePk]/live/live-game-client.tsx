@@ -197,14 +197,61 @@ const useStyles = makeStyles({
     alignItems: "center",
     rowGap: "16px",
   },
+  pitchListContainer: {
+    display: "flex",
+    flexDirection: "column",
+    rowGap: "10px",
+    width: "100%",
+    maxHeight: "560px",
+    overflowY: "auto",
+    ...shorthands.padding("4px", "2px"),
+  },
+  pitchCard: {
+    ...shorthands.padding("10px", "12px"),
+    ...shorthands.borderRadius(tokens.borderRadiusMedium),
+    ...shorthands.border("1px", "solid", tokens.colorNeutralStroke2),
+    backgroundColor: tokens.colorNeutralBackground1,
+    display: "flex",
+    flexDirection: "column",
+    rowGap: "8px",
+    cursor: "pointer",
+    transitionProperty: "all",
+    transitionDuration: "0.15s",
+    transitionTimingFunction: "ease",
+    ":hover": {
+      backgroundColor: tokens.colorNeutralBackground1Hover,
+      ...shorthands.borderColor(tokens.colorNeutralStroke1Hover),
+    },
+  },
+  pitchCardSelected: {
+    ...shorthands.border("2px", "solid", tokens.colorBrandStroke1),
+    backgroundColor: tokens.colorBrandBackground2,
+  },
+  pitchCardHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  pitchNumberBadge: {
+    width: "22px",
+    height: "22px",
+    borderRadius: "50%",
+    color: "#ffffff",
+    fontSize: "12px",
+    fontWeight: "bold",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
   statcastCardGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))",
-    gap: "10px",
+    gridTemplateColumns: "repeat(auto-fit, minmax(95px, 1fr))",
+    gap: "8px",
     width: "100%",
   },
   metricCard: {
-    ...shorthands.padding("10px"),
+    ...shorthands.padding("6px", "8px"),
     ...shorthands.borderRadius(tokens.borderRadiusSmall),
     backgroundColor: tokens.colorNeutralBackground2,
     display: "flex",
@@ -264,8 +311,26 @@ export default function LiveGameClient({ initialData }: LiveGameClientProps) {
 
   const [selectedPitch, setSelectedPitch] = useState<LivePitch | null>(null);
 
-  // Active pitch for Statcast metrics view
-  const activePitch = selectedPitch || latestPitch;
+  // Target play and pitches for strike zone and Statcast pitch list
+  const activePlay =
+    expandedPlayIndex !== null
+      ? plays.find((p) => p.at_bat_index === expandedPlayIndex) ?? currentPlay
+      : currentPlay;
+  const activePitches = activePlay?.pitches || [];
+
+  const isSelectedPitchInActivePlay =
+    selectedPitch !== null &&
+    activePitches.some(
+      (p) =>
+        p.pitch_number === selectedPitch.pitch_number &&
+        p.at_bat_index === selectedPitch.at_bat_index
+    );
+
+  const activePitch = isSelectedPitchInActivePlay
+    ? selectedPitch
+    : activePitches.length > 0
+    ? activePitches[activePitches.length - 1]
+    : latestPitch;
 
   // Inning string (e.g. "9回表", "試合終了", etc.)
   const currentInningLabel = linescore
@@ -325,6 +390,13 @@ export default function LiveGameClient({ initialData }: LiveGameClientProps) {
     if (pitch.is_ball) return "#107c41"; // Green ball
     if (pitch.is_in_play) return "#0078d4"; // Blue in play
     return "#888888";
+  };
+
+  const getCallBadgeColor = (pitch: LivePitch): "danger" | "success" | "brand" | "informative" => {
+    if (pitch.is_strike) return "danger";
+    if (pitch.is_ball) return "success";
+    if (pitch.is_in_play) return "brand";
+    return "informative";
   };
 
   // Connection badge color & icon
@@ -668,11 +740,16 @@ export default function LiveGameClient({ initialData }: LiveGameClientProps) {
                           ) : (
                             <div style={{ display: "flex", flexDirection: "column", rowGap: "4px" }}>
                               {play.pitches.map((p) => {
-                                const isSelected = selectedPitch?.pitch_number === p.pitch_number && selectedPitch?.at_bat_index === p.at_bat_index;
+                                const isSelected =
+                                  activePitch?.pitch_number === p.pitch_number &&
+                                  activePitch?.at_bat_index === p.at_bat_index;
                                 return (
                                   <div
                                     key={`play-${play.at_bat_index}-p-${p.pitch_number}`}
-                                    onClick={() => setSelectedPitch(p)}
+                                    onClick={() => {
+                                      setExpandedPlayIndex(play.at_bat_index);
+                                      setSelectedPitch(p);
+                                    }}
                                     style={{
                                       display: "flex",
                                       justifyContent: "space-between",
@@ -737,8 +814,8 @@ export default function LiveGameClient({ initialData }: LiveGameClientProps) {
               image={<Target24Regular />}
               header={<Text weight="semibold">一球速報 & ストライクゾーン (Statcast)</Text>}
               description={
-                currentPlay
-                  ? `${currentPlay.batter_name} (打者) vs ${currentPlay.pitcher_name} (投手)`
+                activePlay
+                  ? `${activePlay.batter_name} (打者) vs ${activePlay.pitcher_name} (投手)`
                   : "待機中"
               }
             />
@@ -782,12 +859,11 @@ export default function LiveGameClient({ initialData }: LiveGameClientProps) {
                 <line x1="70" y1="155" x2="170" y2="155" stroke="#9ca3af" strokeWidth="1" strokeDasharray="2,2" />
 
                 {/* Plot Pitches for current or expanded play */}
-                {(expandedPlayIndex !== null
-                  ? plays.find((p) => p.at_bat_index === expandedPlayIndex)?.pitches || []
-                  : currentPlay?.pitches || []
-                ).map((pitch) => {
+                {activePitches.map((pitch) => {
                   const { cx, cy } = convertPitchCoords(pitch);
-                  const isSelected = activePitch?.pitch_number === pitch.pitch_number;
+                  const isSelected =
+                    activePitch?.pitch_number === pitch.pitch_number &&
+                    activePitch?.at_bat_index === pitch.at_bat_index;
                   const color = getPitchColor(pitch);
 
                   return (
@@ -846,84 +922,127 @@ export default function LiveGameClient({ initialData }: LiveGameClientProps) {
               </div>
             </div>
 
-            {/* Statcast Metrics Card */}
-            {activePitch ? (
-              <div style={{ display: "flex", flexDirection: "column", rowGap: "12px", marginTop: "8px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <Subtitle2>
-                    第 {activePitch.pitch_number} 球: {activePitch.pitch_name || activePitch.pitch_type || "投球"}
-                  </Subtitle2>
-                  {activePitch.call_description && (
-                    <Badge appearance="filled" color="brand">
-                      {activePitch.call_description}
-                    </Badge>
-                  )}
-                </div>
+            {/* Statcast Pitches List Header */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginTop: "8px",
+                width: "100%",
+              }}
+            >
+              <Subtitle2>
+                投球データ一覧 ({activePitches.length} 球)
+              </Subtitle2>
+              <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>
+                最新球から順に表示
+              </Caption1>
+            </div>
 
-                <div className={styles.statcastCardGrid}>
-                  <div className={styles.metricCard}>
-                    <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>初速 (Velocity)</Caption1>
-                    <Text weight="bold" size={400}>
-                      {activePitch.start_speed ? `${activePitch.start_speed.toFixed(1)} mph` : "-"}
-                    </Text>
-                  </div>
+            {/* Statcast Pitches List (Reverse Order) */}
+            {activePitches.length > 0 ? (
+              <div className={styles.pitchListContainer}>
+                {[...activePitches].reverse().map((pitch) => {
+                  const isSelected =
+                    activePitch?.pitch_number === pitch.pitch_number &&
+                    activePitch?.at_bat_index === pitch.at_bat_index;
 
-                  <div className={styles.metricCard}>
-                    <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>回転数 (Spin)</Caption1>
-                    <Text weight="bold" size={400}>
-                      {activePitch.spin_rate ? `${Math.round(activePitch.spin_rate)} rpm` : "-"}
-                    </Text>
-                  </div>
+                  return (
+                    <div
+                      key={`statcast-pitch-${pitch.at_bat_index}-${pitch.pitch_number}`}
+                      className={`${styles.pitchCard} ${isSelected ? styles.pitchCardSelected : ""}`}
+                      onClick={() => setSelectedPitch(pitch)}
+                    >
+                      <div className={styles.pitchCardHeader}>
+                        <div style={{ display: "flex", alignItems: "center", columnGap: "8px" }}>
+                          <span
+                            className={styles.pitchNumberBadge}
+                            style={{ backgroundColor: getPitchColor(pitch) }}
+                          >
+                            {pitch.pitch_number}
+                          </span>
+                          <Text weight="semibold">
+                            第 {pitch.pitch_number} 球: {pitch.pitch_name || pitch.pitch_type || "投球"}
+                          </Text>
+                        </div>
+                        {pitch.call_description && (
+                          <Badge
+                            appearance={isSelected ? "filled" : "tint"}
+                            color={getCallBadgeColor(pitch)}
+                          >
+                            {pitch.call_description}
+                          </Badge>
+                        )}
+                      </div>
 
-                  <div className={styles.metricCard}>
-                    <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>縦変化 (Induced)</Caption1>
-                    <Text weight="bold" size={400}>
-                      {activePitch.break_vertical_induced !== null
-                        ? `${activePitch.break_vertical_induced.toFixed(1)}" `
-                        : "-"}
-                    </Text>
-                  </div>
+                      <div className={styles.statcastCardGrid}>
+                        <div className={styles.metricCard}>
+                          <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>初速 (Velocity)</Caption1>
+                          <Text weight="bold" size={300}>
+                            {pitch.start_speed ? `${pitch.start_speed.toFixed(1)} mph` : "-"}
+                          </Text>
+                        </div>
 
-                  <div className={styles.metricCard}>
-                    <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>横変化 (Horizontal)</Caption1>
-                    <Text weight="bold" size={400}>
-                      {activePitch.break_horizontal !== null
-                        ? `${activePitch.break_horizontal.toFixed(1)}" `
-                        : "-"}
-                    </Text>
-                  </div>
+                        <div className={styles.metricCard}>
+                          <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>回転数 (Spin)</Caption1>
+                          <Text weight="bold" size={300}>
+                            {pitch.spin_rate ? `${Math.round(pitch.spin_rate)} rpm` : "-"}
+                          </Text>
+                        </div>
 
-                  {activePitch.launch_speed !== null && (
-                    <div className={styles.metricCard}>
-                      <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>打球速度 (Exit)</Caption1>
-                      <Text weight="bold" size={400} style={{ color: tokens.colorBrandForeground1 }}>
-                        {activePitch.launch_speed.toFixed(1)} mph
-                      </Text>
+                        <div className={styles.metricCard}>
+                          <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>縦変化 (Induced)</Caption1>
+                          <Text weight="bold" size={300}>
+                            {pitch.break_vertical_induced !== null
+                              ? `${pitch.break_vertical_induced.toFixed(1)}"`
+                              : "-"}
+                          </Text>
+                        </div>
+
+                        <div className={styles.metricCard}>
+                          <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>横変化 (Horizontal)</Caption1>
+                          <Text weight="bold" size={300}>
+                            {pitch.break_horizontal !== null
+                              ? `${pitch.break_horizontal.toFixed(1)}"`
+                              : "-"}
+                          </Text>
+                        </div>
+
+                        {pitch.launch_speed !== null && (
+                          <div className={styles.metricCard}>
+                            <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>打球速度 (Exit)</Caption1>
+                            <Text weight="bold" size={300} style={{ color: tokens.colorBrandForeground1 }}>
+                              {pitch.launch_speed.toFixed(1)} mph
+                            </Text>
+                          </div>
+                        )}
+
+                        {pitch.launch_angle !== null && (
+                          <div className={styles.metricCard}>
+                            <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>打球角度 (Angle)</Caption1>
+                            <Text weight="bold" size={300}>
+                              {pitch.launch_angle.toFixed(1)}°
+                            </Text>
+                          </div>
+                        )}
+
+                        {pitch.total_distance !== null && (
+                          <div className={styles.metricCard}>
+                            <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>飛距離 (Distance)</Caption1>
+                            <Text weight="bold" size={300} style={{ color: tokens.colorBrandForeground1 }}>
+                              {pitch.total_distance} ft
+                            </Text>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  )}
-
-                  {activePitch.launch_angle !== null && (
-                    <div className={styles.metricCard}>
-                      <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>打球角度 (Angle)</Caption1>
-                      <Text weight="bold" size={400}>
-                        {activePitch.launch_angle.toFixed(1)}°
-                      </Text>
-                    </div>
-                  )}
-
-                  {activePitch.total_distance !== null && (
-                    <div className={styles.metricCard}>
-                      <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>飛距離 (Distance)</Caption1>
-                      <Text weight="bold" size={400} style={{ color: tokens.colorBrandForeground1 }}>
-                        {activePitch.total_distance} ft
-                      </Text>
-                    </div>
-                  )}
-                </div>
+                  );
+                })}
               </div>
             ) : (
-              <Body1 style={{ color: tokens.colorNeutralForeground3, textAlign: "center" }}>
-                投球データを選択するか、新規投球の受信をお待ちください。
+              <Body1 style={{ color: tokens.colorNeutralForeground3, textAlign: "center", padding: "16px 0" }}>
+                投球データがありません。新規投球の受信をお待ちください。
               </Body1>
             )}
           </Card>
