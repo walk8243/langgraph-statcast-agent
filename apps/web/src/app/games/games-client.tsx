@@ -156,7 +156,7 @@ export default function GamesClient({ games, currentDate, latestDate }: GamesCli
       <header className={styles.header}>
         <Title1>MLB 試合一覧 &amp; リアルタイム速報</Title1>
         <Subtitle1 style={{ color: tokens.colorNeutralForeground2 }}>
-          進行中（Live）および特定日の試合を選択して、一球速報・スコアボード・Statcast指標をリアルタイムに閲覧できます。
+          進行中（Live）および日本時間（JST）の日付ごとに試合を選択して、一球速報・スコアボード・Statcast指標をリアルタイムに閲覧できます。
         </Subtitle1>
       </header>
 
@@ -172,7 +172,7 @@ export default function GamesClient({ games, currentDate, latestDate }: GamesCli
           <div className={styles.dateDisplay}>
             <Calendar20Regular style={{ color: tokens.colorBrandForeground1 }} />
             <Text weight="semibold" size={400}>
-              {formatDateJa(currentDate)}
+              {formatDateJa(currentDate)} (日本時間)
             </Text>
           </div>
 
@@ -181,7 +181,7 @@ export default function GamesClient({ games, currentDate, latestDate }: GamesCli
             value={currentDate}
             onChange={handleDateChange}
             className={styles.dateInput}
-            aria-label="試合日付の選択"
+            aria-label="試合日付の選択 (日本時間)"
           />
 
           {latestDate && latestDate !== currentDate && (
@@ -205,7 +205,7 @@ export default function GamesClient({ games, currentDate, latestDate }: GamesCli
         {games.length === 0 ? (
           <Card style={{ padding: "48px 24px", textAlign: "center", gridColumn: "1 / -1" }}>
             <Body1 style={{ color: tokens.colorNeutralForeground2, display: "block", marginBottom: "16px" }}>
-              {formatDateJa(currentDate)} に行われた試合データはありません。
+              {formatDateJa(currentDate)} (日本時間) に行われた試合データはありません。
             </Body1>
             {latestDate && latestDate !== currentDate && (
               <div>
@@ -217,6 +217,7 @@ export default function GamesClient({ games, currentDate, latestDate }: GamesCli
               </div>
             )}
           </Card>
+
         ) : (
           games.map((g) => {
             const isLive =

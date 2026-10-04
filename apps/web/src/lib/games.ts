@@ -322,7 +322,7 @@ export async function getRecentGames(): Promise<GameHeaderInfo[]> {
 }
 
 /**
- * 指定日の全試合一覧を取得する（件数上限なし）
+ * 指定日（日本時間基準）の全試合一覧を取得する（件数上限なし）
  */
 export async function getGamesByDate(dateStr: string): Promise<GameHeaderInfo[]> {
   const sql = `
@@ -343,7 +343,8 @@ export async function getGamesByDate(dateStr: string): Promise<GameHeaderInfo[]>
     FROM games g
     LEFT JOIN teams ht ON g.home_team_id = ht.team_id
     LEFT JOIN teams at ON g.away_team_id = at.team_id
-    WHERE g.game_date_time >= $1::date AND g.game_date_time < ($1::date + INTERVAL '1 day')
+    WHERE g.game_date_time >= (($1::date)::timestamp AT TIME ZONE 'Asia/Tokyo')
+      AND g.game_date_time < (($1::date + INTERVAL '1 day')::timestamp AT TIME ZONE 'Asia/Tokyo')
     ORDER BY
       CASE
         WHEN g.status ILIKE '%Progress%' OR g.status = 'Live' THEN 1
@@ -373,11 +374,11 @@ export async function getGamesByDate(dateStr: string): Promise<GameHeaderInfo[]>
 }
 
 /**
- * 登録されている最新の試合日（YYYY-MM-DD）を取得する
+ * 登録されている最新の試合日（日本時間 YYYY-MM-DD）を取得する
  */
 export async function getLatestGameDate(): Promise<string | null> {
   const sql = `
-    SELECT TO_CHAR(MAX(game_date_time), 'YYYY-MM-DD') as latest_date
+    SELECT TO_CHAR(MAX(game_date_time AT TIME ZONE 'Asia/Tokyo'), 'YYYY-MM-DD') as latest_date
     FROM games
   `;
   const result = await query(sql);
@@ -386,4 +387,5 @@ export async function getLatestGameDate(): Promise<string | null> {
   }
   return result.rows[0].latest_date;
 }
+
 

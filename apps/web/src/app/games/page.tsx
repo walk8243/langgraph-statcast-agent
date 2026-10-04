@@ -20,18 +20,23 @@ export async function generateMetadata({ searchParams }: GamesPageProps): Promis
   };
 }
 
+function getTodayJst(): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Tokyo" }).format(new Date());
+}
+
 export default async function GamesPage({ searchParams }: GamesPageProps) {
   const resolvedParams = await searchParams;
   const requestedDate = resolvedParams?.date;
 
   const latestDate = await getLatestGameDate();
-  const today = new Date().toISOString().slice(0, 10);
+  const today = getTodayJst();
   const defaultDate = latestDate || today;
 
   let targetDate = requestedDate;
   if (!targetDate || !/^\d{4}-\d{2}-\d{2}$/.test(targetDate) || isNaN(Date.parse(targetDate))) {
     targetDate = defaultDate;
   }
+
 
   const games = await getGamesByDate(targetDate);
 
