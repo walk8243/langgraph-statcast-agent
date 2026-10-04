@@ -128,9 +128,19 @@ export function extractLinescoreRecord(
   const awayErrors = safeInt(away.errors) ?? 0;
 
   const inningsRaw = ls.innings || [];
-  const inningsJson = JSON.stringify(inningsRaw);
+  const normalizedInnings = Array.isArray(inningsRaw)
+    ? inningsRaw.map((inn: any) => {
+        const innNum = safeInt(inn.inning) ?? safeInt(inn.num) ?? 0;
+        return {
+          ...inn,
+          num: safeInt(inn.num) ?? innNum,
+          inning: innNum,
+        };
+      })
+    : [];
+  const inningsJson = JSON.stringify(normalizedInnings);
 
-  const hashKey = `${currentInning}:${isTopInning}:${balls}:${strikes}:${outs}:${homeScore}:${awayScore}:${homeHits}:${awayHits}:${homeErrors}:${awayErrors}:${inningsRaw.length}`;
+  const hashKey = `${currentInning}:${isTopInning}:${balls}:${strikes}:${outs}:${homeScore}:${awayScore}:${homeHits}:${awayHits}:${homeErrors}:${awayErrors}:${normalizedInnings.length}`;
 
   const record: LiveLinescoreRecord = {
     game_pk: gamePk,

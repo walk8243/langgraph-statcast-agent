@@ -133,13 +133,20 @@ describe("extractor", () => {
     expect(pids.has(543037)).toBe(true);
   });
 
-  it("extractLinescoreRecord creates record and hash", () => {
+  it("extractLinescoreRecord creates record and hash with normalized innings", () => {
     const { record, hashKey } = extractLinescoreRecord(824703, mockFeedData);
     expect(record.game_pk).toBe(824703);
     expect(record.current_inning).toBe(1);
     expect(record.balls).toBe(1);
     expect(record.strikes).toBe(2);
     expect(typeof hashKey).toBe("string");
+
+    const parsedInnings = JSON.parse(record.innings_json);
+    expect(parsedInnings.length).toBe(1);
+    expect(parsedInnings[0].num).toBe(1);
+    expect(parsedInnings[0].inning).toBe(1);
+    expect(parsedInnings[0].away.runs).toBe(0);
+    expect(parsedInnings[0].home.runs).toBe(0);
   });
 
   it("extractDiff correctly detects initial state and increments", () => {
