@@ -320,3 +320,70 @@ export async function getRecentGames(): Promise<GameHeaderInfo[]> {
     away_score: row.away_score !== null ? Number(row.away_score) : null,
   }));
 }
+
+/**
+ * 指定日の全試合一覧を取得する（件数上限なし）
+ */
+export async function getGamesByDate(dateStr: string): Promise<GameHeaderInfo[]> {
+  const sql = `
+    SELECT
+      g.game_pk,
+      g.game_date_time,
+      g.season,
+      g.game_type,
+      g.status,
+      g.home_team_id,
+      g.away_team_id,
+      COALESCE(ht.name, 'Home Team') as home_team_name,
+      COALESCE(at.name, 'Away Team') as away_team_name,
+      COALESCE(ht.abbreviation, 'HOME') as home_team_abbr,
+      COALESCE(at.abbreviation, 'AWAY') as away_team_abbr,
+      g.home_score,
+      g.away_score
+    FROM games g
+    LEFT JOIN teams ht ON g.home_team_id = ht.team_id
+    LEFT JOIN teams at ON g.away_team_id = at.team_id
+    WHERE g.game_date_time >= $1::date AND g.game_date_time < ($1::date + INTERVAL '1 day')
+    ORDER BY
+      CASE
+        WHEN g.status ILIKE '%Progress%' OR g.status = 'Live' THEN 1
+        WHEN g.status ILIKE '%Final%' THEN 2
+        ELSE 3
+      END ASC,
+      g.game_date_time ASC,
+      g.game_pk ASC
+  `;
+  const result = await query(sql, [dateStr]);
+
+  return result.rows.map((row) => ({
+    game_pk: Number(row.game_pk),
+    game_date_time: row.game_date_time ? new Date(row.game_date_time).toISOString() : "",
+    season: Number(row.season),
+    game_type: row.game_type || "R",
+    status: row.status || "Unknown",
+    home_team_id: Number(row.home_team_id),
+    away_team_id: Number(row.away_team_id),
+    home_team_name: row.home_team_name,
+    away_team_name: row.away_team_name,
+    home_team_abbr: row.home_team_abbr,
+    away_team_abbr: row.away_team_abbr,
+    home_score: row.home_score !== null ? Number(row.home_score) : null,
+    away_score: row.away_score !== null ? Number(row.away_score) : null,
+  }));
+}
+
+/**
+ * 登録されている最新の試合日（YYYY-MM-DD）を取得する
+ */
+export async function getLatestGameDate(): Promise<string | null> {
+  const sql = `
+    SELECT TO_CHAR(MAX(game_date_time), 'YYYY-MM-DD') as latest_date
+    FROM games
+  `;
+  const result = await query(sql);
+  if (result.rows.length === 0 || !result.rows[0].latest_date) {
+    return null;
+  }
+  return result.rows[0].latest_date;
+}
+

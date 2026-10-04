@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Title1,
   Subtitle1,
@@ -13,6 +14,7 @@ import {
   CardFooter,
   Badge,
   Text,
+  Input,
   makeStyles,
   shorthands,
   tokens,
@@ -22,6 +24,7 @@ import {
   ArrowRight16Regular,
   ArrowLeft16Regular,
   CheckmarkCircle20Filled,
+  Calendar20Regular,
 } from "@fluentui/react-icons";
 import { GameHeaderInfo } from "@/types/game";
 
@@ -44,6 +47,32 @@ const useStyles = makeStyles({
     display: "flex",
     flexDirection: "column",
     rowGap: "8px",
+  },
+  dateNavCard: {
+    display: "flex",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: "16px",
+    ...shorthands.padding("14px", "20px"),
+    backgroundColor: tokens.colorNeutralBackground1,
+    ...shorthands.borderRadius(tokens.borderRadiusMedium),
+    ...shorthands.border("1px", "solid", tokens.colorNeutralStroke2),
+    boxShadow: tokens.shadow2,
+  },
+  dateNavCenter: {
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+    flexWrap: "wrap",
+  },
+  dateDisplay: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+  },
+  dateInput: {
+    minWidth: "150px",
   },
   grid: {
     display: "grid",
@@ -78,12 +107,39 @@ const useStyles = makeStyles({
   },
 });
 
-interface GamesClientProps {
-  games: GameHeaderInfo[];
+function getAdjacentDate(dateStr: string, offsetDays: number): string {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const d = new Date(Date.UTC(year, month - 1, day + offsetDays));
+  return d.toISOString().slice(0, 10);
 }
 
-export default function GamesClient({ games }: GamesClientProps) {
+function formatDateJa(dateStr: string): string {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const d = new Date(Date.UTC(year, month - 1, day));
+  const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
+  const weekday = weekdays[d.getUTCDay()];
+  return `${year}年${month}月${day}日 (${weekday})`;
+}
+
+interface GamesClientProps {
+  games: GameHeaderInfo[];
+  currentDate: string;
+  latestDate: string;
+}
+
+export default function GamesClient({ games, currentDate, latestDate }: GamesClientProps) {
   const styles = useStyles();
+  const router = useRouter();
+
+  const prevDate = getAdjacentDate(currentDate, -1);
+  const nextDate = getAdjacentDate(currentDate, 1);
+
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    if (val && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
+      router.push(`/games?date=${val}`);
+    }
+  };
 
   return (
     <main className={styles.container}>
@@ -94,26 +150,72 @@ export default function GamesClient({ games }: GamesClientProps) {
             トップページへ戻る
           </Button>
         </Link>
-        <Badge appearance="filled" color="brand">
-          試合数: {games.length} 件
-        </Badge>
       </nav>
 
       {/* Header */}
       <header className={styles.header}>
         <Title1>MLB 試合一覧 &amp; リアルタイム速報</Title1>
         <Subtitle1 style={{ color: tokens.colorNeutralForeground2 }}>
-          進行中（Live）および直近の試合を選択して、一球速報・スコアボード・Statcast指標をリアルタイムに閲覧できます。
+          進行中（Live）および特定日の試合を選択して、一球速報・スコアボード・Statcast指標をリアルタイムに閲覧できます。
         </Subtitle1>
       </header>
+
+      {/* Date Navigation Bar */}
+      <section className={styles.dateNavCard} aria-label="日付ナビゲーション">
+        <Link href={`/games?date=${prevDate}`} style={{ textDecoration: "none" }}>
+          <Button appearance="outline" icon={<ArrowLeft16Regular />}>
+            前日 ({prevDate})
+          </Button>
+        </Link>
+
+        <div className={styles.dateNavCenter}>
+          <div className={styles.dateDisplay}>
+            <Calendar20Regular style={{ color: tokens.colorBrandForeground1 }} />
+            <Text weight="semibold" size={400}>
+              {formatDateJa(currentDate)}
+            </Text>
+          </div>
+
+          <Input
+            type="date"
+            value={currentDate}
+            onChange={handleDateChange}
+            className={styles.dateInput}
+            aria-label="試合日付の選択"
+          />
+
+          {latestDate && latestDate !== currentDate && (
+            <Link href={`/games?date=${latestDate}`} style={{ textDecoration: "none" }}>
+              <Button appearance="subtle" size="small">
+                最新試合日 ({latestDate}) へ
+              </Button>
+            </Link>
+          )}
+        </div>
+
+        <Link href={`/games?date=${nextDate}`} style={{ textDecoration: "none" }}>
+          <Button appearance="outline" icon={<ArrowRight16Regular />} iconPosition="after">
+            翌日 ({nextDate})
+          </Button>
+        </Link>
+      </section>
 
       {/* Games List Grid */}
       <section className={styles.grid}>
         {games.length === 0 ? (
-          <Card style={{ padding: "32px", textAlign: "center", gridColumn: "1 / -1" }}>
-            <Body1 style={{ color: tokens.colorNeutralForeground3 }}>
-              現在登録されている試合データがありません。
+          <Card style={{ padding: "48px 24px", textAlign: "center", gridColumn: "1 / -1" }}>
+            <Body1 style={{ color: tokens.colorNeutralForeground2, display: "block", marginBottom: "16px" }}>
+              {formatDateJa(currentDate)} に行われた試合データはありません。
             </Body1>
+            {latestDate && latestDate !== currentDate && (
+              <div>
+                <Link href={`/games?date=${latestDate}`} style={{ textDecoration: "none" }}>
+                  <Button appearance="primary" icon={<ArrowRight16Regular />} iconPosition="after">
+                    最新の試合日 ({latestDate}) を表示する
+                  </Button>
+                </Link>
+              </div>
+            )}
           </Card>
         ) : (
           games.map((g) => {
