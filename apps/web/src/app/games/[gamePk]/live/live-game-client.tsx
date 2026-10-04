@@ -509,7 +509,7 @@ export default function LiveGameClient({ initialData }: LiveGameClientProps) {
               <Table size="small">
                 <TableHeader>
                   <TableRow>
-                    <TableHeaderCell style={{ minWidth: "100px" }}>チーム</TableHeaderCell>
+                    <TableHeaderCell style={{ minWidth: "100px" }} />
                     {inningsHeaderArray.map((inningNum) => {
                       const isCurrent =
                         linescore &&
