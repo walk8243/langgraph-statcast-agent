@@ -28,15 +28,13 @@ export default async function GamesPage({ searchParams }: GamesPageProps) {
   const resolvedParams = await searchParams;
   const requestedDate = resolvedParams?.date;
 
-  const latestDate = await getLatestGameDate();
   const today = getTodayJst();
-  const defaultDate = latestDate || today;
+  const latestDate = await getLatestGameDate();
 
   let targetDate = requestedDate;
   if (!targetDate || !/^\d{4}-\d{2}-\d{2}$/.test(targetDate) || isNaN(Date.parse(targetDate))) {
-    targetDate = defaultDate;
+    targetDate = today;
   }
-
 
   const games = await getGamesByDate(targetDate);
 
@@ -44,7 +42,8 @@ export default async function GamesPage({ searchParams }: GamesPageProps) {
     <GamesClient
       games={games}
       currentDate={targetDate}
-      latestDate={defaultDate}
+      latestDate={latestDate || today}
+      today={today}
     />
   );
 }

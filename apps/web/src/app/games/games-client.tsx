@@ -127,9 +127,10 @@ interface GamesClientProps {
   games: GameHeaderInfo[];
   currentDate: string;
   latestDate: string;
+  today?: string;
 }
 
-export default function GamesClient({ games, currentDate, latestDate }: GamesClientProps) {
+export default function GamesClient({ games, currentDate, latestDate, today }: GamesClientProps) {
   const styles = useStyles();
   const router = useRouter();
   const dateInputRef = React.useRef<HTMLInputElement>(null);
@@ -210,7 +211,14 @@ export default function GamesClient({ games, currentDate, latestDate }: GamesCli
             />
           </div>
 
-          {latestDate && latestDate !== currentDate && (
+          {today && today !== currentDate && (
+            <Link href={`/games?date=${today}`} style={{ textDecoration: "none" }}>
+              <Button appearance="subtle" size="small">
+                今日 ({today}) へ
+              </Button>
+            </Link>
+          )}
+          {latestDate && latestDate !== currentDate && latestDate !== today && (
             <Link href={`/games?date=${latestDate}`} style={{ textDecoration: "none" }}>
               <Button appearance="subtle" size="small">
                 最新試合日 ({latestDate}) へ
@@ -234,15 +242,22 @@ export default function GamesClient({ games, currentDate, latestDate }: GamesCli
             <Body1 style={{ color: tokens.colorNeutralForeground2, display: "block", marginBottom: "16px" }}>
               {formatDateJa(currentDate)} (日本時間) に行われた試合データはありません。
             </Body1>
-            {latestDate && latestDate !== currentDate && (
-              <div>
+            <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
+              {today && today !== currentDate && (
+                <Link href={`/games?date=${today}`} style={{ textDecoration: "none" }}>
+                  <Button appearance="secondary">
+                    今日の試合を表示 ({today})
+                  </Button>
+                </Link>
+              )}
+              {latestDate && latestDate !== currentDate && (
                 <Link href={`/games?date=${latestDate}`} style={{ textDecoration: "none" }}>
                   <Button appearance="primary" icon={<ArrowRight16Regular />} iconPosition="after">
                     最新の試合日 ({latestDate}) を表示する
                   </Button>
                 </Link>
-              </div>
-            )}
+              )}
+            </div>
           </Card>
 
         ) : (
