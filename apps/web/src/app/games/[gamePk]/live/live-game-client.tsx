@@ -19,6 +19,7 @@ import {
   TableBody,
   TableCell,
   makeStyles,
+  mergeClasses,
   shorthands,
   tokens,
   Text,
@@ -186,6 +187,24 @@ const useStyles = makeStyles({
   },
   tableContainer: {
     overflowX: "auto",
+  },
+  teamCell: {
+    minWidth: "80px",
+  },
+  scoreHeaderCell: {
+    minWidth: "32px",
+    paddingLeft: "4px",
+    paddingRight: "4px",
+    "& .fui-TableHeaderCell__button": {
+      justifyContent: "center",
+      textAlign: "center",
+    },
+  },
+  scoreCell: {
+    textAlign: "center",
+    minWidth: "32px",
+    paddingLeft: "4px",
+    paddingRight: "4px",
   },
   currentInningCol: {
     backgroundColor: tokens.colorBrandBackground2,
@@ -596,7 +615,7 @@ export default function LiveGameClient({ initialData }: LiveGameClientProps) {
               <Table size="small">
                 <TableHeader>
                   <TableRow>
-                    <TableHeaderCell style={{ minWidth: "100px" }} />
+                    <TableHeaderCell className={styles.teamCell} />
                     {inningsHeaderArray.map((inningNum) => {
                       const isCurrent =
                         linescore &&
@@ -605,24 +624,41 @@ export default function LiveGameClient({ initialData }: LiveGameClientProps) {
                       return (
                         <TableHeaderCell
                           key={`inning-${inningNum}`}
-                          style={{ textAlign: "center", minWidth: "32px" }}
-                          className={isCurrent ? styles.currentInningCol : undefined}
+                          className={mergeClasses(
+                            styles.scoreHeaderCell,
+                            isCurrent ? styles.currentInningCol : undefined
+                          )}
+                          button={{ style: { justifyContent: "center" } }}
                         >
                           {inningNum}
                         </TableHeaderCell>
                       );
                     })}
-                    <TableHeaderCell style={{ textAlign: "center", fontWeight: "bold" }}>
+                    <TableHeaderCell
+                      className={styles.scoreHeaderCell}
+                      style={{ fontWeight: "bold" }}
+                      button={{ style: { justifyContent: "center" } }}
+                    >
                       R
                     </TableHeaderCell>
-                    <TableHeaderCell style={{ textAlign: "center" }}>H</TableHeaderCell>
-                    <TableHeaderCell style={{ textAlign: "center" }}>E</TableHeaderCell>
+                    <TableHeaderCell
+                      className={styles.scoreHeaderCell}
+                      button={{ style: { justifyContent: "center" } }}
+                    >
+                      H
+                    </TableHeaderCell>
+                    <TableHeaderCell
+                      className={styles.scoreHeaderCell}
+                      button={{ style: { justifyContent: "center" } }}
+                    >
+                      E
+                    </TableHeaderCell>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {/* Away Row */}
                   <TableRow>
-                    <TableCell>
+                    <TableCell className={styles.teamCell}>
                       <Body1Strong>{game.away_team_abbr}</Body1Strong>
                     </TableCell>
                     {inningsHeaderArray.map((inningNum) => {
@@ -637,8 +673,10 @@ export default function LiveGameClient({ initialData }: LiveGameClientProps) {
                       return (
                         <TableCell
                           key={`away-inn-${inningNum}`}
-                          style={{ textAlign: "center" }}
-                          className={isCurrent ? styles.currentInningCol : undefined}
+                          className={mergeClasses(
+                            styles.scoreCell,
+                            isCurrent ? styles.currentInningCol : undefined
+                          )}
                         >
                           {innData?.away?.runs !== null && innData?.away?.runs !== undefined
                             ? innData.away.runs
@@ -646,20 +684,20 @@ export default function LiveGameClient({ initialData }: LiveGameClientProps) {
                         </TableCell>
                       );
                     })}
-                    <TableCell style={{ textAlign: "center", fontWeight: "bold" }}>
+                    <TableCell className={styles.scoreCell} style={{ fontWeight: "bold" }}>
                       {linescore ? linescore.away_score : game.away_score ?? 0}
                     </TableCell>
-                    <TableCell style={{ textAlign: "center" }}>
+                    <TableCell className={styles.scoreCell}>
                       {linescore ? linescore.away_hits : 0}
                     </TableCell>
-                    <TableCell style={{ textAlign: "center" }}>
+                    <TableCell className={styles.scoreCell}>
                       {linescore ? linescore.away_errors : 0}
                     </TableCell>
                   </TableRow>
 
                   {/* Home Row */}
                   <TableRow>
-                    <TableCell>
+                    <TableCell className={styles.teamCell}>
                       <Body1Strong>{game.home_team_abbr}</Body1Strong>
                     </TableCell>
                     {inningsHeaderArray.map((inningNum) => {
@@ -674,8 +712,10 @@ export default function LiveGameClient({ initialData }: LiveGameClientProps) {
                       return (
                         <TableCell
                           key={`home-inn-${inningNum}`}
-                          style={{ textAlign: "center" }}
-                          className={isCurrent ? styles.currentInningCol : undefined}
+                          className={mergeClasses(
+                            styles.scoreCell,
+                            isCurrent ? styles.currentInningCol : undefined
+                          )}
                         >
                           {innData?.home?.runs !== null && innData?.home?.runs !== undefined
                             ? innData.home.runs
@@ -683,13 +723,13 @@ export default function LiveGameClient({ initialData }: LiveGameClientProps) {
                         </TableCell>
                       );
                     })}
-                    <TableCell style={{ textAlign: "center", fontWeight: "bold" }}>
+                    <TableCell className={styles.scoreCell} style={{ fontWeight: "bold" }}>
                       {linescore ? linescore.home_score : game.home_score ?? 0}
                     </TableCell>
-                    <TableCell style={{ textAlign: "center" }}>
+                    <TableCell className={styles.scoreCell}>
                       {linescore ? linescore.home_hits : 0}
                     </TableCell>
-                    <TableCell style={{ textAlign: "center" }}>
+                    <TableCell className={styles.scoreCell}>
                       {linescore ? linescore.home_errors : 0}
                     </TableCell>
                   </TableRow>
