@@ -90,6 +90,10 @@ const useStyles = makeStyles({
   cardHeaderIcon: {
     color: tokens.colorBrandForeground1,
   },
+  cardActionBadge: {
+    whiteSpace: "nowrap",
+    flexShrink: 0,
+  },
   cardContent: {
     ...shorthands.padding("12px", "16px"),
     display: "flex",
@@ -185,7 +189,7 @@ export default function HomePage() {
             image={<Sport24Regular className={styles.cardHeaderIcon} />}
             header={<Text weight="semibold">MLB リアルタイム試合速報</Text>}
             description={<Caption1>SSE配信 &amp; 一球速報</Caption1>}
-            action={<Badge color="danger">Live SSE</Badge>}
+            action={<Badge color="danger" className={styles.cardActionBadge}>Live SSE</Badge>}
           />
           <div className={styles.cardContent}>
             <Body1>
@@ -206,7 +210,7 @@ export default function HomePage() {
             image={<PeopleTeam24Regular className={styles.cardHeaderIcon} />}
             header={<Text weight="semibold">MLB チーム・選手一覧</Text>}
             description={<Caption1>マスターデータ閲覧</Caption1>}
-            action={<Badge color="success">Available</Badge>}
+            action={<Badge color="success" className={styles.cardActionBadge}>Available</Badge>}
           />
           <div className={styles.cardContent}>
             <Body1>
@@ -227,7 +231,7 @@ export default function HomePage() {
             image={<Database24Regular className={styles.cardHeaderIcon} />}
             header={<Text weight="semibold">RDB / PostgreSQL 連携</Text>}
             description={<Caption1>Next.js Server Components</Caption1>}
-            action={<Badge color="success">Connected</Badge>}
+            action={<Badge color="success" className={styles.cardActionBadge}>Connected</Badge>}
           />
           <div className={styles.cardContent}>
             <Body1>
@@ -246,7 +250,7 @@ export default function HomePage() {
             image={<Sparkle24Regular className={styles.cardHeaderIcon} />}
             header={<Text weight="semibold">LangGraph AI エージェント</Text>}
             description={<Caption1>選手解説レポート自動生成</Caption1>}
-            action={<Badge color="brand">Gemini 3.8 Flash</Badge>}
+            action={<Badge color="brand" className={styles.cardActionBadge}>Gemini 3.8 Flash</Badge>}
           />
           <div className={styles.cardContent}>
             <Body1>
