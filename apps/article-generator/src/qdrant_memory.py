@@ -40,7 +40,7 @@ class QdrantKnowledgeStore:
         self.url = url or settings.qdrant_url
         self.collection_name = collection_name or settings.qdrant_collection_name
         self.api_key = api_key
-        self.gemini_api_key = gemini_api_key or settings.gemini_api_key
+        self.gemini_api_key = gemini_api_key if gemini_api_key is not None else settings.gemini_api_key
         self.dimension = dimension
 
         self.client = QdrantClient(url=self.url, api_key=self.api_key, check_compatibility=False)

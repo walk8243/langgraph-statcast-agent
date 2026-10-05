@@ -261,7 +261,7 @@ export default function HomePage() {
             image={<Sparkle24Regular className={styles.cardHeaderIcon} />}
             header={<Text weight="semibold">AI 分析・解説レポート</Text>}
             description={<Caption1>Text-to-SQL &amp; 自動記事生成</Caption1>}
-            action={<Badge color="brand" className={styles.cardActionBadge}>Gemini 3.8 Flash</Badge>}
+            action={<Badge color="brand" className={styles.cardActionBadge}>Gemini 3.5 Flash-Lite</Badge>}
           />
           <div className={styles.cardContent}>
             <Body1>
