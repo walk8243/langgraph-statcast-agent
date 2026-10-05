@@ -26,6 +26,7 @@ import {
   CheckmarkCircle20Filled,
   ArrowSync24Regular,
   Sport24Regular,
+  DocumentText24Regular,
 } from "@fluentui/react-icons";
 
 const useStyles = makeStyles({
@@ -169,6 +170,16 @@ export default function HomePage() {
               試合速報 (Live)
             </Button>
           </Link>
+          <Link href="/articles" style={{ textDecoration: "none" }}>
+            <Button
+              appearance="primary"
+              icon={<DocumentText24Regular />}
+              iconPosition="after"
+              size="large"
+            >
+              AI 分析記事
+            </Button>
+          </Link>
           <Link href="/teams" style={{ textDecoration: "none" }}>
             <Button
               appearance="secondary"
@@ -248,19 +259,21 @@ export default function HomePage() {
         <Card className={styles.card}>
           <CardHeader
             image={<Sparkle24Regular className={styles.cardHeaderIcon} />}
-            header={<Text weight="semibold">LangGraph AI エージェント</Text>}
-            description={<Caption1>選手解説レポート自動生成</Caption1>}
+            header={<Text weight="semibold">AI 分析・解説レポート</Text>}
+            description={<Caption1>Text-to-SQL &amp; 自動記事生成</Caption1>}
             action={<Badge color="brand" className={styles.cardActionBadge}>Gemini 3.8 Flash</Badge>}
           />
           <div className={styles.cardContent}>
             <Body1>
-              球種別被打率や球速・変化量などの Statcast 指標を基に、Google Gemini が自然な解説レポートを自動生成・蓄積します。
+              Statcast の打球・投球データを Text-to-SQL で動的集計し、Gemini が自動生成した詳細な解説記事を閲覧できます。
             </Body1>
           </div>
           <CardFooter>
-            <Button appearance="subtle" icon={<ArrowRight16Regular />} iconPosition="after">
-              エージェント実行
-            </Button>
+            <Link href="/articles" style={{ textDecoration: "none" }}>
+              <Button appearance="subtle" icon={<ArrowRight16Regular />} iconPosition="after">
+                分析記事一覧を見る
+              </Button>
+            </Link>
           </CardFooter>
         </Card>
       </section>
