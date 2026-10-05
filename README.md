@@ -169,6 +169,9 @@ docker compose run --rm ingestion --fetch-pitching-stats --season 2024
 # データの収集実行 (Ingestion - 登録全選手の Statcast データ一括取得例: 上限10選手、特定期間)
 docker compose run --rm ingestion --fetch-all-statcast --limit 10 --start-date 2024-04-01 --end-date 2024-04-07
 
+# データの収集実行 (Ingestion - 期間指定による全選手 Statcast データの日付分割一括取得: Baseball Savant の 40,000 件制限を日単位で回避)
+docker compose run --rm ingestion --fetch-statcast-range --start-date 2024-04-01 --end-date 2024-04-07 --interval 3.0
+
 # 個別選手の Statcast データ収集 (投手データ取得例)
 docker compose run --rm ingestion --player-id 808967 --start-date 2024-04-01 --end-date 2024-04-07
 

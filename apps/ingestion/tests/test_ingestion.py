@@ -1,6 +1,7 @@
 """Ingestion モジュールの単体テスト"""
 
 import datetime
+from unittest.mock import patch
 import pandas as pd
 import pytest
 from src.downloader import build_savant_search_params
@@ -85,4 +86,49 @@ def test_clean_statcast_df_without_player_name():
     assert "player_name" not in cleaned.columns
     assert cleaned["pitcher"].iloc[0] == 808967
     assert cleaned["batter"].iloc[0] == 673548
+
+
+def test_cli_fetch_statcast_range_args():
+    """--fetch-statcast-range 関連のコマンドライン引数が正しくパースされることを検証"""
+    import argparse
+    from src.main import main
+
+    # parse_args を個別に検証するため、同様の引数設定をテスト
+    # main.py の parser 定義が壊れていないかをチェック
+    import sys
+    with patch.object(
+        sys,
+        "argv",
+        [
+            "main.py",
+            "--fetch-statcast-range",
+            "--start-date",
+            "2024-04-01",
+            "--end-date",
+            "2024-04-05",
+            "--step-days",
+            "2",
+            "--interval",
+            "1.5",
+        ],
+    ):
+        with patch("src.main.get_clickhouse_client"), patch("src.main.initialize_table"), patch(
+            "src.main.ingest_statcast_date_range"
+        ) as mock_range:
+            mock_range.return_value = {
+                "total_chunks": 3,
+                "success_chunks": 3,
+                "skipped_chunks": 0,
+                "failed_chunks": 0,
+                "total_inserted": 500,
+            }
+            main()
+            mock_range.assert_called_once_with(
+                ch_client=mock_range.call_args.kwargs["ch_client"],
+                start_date="2024-04-01",
+                end_date="2024-04-05",
+                interval=1.5,
+                step_days=2,
+            )
+
 

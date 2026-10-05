@@ -10,7 +10,11 @@ from dotenv import load_dotenv
 # プロジェクトルートの .env を読み込み
 load_dotenv()
 
-from .batch_statcast import extract_year_from_dates, ingest_all_players_statcast
+from .batch_statcast import (
+    extract_year_from_dates,
+    ingest_all_players_statcast,
+    ingest_statcast_date_range,
+)
 from .downloader import download_statcast_csv, load_local_csv
 from .loader import get_clickhouse_client, initialize_table, insert_statcast_data
 from .publisher import publish_statcast_raw_message
@@ -110,6 +114,17 @@ def main() -> None:
         "--fetch-all-statcast",
         action="store_true",
         help="登録済み全選手を対象として Baseball Savant から Statcast データを一括取得・投入します",
+    )
+    parser.add_argument(
+        "--fetch-statcast-range",
+        action="store_true",
+        help="指定した期間 (--start-date から --end-date) の全選手 Statcast データを日単位等で分割一括取得・投入します",
+    )
+    parser.add_argument(
+        "--step-days",
+        type=int,
+        default=1,
+        help="--fetch-statcast-range 実行時の分割日数 (デフォルト: 1日)",
     )
     parser.add_argument(
         "--limit",
@@ -303,6 +318,33 @@ def main() -> None:
             f"Total Statcast rows inserted: {summary['total_inserted']}"
         )
         pg_conn.close()
+        return
+
+    if args.fetch_statcast_range:
+        if not args.start_date:
+            print("Error: --start-date is required when using --fetch-statcast-range")
+            sys.exit(1)
+        client = get_clickhouse_client()
+        initialize_table(client)
+
+        interval = args.interval if args.interval > 0 else 3.0
+        print(
+            f"Starting date-range Statcast batch ingestion "
+            f"(start_date={args.start_date}, end_date={args.end_date or args.start_date}, "
+            f"step_days={args.step_days}, interval={interval}s)..."
+        )
+        summary = ingest_statcast_date_range(
+            ch_client=client,
+            start_date=args.start_date,
+            end_date=args.end_date,
+            interval=interval,
+            step_days=args.step_days,
+        )
+        print(
+            f"Date-range ingestion completed! Total chunks: {summary['total_chunks']}, "
+            f"Success: {summary['success_chunks']}, Skipped: {summary['skipped_chunks']}, "
+            f"Failed: {summary['failed_chunks']}, Total Statcast rows inserted: {summary['total_inserted']}"
+        )
         return
 
     client = get_clickhouse_client()
