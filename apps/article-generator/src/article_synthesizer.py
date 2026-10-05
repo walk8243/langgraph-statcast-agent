@@ -100,7 +100,7 @@ class ArticleSynthesizer:
         prompt = self._build_article_prompt(user_prompt, sql, df)
 
         candidate_models = [self.gemini_model]
-        for fallback in ["gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-3.7-flash", "gemini-flash-latest"]:
+        for fallback in ["gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-3.8-flash", "gemini-3.7-flash"]:
             if fallback not in candidate_models:
                 candidate_models.append(fallback)
 

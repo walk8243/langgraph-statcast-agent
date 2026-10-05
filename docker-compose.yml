@@ -249,7 +249,7 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-statcast_pass}
       - POSTGRES_DB=${POSTGRES_DB:-statcast}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-3.8-flash}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-3.5-flash-lite}
     volumes:
       - ./apps/article-generator/src:/app/src
 

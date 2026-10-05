@@ -51,7 +51,7 @@ class Settings(BaseSettings):
 
     # Google Gemini Settings
     gemini_api_key: str = ""
-    gemini_model: str = "gemini-3.8-flash"
+    gemini_model: str = "gemini-3.5-flash-lite"
     gemini_embedding_model: str = "gemini-embedding-001"
 
     @property
