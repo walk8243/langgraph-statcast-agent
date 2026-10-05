@@ -37,25 +37,28 @@ Statcast 主要指標解説:
 ClickHouse データベース statcast 内の主要テーブル:
 1. statcast.statcast_raw:
    - 全投球・打球の生データ (pitch-by-pitch)。
-   - batter カラムは打者の player_id、pitcher カラムは投手の player_id。
-   - players テーブルと結合して選手名を取得可能: `JOIN statcast.players p ON s.batter = p.player_id`
+   - batter カラムは打者の player_id (Int64)、pitcher カラムは投手の player_id (Int64)、game_pk も Int64。
+   - players テーブルと結合する場合、型を揃えるために `toUInt64()` でキャスト: `JOIN statcast.players p ON toUInt64(s.batter) = p.player_id`
+   - games テーブルと結合する場合も型をキャスト: `JOIN statcast.games g ON toUInt64(s.game_pk) = g.game_pk`
    - teams テーブルと結合可能: `JOIN statcast.teams t ON s.home_team = t.abbreviation`
 2. statcast.players:
-   - 選手マスタ情報 (player_id, full_name, primary_position_name, bat_side, pitch_hand)。
+   - 選手マスタ情報 (player_id: UInt64, full_name, primary_position_name, bat_side, pitch_hand)。
    - 大谷翔平は full_name = 'Shohei Ohtani'。
 3. statcast.teams:
-   - チームマスタ情報 (team_id, name, abbreviation, league_name, division_name)。
+   - チームマスタ情報 (team_id: UInt32, name, abbreviation, league_name, division_name)。
    - ロサンゼルス・ドジャースは abbreviation = 'LAD'、ニューヨーク・ヤンキースは abbreviation = 'NYY'。
+   - リーグ・地区別チーム一覧の取得に直接使用可能 (`SELECT league_name, division_name, name, abbreviation FROM statcast.teams WHERE active = 1 ORDER BY league_name, division_name, name`)。
 4. statcast.games:
-   - 試合結果 (game_pk, game_date, season, home_team_name, away_team_name, home_score, away_score)。
+   - 試合結果 (game_pk: UInt64, game_date, season: UInt16, home_team_name, away_team_name, home_score, away_score, is_winner_home, is_winner_away)。
 5. statcast.boxscore_batting / boxscore_pitching:
-   - 試合ごとの選手別集計ボックススコア。
+   - 試合ごとの選手別集計ボックススコア (game_pk: UInt64, team_id: UInt32, player_id: UInt64)。
         """.strip(),
     ),
     (
         "ClickHouse SQL 集計のベストプラクティス",
         """
 ClickHouse クエリ作成の注意点:
+- 型の厳格性 (Type Strictness): JOIN ON 条件のキー型は符号を含めて一致している必要があります。statcast_raw (Int64) と games/players (UInt64) を JOIN する際は、必ず `toUInt64(s.game_pk) = g.game_pk` や `toUInt64(s.batter) = p.player_id` と明示的にキャストしてください。
 - 条件付き集計には `countIf(cond)`, `avgIf(col, cond)`, `sumIf(col, cond)` 関数を活用すると高速。
 - 打球初速や飛距離は NULL の投球もあるため、`WHERE launch_speed IS NOT NULL` または `avg(launch_speed)` を使用する。
 - 本塁打の集計は `WHERE events = 'home_run'` または `countIf(events = 'home_run')`。
@@ -91,10 +94,23 @@ SELECT
     s.hit_distance_sc,
     s.events
 FROM statcast.statcast_raw AS s
-LEFT JOIN statcast.players AS p ON s.batter = p.player_id
+LEFT JOIN statcast.players AS p ON toUInt64(s.batter) = p.player_id
 WHERE s.game_year = 2024 AND s.launch_speed IS NOT NULL
 ORDER BY s.launch_speed DESC
 LIMIT 10
+        """.strip(),
+    ),
+    (
+        "MLB各地区のチーム一覧と所属地区",
+        """
+SELECT
+    league_name,
+    division_name,
+    name AS team_name,
+    abbreviation
+FROM statcast.teams
+WHERE active = 1
+ORDER BY league_name, division_name, team_name
         """.strip(),
     ),
     (
@@ -122,7 +138,7 @@ SELECT
     round(max(s.launch_speed), 1) AS max_launch_speed_mph,
     round(avg(s.hit_distance_sc), 1) AS avg_distance_ft
 FROM statcast.statcast_raw AS s
-JOIN statcast.players AS p ON s.batter = p.player_id
+JOIN statcast.players AS p ON toUInt64(s.batter) = p.player_id
 WHERE p.full_name LIKE '%Ohtani%' AND s.game_year = 2024
 GROUP BY player_name
         """.strip(),
@@ -135,7 +151,7 @@ SELECT
     countIf(s.events = 'strikeout') AS strikeouts,
     round(avg(s.release_speed), 1) AS avg_speed_mph
 FROM statcast.statcast_raw AS s
-JOIN statcast.players AS p ON s.pitcher = p.player_id
+JOIN statcast.players AS p ON toUInt64(s.pitcher) = p.player_id
 WHERE s.game_year = 2024
 GROUP BY pitcher_name
 ORDER BY strikeouts DESC
