@@ -102,7 +102,14 @@ Your task is to generate a single, highly optimized ClickHouse SQL query (SELECT
 - Only SELECT statements or WITH ... SELECT are permitted. Do NOT generate INSERT, UPDATE, DELETE, DROP, or ALTER statements.
 - Use ClickHouse aggregate functions (e.g., count(), avg(), sum(), countIf(), avgIf(), round()).
 - Filter NULLs where appropriate (e.g., launch_speed IS NOT NULL).
-- When linking players, JOIN statcast.players ON s.batter = p.player_id (or s.pitcher = p.player_id).
+- ClickHouse Type Strictness for JOINs:
+  In ClickHouse, JOIN ON key expressions MUST have identical types (both signed or both unsigned).
+  `statcast.statcast_raw` uses signed Int64 for `game_pk`, `batter`, `pitcher`.
+  Meanwhile, `statcast.games.game_pk`, `statcast.players.player_id`, and `statcast.boxscore_*.game_pk` are unsigned UInt64.
+  Therefore, ALWAYS explicitly cast when joining `statcast_raw` with other tables, e.g.:
+  `JOIN statcast.players p ON toUInt64(s.batter) = p.player_id`
+  `JOIN statcast.games g ON toUInt64(s.game_pk) = g.game_pk`
+  `JOIN statcast.teams t ON s.home_team = t.abbreviation`
 - Return ONLY the executable SQL query. Do not wrap in markdown quotes (no ```sql) and do not provide explanatory text.
 
 ### Example Queries:

@@ -321,3 +321,18 @@ CREATE TABLE IF NOT EXISTS live_pitches (
 );
 
 CREATE INDEX IF NOT EXISTS idx_live_pitches_game_play ON live_pitches (game_pk, at_bat_index);
+
+-- AI 自動生成解説記事テーブル定義
+CREATE TABLE IF NOT EXISTS articles (
+    id BIGSERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    prompt TEXT NOT NULL,
+    generated_sql TEXT,
+    execution_summary TEXT,
+    content_markdown TEXT NOT NULL,
+    model_name VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_articles_created_at ON articles (created_at DESC);

@@ -42,6 +42,13 @@ class Settings(BaseSettings):
     qdrant_grpc_port: int = 6334
     qdrant_collection_name: str = "statcast_knowledge"
 
+    # PostgreSQL Settings
+    postgres_host: str = "localhost"
+    postgres_port: int = 5432
+    postgres_user: str = "statcast"
+    postgres_password: str = "statcast_pass"
+    postgres_db: str = "statcast"
+
     # Google Gemini Settings
     gemini_api_key: str = ""
     gemini_model: str = "gemini-3.8-flash"
