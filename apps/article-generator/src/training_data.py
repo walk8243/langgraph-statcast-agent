@@ -62,9 +62,18 @@ ClickHouse クエリ作成の注意点:
 - 条件付き集計には `countIf(cond)`, `avgIf(col, cond)`, `sumIf(col, cond)` 関数を活用すると高速。
 - 打球初速や飛距離は NULL の投球もあるため、`WHERE launch_speed IS NOT NULL` または `avg(launch_speed)` を使用する。
 - 本塁打の集計は `WHERE events = 'home_run'` または `countIf(events = 'home_run')`。
-- 年度別の絞り込みは `WHERE game_year = 2024` または `WHERE toYear(game_date) = 2024`。
+- 年度別・シーズン別の絞り込みは必ず `statcast.games` テーブルを結合し、`WHERE g.season = YYYY AND g.game_type = 'R'`（レギュラーシーズン）を使用する。`game_year` カラムのみによる絞り込みはオープン戦等を含んでしまうため避けること。
 - 文字列の部分一致は `LIKE '%keyword%'` または `ilike` を使用。
 - 順位付けには `ORDER BY ... DESC LIMIT N` を使用する。
+        """.strip(),
+    ),
+    (
+        "シーズン集計と試合区分（game_type）のルール",
+        """
+シーズン成績・年度スタッツの集計ルール:
+- シーズン（年度）の成績を求める際は、必ず statcast.games テーブルを結合する:
+  `JOIN statcast.games g ON toUInt64(s.game_pk) = g.game_pk`
+- ユーザーから特定の指定がない限り、「〇〇年の成績」「〇〇年打撃スタッツ」はレギュラーシーズンのみを対象とするため、必ず `g.season = YYYY` かつ `g.game_type = 'R'` で絞り込む（オープン戦 'S' やポストシーズンを除外するため）。
         """.strip(),
     ),
 ]
@@ -75,10 +84,11 @@ SQL_EXAMPLES: List[Tuple[str, str]] = [
         "2024年のチーム別本塁打数ランキング",
         """
 SELECT
-    home_team AS team,
+    s.home_team AS team,
     count() AS total_home_runs
-FROM statcast.statcast_raw
-WHERE game_year = 2024 AND events = 'home_run'
+FROM statcast.statcast_raw AS s
+JOIN statcast.games AS g ON toUInt64(s.game_pk) = g.game_pk
+WHERE g.season = 2024 AND g.game_type = 'R' AND s.events = 'home_run'
 GROUP BY team
 ORDER BY total_home_runs DESC
         """.strip(),
@@ -94,8 +104,9 @@ SELECT
     s.hit_distance_sc,
     s.events
 FROM statcast.statcast_raw AS s
+JOIN statcast.games AS g ON toUInt64(s.game_pk) = g.game_pk
 LEFT JOIN statcast.players AS p ON toUInt64(s.batter) = p.player_id
-WHERE s.game_year = 2024 AND s.launch_speed IS NOT NULL
+WHERE g.season = 2024 AND g.game_type = 'R' AND s.launch_speed IS NOT NULL
 ORDER BY s.launch_speed DESC
 LIMIT 10
         """.strip(),
@@ -139,7 +150,28 @@ SELECT
     round(avg(s.hit_distance_sc), 1) AS avg_distance_ft
 FROM statcast.statcast_raw AS s
 JOIN statcast.players AS p ON toUInt64(s.batter) = p.player_id
-WHERE p.full_name LIKE '%Ohtani%' AND s.game_year = 2024
+JOIN statcast.games AS g ON toUInt64(s.game_pk) = g.game_pk
+WHERE p.full_name LIKE '%Ohtani%' AND g.season = 2024 AND g.game_type = 'R'
+GROUP BY player_name
+        """.strip(),
+    ),
+    (
+        "村上宗隆選手の2026年打撃スタッツ（本塁打・打球初速・飛距離・投球数）",
+        """
+SELECT
+    p.full_name AS player_name,
+    countIf(s.events = 'home_run') AS home_runs,
+    countIf(s.launch_speed >= 95.0) AS hard_hit_count,
+    round(avg(s.launch_speed), 2) AS avg_launch_speed_mph,
+    round(max(s.launch_speed), 2) AS max_launch_speed_mph,
+    round(avg(s.launch_angle), 2) AS avg_launch_angle_deg,
+    round(avg(s.hit_distance_sc), 2) AS avg_distance_ft,
+    round(max(s.hit_distance_sc), 2) AS max_distance_ft,
+    count() AS total_pitches_seen
+FROM statcast.statcast_raw AS s
+JOIN statcast.players AS p ON toUInt64(s.batter) = p.player_id
+JOIN statcast.games AS g ON toUInt64(s.game_pk) = g.game_pk
+WHERE p.full_name LIKE '%Munetaka Murakami%' AND g.season = 2026 AND g.game_type = 'R'
 GROUP BY player_name
         """.strip(),
     ),
@@ -152,7 +184,8 @@ SELECT
     round(avg(s.release_speed), 1) AS avg_speed_mph
 FROM statcast.statcast_raw AS s
 JOIN statcast.players AS p ON toUInt64(s.pitcher) = p.player_id
-WHERE s.game_year = 2024
+JOIN statcast.games AS g ON toUInt64(s.game_pk) = g.game_pk
+WHERE g.season = 2024 AND g.game_type = 'R'
 GROUP BY pitcher_name
 ORDER BY strikeouts DESC
 LIMIT 10

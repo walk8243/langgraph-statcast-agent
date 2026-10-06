@@ -110,6 +110,11 @@ Your task is to generate a single, highly optimized ClickHouse SQL query (SELECT
   `JOIN statcast.players p ON toUInt64(s.batter) = p.player_id`
   `JOIN statcast.games g ON toUInt64(s.game_pk) = g.game_pk`
   `JOIN statcast.teams t ON s.home_team = t.abbreviation`
+- Season Aggregation & Regular Season Filter (CRITICAL):
+  When aggregating stats for a specific season or year (e.g., '2024年', '2026年', '〇〇年の打撃スタッツ', 'シーズン成績'):
+  Do NOT filter by `s.game_year = <year>` alone! You MUST join `statcast.games`:
+  `JOIN statcast.games g ON toUInt64(s.game_pk) = g.game_pk`
+  and filter by `g.season = <year> AND g.game_type = 'R'` (regular season), unless the user explicitly specifies exhibition/spring training or post-season.
 - Return ONLY the executable SQL query. Do not wrap in markdown quotes (no ```sql) and do not provide explanatory text.
 
 ### Example Queries:
