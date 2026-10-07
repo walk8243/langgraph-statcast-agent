@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
-import { findInProgressGames, saveDiffResult } from "../src/db.js";
-import { DiffResult } from "../src/types.js";
+import { findInProgressGames, saveDiffResult, upsertGameRecord } from "../src/db.js";
+import { DiffResult, GameInfo } from "../src/types.js";
 
 describe("db", () => {
-  it("findInProgressGames returns array of game_pk", async () => {
+  it("findInProgressGames returns array of game_pk with abstract_game_state and fallback", async () => {
     const mockPool = {
       query: vi.fn().mockResolvedValue({
         rows: [{ game_pk: "824703" }, { game_pk: "824704" }],
@@ -13,7 +13,37 @@ describe("db", () => {
     const pks = await findInProgressGames(mockPool);
     expect(pks).toEqual([824703, 824704]);
     expect(mockPool.query).toHaveBeenCalledTimes(1);
-    expect(mockPool.query.mock.calls[0][0]).toContain("status ILIKE '%Progress%'");
+    const querySql = mockPool.query.mock.calls[0][0];
+    expect(querySql).toContain("abstract_game_state = 'Live'");
+    expect(querySql).toContain("status ILIKE '%Progress%'");
+  });
+
+  it("upsertGameRecord correctly inserts abstract_game_state", async () => {
+    const mockClient = {
+      query: vi.fn().mockResolvedValue({ rows: [] }),
+    } as any;
+
+    const game: GameInfo = {
+      game_pk: 824703,
+      game_date_time: new Date("2024-04-01T18:00:00Z"),
+      season: 2024,
+      game_type: "R",
+      status: "Delayed: Rain",
+      status_code: "D",
+      abstract_state: "Live",
+      abstract_game_state: "Live",
+      home_team_id: 119,
+      away_team_id: 135,
+      home_score: 3,
+      away_score: 2,
+    };
+
+    await upsertGameRecord(mockClient, game);
+    expect(mockClient.query).toHaveBeenCalledTimes(1);
+    const [sql, params] = mockClient.query.mock.calls[0];
+    expect(sql).toContain("abstract_game_state");
+    expect(params[4]).toBe("Delayed: Rain");
+    expect(params[5]).toBe("Live");
   });
 
   it("saveDiffResult executes in transaction and commits", async () => {
@@ -35,6 +65,7 @@ describe("db", () => {
         status: "In Progress",
         status_code: "I",
         abstract_state: "Live",
+        abstract_game_state: "Live",
         home_team_id: 112,
         away_team_id: 111,
         home_score: 0,

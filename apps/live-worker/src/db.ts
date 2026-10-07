@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS games (
     season INT NOT NULL,
     game_type VARCHAR(10),
     status VARCHAR(50),
+    abstract_game_state VARCHAR(20),
     home_team_id BIGINT,
     away_team_id BIGINT,
     home_score INT,
@@ -26,6 +27,8 @@ CREATE TABLE IF NOT EXISTS games (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE games ADD COLUMN IF NOT EXISTS abstract_game_state VARCHAR(20);
 
 CREATE TABLE IF NOT EXISTS players (
     player_id BIGINT PRIMARY KEY,
@@ -152,7 +155,8 @@ export async function findInProgressGames(poolOrClient: Pool | PoolClient): Prom
   const sql = `
     SELECT game_pk
     FROM games
-    WHERE status ILIKE '%Progress%' OR status = 'Live'
+    WHERE abstract_game_state = 'Live'
+       OR (abstract_game_state IS NULL AND (status ILIKE '%Progress%' OR status = 'Live'))
     ORDER BY game_date_time ASC;
   `;
   const res = await poolOrClient.query(sql);
@@ -161,18 +165,20 @@ export async function findInProgressGames(poolOrClient: Pool | PoolClient): Prom
 
 export async function upsertGameRecord(client: PoolClient, game: GameInfo): Promise<void> {
   if (!game.game_pk) return;
+  const abstractGameState = game.abstract_game_state || game.abstract_state || null;
   const sql = `
     INSERT INTO games (
-        game_pk, game_date_time, season, game_type, status,
+        game_pk, game_date_time, season, game_type, status, abstract_game_state,
         home_team_id, away_team_id, home_score, away_score,
         updated_at
     ) VALUES (
-        $1, $2, $3, $4, $5,
-        $6, $7, $8, $9,
+        $1, $2, $3, $4, $5, $6,
+        $7, $8, $9, $10,
         CURRENT_TIMESTAMP
     )
     ON CONFLICT (game_pk) DO UPDATE SET
         status = EXCLUDED.status,
+        abstract_game_state = COALESCE(EXCLUDED.abstract_game_state, games.abstract_game_state),
         home_score = COALESCE(EXCLUDED.home_score, games.home_score),
         away_score = COALESCE(EXCLUDED.away_score, games.away_score),
         updated_at = CURRENT_TIMESTAMP;
@@ -183,6 +189,7 @@ export async function upsertGameRecord(client: PoolClient, game: GameInfo): Prom
     game.season,
     game.game_type,
     game.status,
+    abstractGameState,
     game.home_team_id,
     game.away_team_id,
     game.home_score,

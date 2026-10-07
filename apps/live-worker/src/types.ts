@@ -10,6 +10,7 @@ export interface GameInfo {
   status: string;
   status_code: string | null;
   abstract_state: string;
+  abstract_game_state?: string;
   home_team_id: number | null;
   away_team_id: number | null;
   home_score: number | null;

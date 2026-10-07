@@ -177,6 +177,7 @@ CREATE TABLE IF NOT EXISTS statcast.games (
     `game_type` LowCardinality(String),
     `status` LowCardinality(String),
     `status_code` LowCardinality(Nullable(String)),
+    `abstract_game_state` LowCardinality(String),
     `home_team_id` UInt32,
     `home_team_name` String,
     `away_team_id` UInt32,
