@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS statcast.games (
     `game_type` LowCardinality(String),
     `status` LowCardinality(String),
     `status_code` LowCardinality(Nullable(String)),
+    `abstract_game_state` LowCardinality(String),
     `home_team_id` UInt32,
     `home_team_name` String,
     `away_team_id` UInt32,
@@ -129,6 +130,7 @@ def fetch_mlb_schedule(
                 "game_type": g.get("gameType") or "",
                 "status": status.get("detailedState") or "",
                 "status_code": status.get("statusCode"),
+                "abstract_game_state": status.get("abstractGameState") or "",
                 "home_team_id": home_team.get("id"),
                 "home_team_name": home_team.get("name") or "",
                 "away_team_id": away_team.get("id"),
@@ -174,6 +176,7 @@ def insert_games_to_clickhouse(client: Client, games: list[dict[str, Any]]) -> i
         "game_type",
         "status",
         "status_code",
+        "abstract_game_state",
         "home_team_id",
         "home_team_name",
         "away_team_id",
@@ -196,6 +199,7 @@ def insert_games_to_clickhouse(client: Client, games: list[dict[str, Any]]) -> i
             g.get("game_type") or "",
             g.get("status") or "",
             g.get("status_code"),
+            g.get("abstract_game_state") or "",
             g.get("home_team_id"),
             g.get("home_team_name") or "",
             g.get("away_team_id"),
@@ -236,11 +240,11 @@ def upsert_games_to_postgres(
 
     sql = """
     INSERT INTO games (
-        game_pk, game_date_time, season, game_type, status,
+        game_pk, game_date_time, season, game_type, status, abstract_game_state,
         home_team_id, away_team_id, home_score, away_score,
         updated_at
     ) VALUES (
-        %(game_pk)s, %(game_date_time)s, %(season)s, %(game_type)s, %(status)s,
+        %(game_pk)s, %(game_date_time)s, %(season)s, %(game_type)s, %(status)s, %(abstract_game_state)s,
         %(home_team_id)s, %(away_team_id)s, %(home_score)s, %(away_score)s,
         CURRENT_TIMESTAMP
     )
@@ -249,6 +253,7 @@ def upsert_games_to_postgres(
         season = EXCLUDED.season,
         game_type = EXCLUDED.game_type,
         status = EXCLUDED.status,
+        abstract_game_state = COALESCE(EXCLUDED.abstract_game_state, games.abstract_game_state),
         home_team_id = EXCLUDED.home_team_id,
         away_team_id = EXCLUDED.away_team_id,
         home_score = EXCLUDED.home_score,
@@ -267,6 +272,7 @@ def upsert_games_to_postgres(
             "season": g.get("season"),
             "game_type": g.get("game_type") or "",
             "status": g.get("status") or "",
+            "abstract_game_state": g.get("abstract_game_state") or "",
             "home_team_id": g.get("home_team_id"),
             "away_team_id": g.get("away_team_id"),
             "home_score": g.get("home_score"),

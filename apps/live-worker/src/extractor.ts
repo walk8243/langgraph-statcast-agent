@@ -75,6 +75,7 @@ export function extractGameInfo(feedData: Record<string, any>): GameInfo {
     status: statusInfo.detailedState || "Unknown",
     status_code: statusInfo.statusCode || null,
     abstract_state: statusInfo.abstractGameState || "Live",
+    abstract_game_state: statusInfo.abstractGameState || "Live",
     home_team_id: safeInt(homeTeam.id),
     away_team_id: safeInt(awayTeam.id),
     home_score: safeInt(lsTeams.home?.runs),

@@ -24,6 +24,7 @@ def sample_schedule_response():
                         "gameType": "R",
                         "season": "2024",
                         "status": {
+                            "abstractGameState": "Final",
                             "detailedState": "Final",
                             "statusCode": "F",
                         },
@@ -79,6 +80,7 @@ def test_fetch_mlb_schedule(sample_schedule_response):
         assert g["game_type"] == "R"
         assert g["status"] == "Final"
         assert g["status_code"] == "F"
+        assert g["abstract_game_state"] == "Final"
         assert g["home_team_id"] == 135
         assert g["home_team_name"] == "San Diego Padres"
         assert g["away_team_id"] == 119
@@ -139,6 +141,7 @@ def test_insert_games_to_clickhouse():
             "game_type": "R",
             "status": "Final",
             "status_code": "F",
+            "abstract_game_state": "Final",
             "home_team_id": 135,
             "home_team_name": "San Diego Padres",
             "away_team_id": 119,
@@ -159,6 +162,9 @@ def test_insert_games_to_clickhouse():
     call_args = mock_client.insert.call_args[1]
     assert call_args["table"] == "games"
     assert call_args["database"] == "statcast"
+    assert "abstract_game_state" in call_args["column_names"]
+    idx = call_args["column_names"].index("abstract_game_state")
+    assert call_args["data"][0][idx] == "Final"
     assert len(call_args["data"]) == 1
 
 
@@ -181,6 +187,7 @@ def test_upsert_games_to_postgres():
             "season": 2024,
             "game_type": "R",
             "status": "Final",
+            "abstract_game_state": "Final",
             "home_team_id": 135,
             "away_team_id": 119,
             "home_score": 2,
@@ -198,6 +205,7 @@ def test_upsert_games_to_postgres():
     assert called_data[0]["game_date_time"] == datetime.fromisoformat("2024-03-20T10:05:00+00:00")
     assert called_data[0]["home_team_id"] == 135
     assert called_data[0]["away_team_id"] == 119
+    assert called_data[0]["abstract_game_state"] == "Final"
     assert "game_date" not in called_data[0]
     assert "venue_id" not in called_data[0]
     mock_conn.commit.assert_called_once()

@@ -51,6 +51,7 @@ CREATE TABLE IF NOT EXISTS games (
     season INT NOT NULL,
     game_type VARCHAR(10),
     status VARCHAR(50),
+    abstract_game_state VARCHAR(20),
     home_team_id BIGINT,
     away_team_id BIGINT,
     home_score INT,
@@ -63,6 +64,7 @@ CREATE INDEX IF NOT EXISTS idx_games_game_date_time ON games (game_date_time);
 CREATE INDEX IF NOT EXISTS idx_games_season ON games (season);
 CREATE INDEX IF NOT EXISTS idx_games_home_team_id ON games (home_team_id);
 CREATE INDEX IF NOT EXISTS idx_games_away_team_id ON games (away_team_id);
+CREATE INDEX IF NOT EXISTS idx_games_abstract_game_state ON games (abstract_game_state);
 
 -- 打者シーズン基本指標テーブル定義
 CREATE TABLE IF NOT EXISTS batter_season_stats (
