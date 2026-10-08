@@ -227,6 +227,8 @@ services:
       context: ./apps/article-generator
       dockerfile: Dockerfile
     container_name: statcast-article-generator
+    ports:
+      - "${ARTICLE_GENERATOR_PORT:-8002}:8002"
     depends_on:
       clickhouse:
         condition: service_healthy
@@ -234,7 +236,14 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -s -f http://localhost:8002/health || exit 1" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     environment:
+      - PORT=8002
       - CLICKHOUSE_HOST=clickhouse
       - CLICKHOUSE_HTTP_PORT=8123
       - CLICKHOUSE_USER=${CLICKHOUSE_USER:-statcast}
@@ -263,6 +272,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      article-generator:
+        condition: service_healthy
     environment:
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
@@ -270,6 +281,7 @@ services:
       - POSTGRES_USER=${POSTGRES_USER:-statcast}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-statcast_pass}
       - NEXT_PUBLIC_LIVE_API_URL=${NEXT_PUBLIC_LIVE_API_URL:-http://localhost:8001}
+      - ARTICLE_GENERATOR_URL=${ARTICLE_GENERATOR_URL:-http://article-generator:8002}
 
 volumes:
   clickhouse_data:

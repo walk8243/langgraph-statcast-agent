@@ -11,4 +11,7 @@ RUN pip install --no-cache-dir .
 
 COPY src/ /app/src/
 
+EXPOSE 8002
+
 ENTRYPOINT ["python", "-m", "src.main"]
+CMD ["--serve"]

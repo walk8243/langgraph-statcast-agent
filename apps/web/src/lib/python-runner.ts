@@ -10,7 +10,7 @@ function resolveArticleGeneratorDir(): string {
   ];
 
   for (const dir of candidates) {
-    if (fs.existsSync(path.join(dir, "src/main.py"))) {
+    if (fs.existsSync(/*turbopackIgnore: true*/ path.join(dir, "src/main.py"))) {
       return dir;
     }
   }
@@ -26,6 +26,14 @@ export interface PythonRunResult {
 
 export async function runArticleGenerator(args: string[]): Promise<PythonRunResult> {
   const cwd = resolveArticleGeneratorDir();
+
+  if (!fs.existsSync(/*turbopackIgnore: true*/ cwd)) {
+    return {
+      stdout: "",
+      stderr: `Article generator directory not found: ${cwd}. Please ensure ARTICLE_GENERATOR_URL is configured.`,
+      exitCode: 1,
+    };
+  }
 
   return new Promise((resolve, reject) => {
     // Try uv run python first, with fallback to python
