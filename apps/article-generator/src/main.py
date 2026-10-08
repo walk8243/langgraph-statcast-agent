@@ -463,6 +463,11 @@ def main() -> None:
         type=str,
         help="Validate a SQL query string for security rules",
     )
+    parser.add_argument(
+        "--serve",
+        action="store_true",
+        help="Start the FastAPI HTTP server for article generation service",
+    )
 
     args = parser.parse_args()
 
@@ -488,6 +493,13 @@ def main() -> None:
         sys.exit(cmd_get_article(args.get_article))
     elif args.validate_sql:
         sys.exit(cmd_validate_sql(args.validate_sql))
+    elif args.serve:
+        import os
+        from src.server import run_server
+        port_env = int(os.environ.get("PORT", "8002"))
+        host_env = os.environ.get("HOST", "0.0.0.0")
+        run_server(host=host_env, port=port_env)
+        sys.exit(0)
     else:
         parser.print_help()
         sys.exit(0)
