@@ -41,6 +41,13 @@ python -m src.main --example-multi-config
 python -m src.main --generate-multi-article config.json
 ```
 
+### 対話型AI編集デスク（企画立案・壁打ちからの自動執筆）
+ターミナル上でAI編集デスクと対話し、テーマの深掘りや章立て・取材項目を決定して一気通貫で記事を生成します。
+
+```bash
+python -m src.main --desk-interactive
+```
+
 ### Docker での実行
 ```bash
 docker compose run --rm article-generator --check-services

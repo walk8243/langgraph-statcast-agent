@@ -275,6 +275,73 @@ def cmd_generate_multi_article(config_path_or_json: str) -> int:
     return 0
 
 
+def cmd_desk_interactive() -> int:
+    """Run interactive terminal session with Editorial Desk Agent to brainstorm and generate article."""
+    from src.orchestration_pipeline import OrchestrationPipeline
+
+    print("\n" + "=" * 65)
+    print("MLB Statcast AI 編集デスク（企画立案・取材壁打ちエージェント）")
+    print("=" * 65)
+    print("編集デスクAIと対話して、記事のテーマ、切り口、取材データ項目を決めましょう。")
+    print("終了したいときは 'exit' または 'quit' と入力してください。\n")
+
+    pipeline = OrchestrationPipeline()
+    messages: list[dict[str, str]] = []
+
+    while True:
+        try:
+            user_input = input("\n[あなた (ライター)] > ").strip()
+        except (KeyboardInterrupt, EOFError):
+            print("\nセッションを終了します。")
+            break
+
+        if not user_input:
+            continue
+        if user_input.lower() in ["exit", "quit", "q"]:
+            print("セッションを終了します。")
+            break
+
+        messages.append({"role": "user", "content": user_input})
+        print("\n[編集デスクが思考・企画案を策定中...]")
+
+        try:
+            response, article = pipeline.process_chat_and_run(messages)
+        except Exception as e:
+            print(f"\nエラーが発生しました: {e}")
+            continue
+
+        messages.append({"role": "assistant", "content": response.reply})
+
+        print(f"\n[編集デスク] >\n{response.reply}")
+
+        if response.proposal:
+            print("\n" + "-" * 50)
+            print(f"【企画案ドラフト】: {response.proposal.title}")
+            print(f"主旨: {response.proposal.theme}")
+            print("章構成:")
+            for idx, sec in enumerate(response.proposal.sections, 1):
+                mat_str = f" (参照: {sec.material_label})" if sec.material_label else ""
+                print(f"  {idx}. {sec.title}{mat_str} - {sec.description}")
+            print("取材データ要求リスト:")
+            for idx, req in enumerate(response.proposal.requirements, 1):
+                print(f"  [{req.label}]: {req.prompt}")
+            print("-" * 50)
+
+        if article:
+            print("\n" + "=" * 65)
+            print(f"[成功] 総合解説記事が生成・保存されました！ (ID: {article.id})")
+            print(f"タイトル: {article.title}")
+            print(f"モデル: {article.model_name}")
+            print("=" * 65)
+            preview = article.content_markdown[:600] + ("..." if len(article.content_markdown) > 600 else "")
+            print(f"\nプレビュー:\n{preview}")
+            print("\n" + "=" * 65)
+            print("記事一覧は `python -m src.main --list-articles` で確認できます。")
+            break
+
+    return 0
+
+
 def cmd_validate_sql(sql: str) -> int:
     """Validate SQL query for safety constraints."""
     is_valid, msg = ClickHouseClient.validate_safe_sql(sql)
@@ -321,6 +388,11 @@ def main() -> None:
         help="Print an example JSON configuration for multi-material article generation",
     )
     parser.add_argument(
+        "--desk-interactive",
+        action="store_true",
+        help="Start interactive conversational session with Editorial Desk Agent to plan and write article",
+    )
+    parser.add_argument(
         "--list-articles",
         action="store_true",
         help="List all saved articles in PostgreSQL",
@@ -350,6 +422,8 @@ def main() -> None:
         sys.exit(cmd_generate_multi_article(args.generate_multi_article))
     elif args.example_multi_config:
         sys.exit(cmd_example_multi_config())
+    elif args.desk_interactive:
+        sys.exit(cmd_desk_interactive())
     elif args.list_articles:
         sys.exit(cmd_list_articles())
     elif args.get_article is not None:
