@@ -25,6 +25,22 @@ python -m src.main --train
 python -m src.main --query "2024年のチーム別本塁打数ランキング"
 ```
 
+### AI解説記事の生成（単一SQL）
+```bash
+python -m src.main --generate-article "2024年ドジャースのチーム本塁打と得点力の要因分析"
+```
+
+### 多段オーケストレーション解説記事の生成（複数データ素材集計）
+複数の集計素材と章構成を指定して、立体的な解説記事を生成・PostgreSQLへ保存します。
+
+```bash
+# 雛形設定JSONの確認
+python -m src.main --example-multi-config
+
+# 設定JSONファイルを指定して生成
+python -m src.main --generate-multi-article config.json
+```
+
 ### Docker での実行
 ```bash
 docker compose run --rm article-generator --check-services
