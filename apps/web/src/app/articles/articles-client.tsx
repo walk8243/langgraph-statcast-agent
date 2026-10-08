@@ -27,6 +27,7 @@ import {
   Calendar20Regular,
   DocumentText24Regular,
   Comment20Regular,
+  Rocket24Regular,
 } from "@fluentui/react-icons";
 import { ArticleListItem } from "@/types/article";
 
@@ -145,23 +146,39 @@ export function ArticlesClient({ articles }: ArticlesClientProps) {
             ダッシュボードへ戻る
           </Button>
         </Link>
-        <Badge appearance="filled" color="brand" icon={<Sparkle24Regular />}>
-          AI Generated Reports
-        </Badge>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <Link href="/articles/desk" style={{ textDecoration: "none" }}>
+            <Button appearance="primary" icon={<Rocket24Regular />}>
+              AI 編集デスクと企画する
+            </Button>
+          </Link>
+          <Badge appearance="filled" color="brand" icon={<Sparkle24Regular />}>
+            AI Generated Reports
+          </Badge>
+        </div>
       </nav>
 
       {/* Hero Banner */}
       <section className={styles.heroBanner}>
-        <Badge appearance="outline" color="brand" style={{ alignSelf: "flex-start" }}>
-          Text-to-SQL &amp; LLM 記事生成
-        </Badge>
-        <Title1>MLB データ分析・解説レポート一覧</Title1>
-        <Subtitle1 style={{ color: tokens.colorNeutralForeground2 }}>
-          自然言語の指示から ClickHouse の Statcast データを動的集計し、Google Gemini が自動執筆した解説記事です。
-        </Subtitle1>
-        <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>
-          登録記事数: {articles.length} 件
-        </Caption1>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "16px" }}>
+          <div style={{ display: "flex", flexDirection: "column", rowGap: "8px" }}>
+            <Badge appearance="outline" color="brand" style={{ alignSelf: "flex-start" }}>
+              Text-to-SQL &amp; LLM 記事生成
+            </Badge>
+            <Title1>MLB データ分析・解説レポート一覧</Title1>
+            <Subtitle1 style={{ color: tokens.colorNeutralForeground2 }}>
+              自然言語の指示から ClickHouse の Statcast データを動的集計し、Google Gemini が自動執筆した解説記事です。
+            </Subtitle1>
+            <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>
+              登録記事数: {articles.length} 件
+            </Caption1>
+          </div>
+          <Link href="/articles/desk" style={{ textDecoration: "none", alignSelf: "center" }}>
+            <Button appearance="primary" size="large" icon={<Sparkle24Regular />}>
+              新機能: AI 編集デスクと対話企画
+            </Button>
+          </Link>
+        </div>
       </section>
 
       {/* Articles Grid or Empty State */}

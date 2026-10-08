@@ -260,6 +260,7 @@ def cmd_generate_multi_article(config_path_or_json: str) -> int:
         return 1
 
     print(f"\n[Success] Multi-Material Article Saved with ID: {article.id}")
+    print(f"JSON_RESULT:{json.dumps({'article_id': article.id, 'title': article.title}, ensure_ascii=False)}")
     print(f"Title: {article.title}")
     print(f"Model: {article.model_name}")
     print("\nGenerated SQLs:")
@@ -273,6 +274,56 @@ def cmd_generate_multi_article(config_path_or_json: str) -> int:
     print(article.content_markdown)
     print("=" * 60)
     return 0
+
+
+def cmd_desk_chat_json(payload_str: str) -> int:
+    """Process a single turn of chat with ArticleDeskAgent from JSON input and output JSON result."""
+    import json
+    from src.article_desk_agent import ArticleDeskAgent
+
+    try:
+        data = json.loads(payload_str)
+        messages = data.get("messages", [])
+    except Exception as e:
+        err_res = {"error": f"Invalid JSON payload: {e}"}
+        print(json.dumps(err_res, ensure_ascii=False))
+        return 1
+
+    agent = ArticleDeskAgent()
+    try:
+        res = agent.chat(messages)
+        output = {
+            "reply": res.reply,
+            "is_finalized": res.is_finalized,
+            "proposal": {
+                "title": res.proposal.title,
+                "theme": res.proposal.theme,
+                "sections": [
+                    {
+                        "title": s.title,
+                        "description": s.description,
+                        "material_label": s.material_label,
+                    }
+                    for s in res.proposal.sections
+                ],
+                "requirements": [
+                    {
+                        "label": r.label,
+                        "prompt": r.prompt,
+                        "section_hint": r.section_hint,
+                    }
+                    for r in res.proposal.requirements
+                ],
+            }
+            if res.proposal
+            else None,
+        }
+        print(json.dumps(output, ensure_ascii=False))
+        return 0
+    except Exception as e:
+        err_res = {"error": f"Desk agent execution failed: {e}"}
+        print(json.dumps(err_res, ensure_ascii=False))
+        return 1
 
 
 def cmd_desk_interactive() -> int:
@@ -393,6 +444,11 @@ def main() -> None:
         help="Start interactive conversational session with Editorial Desk Agent to plan and write article",
     )
     parser.add_argument(
+        "--desk-chat-json",
+        type=str,
+        help="Execute single chat turn with Editorial Desk Agent from JSON string",
+    )
+    parser.add_argument(
         "--list-articles",
         action="store_true",
         help="List all saved articles in PostgreSQL",
@@ -424,6 +480,8 @@ def main() -> None:
         sys.exit(cmd_example_multi_config())
     elif args.desk_interactive:
         sys.exit(cmd_desk_interactive())
+    elif args.desk_chat_json:
+        sys.exit(cmd_desk_chat_json(args.desk_chat_json))
     elif args.list_articles:
         sys.exit(cmd_list_articles())
     elif args.get_article is not None:
