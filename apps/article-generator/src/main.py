@@ -9,6 +9,12 @@ import sys
 from src.article_service import ArticleService
 from src.clickhouse_client import ClickHouseClient
 from src.config import settings
+from src.multi_article_service import MultiArticleService
+from src.multi_article_synthesizer import (
+    ArticleOutline,
+    ArticleOutlineSection,
+    DataRequirement,
+)
 from src.postgres_client import PostgresClient
 from src.qdrant_memory import QdrantKnowledgeStore
 from src.text_to_sql import TextToSqlEngine
@@ -162,6 +168,113 @@ def cmd_get_article(article_id: int) -> int:
     return 0
 
 
+def cmd_example_multi_config() -> int:
+    """Print an example multi-material article configuration JSON."""
+    example = {
+        "title": "2026年 鈴木誠也・村上宗隆・岡本和真 打撃特性徹底比較",
+        "theme": "MLBで競い合う日本屈指のスラッガー3名の打撃特性・パワーの質・速球適応度を詳細スタッツから多角的に分析・比較する。",
+        "sections": [
+            {
+                "title": "シーズン基本成績と総合生産性",
+                "description": "打率、本塁打、打点、OPS、wOBAなどの主要指標の比較",
+                "material_label": "素材①: 総合生産性",
+            },
+            {
+                "title": "打球品質とパワーの真価（Barrel% & HardHit%）",
+                "description": "平均打球速度、最高速度、バレル率、ハードヒット率の差異",
+                "material_label": "素材②: 打球質",
+            },
+        ],
+        "requirements": [
+            {
+                "label": "素材①: 総合生産性",
+                "prompt": "2026年の鈴木誠也、村上宗隆、岡本和真のPA, AVG, HR, RBI, OPS, wOBA, BB%, K%を集計",
+                "section_hint": "シーズン基本成績と総合生産性",
+            },
+            {
+                "label": "素材②: 打球質",
+                "prompt": "2026年の鈴木誠也、村上宗隆、岡本和真の平均打球速度, 最高打球速度, HardHit%, Barrel%を集計",
+                "section_hint": "打球品質とパワーの真価",
+            },
+        ],
+    }
+    import json
+
+    print(json.dumps(example, ensure_ascii=False, indent=2))
+    return 0
+
+
+def cmd_generate_multi_article(config_path_or_json: str) -> int:
+    """Generate comprehensive multi-material article from config JSON and save to PostgreSQL."""
+    import json
+    import os
+
+    try:
+        if os.path.exists(config_path_or_json):
+            with open(config_path_or_json, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        else:
+            data = json.loads(config_path_or_json)
+    except Exception as e:
+        print(f"Failed to parse config file/JSON: {e}")
+        return 1
+
+    title = data.get("title", "Statcast 総合分析レポート")
+    theme = data.get("theme", "")
+    sections_raw = data.get("sections", [])
+    requirements_raw = data.get("requirements", [])
+
+    if not requirements_raw:
+        print("Error: 'requirements' array is required in multi-article configuration.")
+        return 1
+
+    sections = [
+        ArticleOutlineSection(
+            title=s.get("title", ""),
+            description=s.get("description", ""),
+            material_label=s.get("material_label"),
+        )
+        for s in sections_raw
+    ]
+    outline = ArticleOutline(title=title, theme=theme, sections=sections)
+
+    requirements = [
+        DataRequirement(
+            label=r.get("label", f"素材 {idx + 1}"),
+            prompt=r.get("prompt", ""),
+            section_hint=r.get("section_hint"),
+        )
+        for idx, r in enumerate(requirements_raw)
+    ]
+
+    print(f"\nStarting Multi-Material Article Generation: '{outline.title}'")
+    print(f"Theme: {outline.theme}")
+    print(f"Materials to collect: {len(requirements)}")
+    print("=" * 60)
+
+    service = MultiArticleService()
+    try:
+        article = service.generate_and_save_multi_article(outline, requirements)
+    except Exception as e:
+        print(f"\nMulti-material article generation failed: {e}")
+        return 1
+
+    print(f"\n[Success] Multi-Material Article Saved with ID: {article.id}")
+    print(f"Title: {article.title}")
+    print(f"Model: {article.model_name}")
+    print("\nGenerated SQLs:")
+    print("-" * 60)
+    print(article.generated_sql)
+    print("-" * 60)
+    print("\nExecution Summary:")
+    print(article.execution_summary)
+    print("\nArticle Markdown Preview:")
+    print("=" * 60)
+    print(article.content_markdown)
+    print("=" * 60)
+    return 0
+
+
 def cmd_validate_sql(sql: str) -> int:
     """Validate SQL query for safety constraints."""
     is_valid, msg = ClickHouseClient.validate_safe_sql(sql)
@@ -198,6 +311,16 @@ def main() -> None:
         help="Generate a complete Markdown analysis article from topic and save to PostgreSQL",
     )
     parser.add_argument(
+        "--generate-multi-article",
+        type=str,
+        help="Generate multi-material analytical article from JSON configuration file or string",
+    )
+    parser.add_argument(
+        "--example-multi-config",
+        action="store_true",
+        help="Print an example JSON configuration for multi-material article generation",
+    )
+    parser.add_argument(
         "--list-articles",
         action="store_true",
         help="List all saved articles in PostgreSQL",
@@ -223,6 +346,10 @@ def main() -> None:
         sys.exit(cmd_query(args.query))
     elif args.generate_article:
         sys.exit(cmd_generate_article(args.generate_article))
+    elif args.generate_multi_article:
+        sys.exit(cmd_generate_multi_article(args.generate_multi_article))
+    elif args.example_multi_config:
+        sys.exit(cmd_example_multi_config())
     elif args.list_articles:
         sys.exit(cmd_list_articles())
     elif args.get_article is not None:
