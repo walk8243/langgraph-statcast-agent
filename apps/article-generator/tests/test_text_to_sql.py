@@ -91,7 +91,7 @@ def test_qdrant_fallback_embedding():
 
 
 def test_text_to_sql_prompt_construction():
-    """Verify that TextToSqlEngine builds rich prompt with context."""
+    """Verify that TextToSqlEngine builds rich prompt with context and critical rules."""
     engine = TextToSqlEngine(gemini_api_key="dummy")
     context = {
         "ddls": [{"table_name": "statcast_raw", "content": "CREATE TABLE statcast_raw ..."}],
@@ -103,6 +103,24 @@ def test_text_to_sql_prompt_construction():
     assert "Launch Speed" in prompt
     assert "Top HRs" in prompt
     assert "Show me top home runs" in prompt
+    assert "ReplacingMergeTree Deduplication & FINAL Modifier" in prompt
+    assert "statcast.boxscore_batting" in prompt
+    assert "s.type = 'X'" in prompt
+
+
+def test_training_data_rules_coverage():
+    """Verify that STATCAST_DOCS and SQL_EXAMPLES cover critical ClickHouse patterns."""
+    docs_text = " ".join([doc for _, doc in STATCAST_DOCS])
+    assert "ReplacingMergeTree" in docs_text
+    assert "FINAL" in docs_text
+    assert "boxscore_batting" in docs_text
+    assert "launch_speed_angle = 6" in docs_text
+
+    sql_texts = " ".join([sql for _, sql in SQL_EXAMPLES])
+    assert "FINAL" in sql_texts
+    assert "statcast.boxscore_batting" in sql_texts
+    assert "launch_speed_angle = 6" in sql_texts
+
 
 
 @patch.object(ClickHouseClient, "run_query")
