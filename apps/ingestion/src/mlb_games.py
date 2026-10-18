@@ -222,7 +222,8 @@ def insert_games_to_clickhouse(client: Client, games: list[dict[str, Any]]) -> i
         column_names=column_names,
         database="statcast",
     )
-    logger.info("Inserted %d games into ClickHouse statcast.games table", len(rows))
+    client.command("OPTIMIZE TABLE statcast.games FINAL")
+    logger.info("Inserted %d games into ClickHouse statcast.games table and optimized table", len(rows))
     return len(rows)
 
 
