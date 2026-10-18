@@ -157,7 +157,7 @@ def test_insert_games_to_clickhouse():
 
     count = insert_games_to_clickhouse(mock_client, sample_games)
     assert count == 1
-    mock_client.command.assert_called_once()  # table init
+    assert mock_client.command.call_count == 2  # table init and column migration
     mock_client.insert.assert_called_once()
     call_args = mock_client.insert.call_args[1]
     assert call_args["table"] == "games"

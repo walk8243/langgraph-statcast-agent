@@ -151,6 +151,9 @@ def fetch_mlb_schedule(
 def initialize_clickhouse_games_table(client: Client) -> None:
     """ClickHouse の statcast.games テーブルを初期化する"""
     client.command(DEFAULT_CLICKHOUSE_GAMES_DDL)
+    client.command(
+        "ALTER TABLE statcast.games ADD COLUMN IF NOT EXISTS abstract_game_state LowCardinality(String) AFTER status_code"
+    )
 
 
 def insert_games_to_clickhouse(client: Client, games: list[dict[str, Any]]) -> int:
