@@ -131,6 +131,13 @@ Your task is to generate a single, highly optimized ClickHouse SQL query (SELECT
   The population MUST be in-play batted balls (Batted Ball Events): filter by `s.type = 'X' AND s.launch_speed IS NOT NULL`.
   Do NOT omit `s.type = 'X'` (omitting it includes foul balls, severely diluting and underestimating average exit velocity and hard hit percentage).
   For Barrel%, use `s.launch_speed_angle = 6` (e.g., `round(countIf(s.launch_speed_angle = 6) * 100.0 / count(), 2) AS barrel_pct`).
+- Preventing Fan-Out between Different Table Granularities (CRITICAL):
+  `statcast.boxscore_batting` contains 1 row per player per game.
+  `statcast.statcast_raw` contains 1 row per pitch (~15-25 rows per game).
+  NEVER directly `JOIN statcast.boxscore_batting` with `statcast.statcast_raw`!
+  Directly joining them causes severe fan-out, multiplying plate appearances (PA), hits, and runs by ~20x!
+  If a single query requires both box score stats (PA, AB, H, HR, AVG, OPS) and Statcast pitch/batted-ball metrics (wOBA, xwOBA, exit velocity):
+  You MUST aggregate each table separately in Common Table Expressions (CTEs: `WITH batting_stats AS (...), statcast_metrics AS (...)`), grouping each by `player_id`, and then join the two aggregated CTEs by `player_id`. (Always explicitly alias columns in the CTE SELECT list, e.g. `bb.player_id AS player_id`, so ClickHouse identifies `b.player_id` properly).
 - Return ONLY the executable SQL query. Do not wrap in markdown quotes (no ```sql) and do not provide explanatory text.
 
 ### Example Queries:

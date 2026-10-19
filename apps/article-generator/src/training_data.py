@@ -82,6 +82,11 @@ ClickHouse クエリ作成の重要ルール:
    - 選手の打撃成績（PA, AB, H, HR, RBI, R, BB%, K%, AVG, OBP, SLG, OPS等）は、必ず `statcast.boxscore_batting` テーブルを集計してください。チーム成績テーブル `statcast.boxscore_teams` を選手成績集計に使用することは厳禁です。
 6. シーズン集計と試合区分:
    - シーズン（年度）集計時は必ず `statcast.games` テーブルを結合し、`WHERE g.season = YYYY AND g.game_type = 'R'`（レギュラーシーズン）で絞り込んでください。
+7. テーブル粒度の混在と直接JOINの禁止 (Granularity Fan-out Prevention - CRITICAL):
+   - `statcast.boxscore_batting` は「1選手・1試合あたり1行」の集約テーブルです。
+   - `statcast.statcast_raw` は「1投球あたり1行 (pitch-by-pitch)」の生データテーブルです（1試合に約15〜25投球）。
+   - 【絶対禁止】`boxscore_batting` と `statcast_raw` を直接 JOIN してはなりません。直接 JOIN すると1試合の記録が投球数分（約20倍）複製され、打席数 (PA) や安打数が数十倍に爆発する致命的な集計バグとなります。
+   - もし1つのクエリで基礎成績（boxscore_batting由来）と Statcast 指標（statcast_raw由来の wOBA, xwOBA, 打球速度等）を併せて集計したい場合は、必ず CTE (`WITH ...`) を用いてそれぞれのテーブルを `player_id` ごとに GROUP BY 集約した後に、集約結果同士を JOIN してください。
         """.strip(),
     ),
     (
@@ -291,6 +296,61 @@ WHERE g.season = 2026
   AND (p.full_name LIKE '%Seiya Suzuki%' OR p.full_name LIKE '%Munetaka Murakami%' OR p.full_name LIKE '%Kazuma Okamoto%')
 GROUP BY p.full_name
 ORDER BY xwoba DESC
+        """.strip(),
+    ),
+    (
+        "2026年の鈴木誠也・村上宗隆・岡本和真の打撃成績（PA, AB, H, HR, 打率, OPS）とStatcast指標（wOBA, xwOBA）の統合比較",
+        """
+WITH batting_stats AS (
+    SELECT
+        bb.player_id AS player_id,
+        p.full_name AS player_name,
+        sum(bb.plate_appearances) AS pa,
+        sum(bb.at_bats) AS ab,
+        sum(bb.hits) AS h,
+        sum(bb.home_runs) AS hr,
+        sum(bb.rbi) AS rbi,
+        round(sum(bb.hits) / nullIf(sum(bb.at_bats), 0), 3) AS avg,
+        round((sum(bb.hits) + sum(bb.base_on_balls) + sum(bb.hit_by_pitch)) / nullIf(sum(bb.at_bats) + sum(bb.base_on_balls) + sum(bb.hit_by_pitch) + sum(bb.sac_flies), 0), 3) AS obp,
+        round(sum(bb.total_bases) / nullIf(sum(bb.at_bats), 0), 3) AS slg,
+        round(obp + slg, 3) AS ops
+    FROM statcast.boxscore_batting bb FINAL
+    JOIN statcast.players p FINAL ON bb.player_id = p.player_id
+    JOIN statcast.games g FINAL ON toUInt64(bb.game_pk) = g.game_pk
+    WHERE g.season = 2026
+      AND g.game_type = 'R'
+      AND (p.full_name LIKE '%Seiya Suzuki%' OR p.full_name LIKE '%Munetaka Murakami%' OR p.full_name LIKE '%Kazuma Okamoto%')
+    GROUP BY bb.player_id, player_name
+),
+statcast_metrics AS (
+    SELECT
+        toUInt64(s.batter) AS player_id,
+        round(sum(s.woba_value) / nullIf(sum(s.woba_denom), 0), 3) AS woba,
+        round(avg(s.estimated_woba_using_speedangle), 3) AS xwoba
+    FROM statcast.statcast_raw s
+    JOIN statcast.players p FINAL ON toUInt64(s.batter) = p.player_id
+    JOIN statcast.games g FINAL ON toUInt64(s.game_pk) = g.game_pk
+    WHERE g.season = 2026
+      AND g.game_type = 'R'
+      AND (p.full_name LIKE '%Seiya Suzuki%' OR p.full_name LIKE '%Munetaka Murakami%' OR p.full_name LIKE '%Kazuma Okamoto%')
+    GROUP BY player_id
+)
+SELECT
+    b.player_name,
+    b.pa,
+    b.ab,
+    b.h,
+    b.hr,
+    b.rbi,
+    b.avg,
+    b.obp,
+    b.slg,
+    b.ops,
+    m.woba,
+    m.xwoba
+FROM batting_stats b
+LEFT JOIN statcast_metrics m ON b.player_id = m.player_id
+ORDER BY b.ops DESC
         """.strip(),
     ),
 ]
