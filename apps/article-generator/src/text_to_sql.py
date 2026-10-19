@@ -113,8 +113,24 @@ Your task is to generate a single, highly optimized ClickHouse SQL query (SELECT
 - Season Aggregation & Regular Season Filter (CRITICAL):
   When aggregating stats for a specific season or year (e.g., '2024年', '2026年', '〇〇年の打撃スタッツ', 'シーズン成績'):
   Do NOT filter by `s.game_year = <year>` alone! You MUST join `statcast.games`:
-  `JOIN statcast.games g ON toUInt64(s.game_pk) = g.game_pk`
+  `JOIN statcast.games g FINAL ON toUInt64(s.game_pk) = g.game_pk`
   and filter by `g.season = <year> AND g.game_type = 'R'` (regular season), unless the user explicitly specifies exhibition/spring training or post-season.
+- ReplacingMergeTree Deduplication & FINAL Modifier (CRITICAL):
+  `statcast.players`, `statcast.games`, and `statcast.boxscore_*` are `ReplacingMergeTree` tables with async background deduplication.
+  You MUST ALWAYS append `FINAL` modifier right before the alias whenever querying or joining them, e.g.:
+  `JOIN statcast.players p FINAL ON toUInt64(s.batter) = p.player_id`
+  `JOIN statcast.games g FINAL ON toUInt64(s.game_pk) = g.game_pk`
+  `FROM statcast.boxscore_batting bb FINAL`
+  Failing to use `FINAL` causes unmerged duplicate records to match, multiplying plate appearances and stats by 2x or more!
+- Individual Player Batting Stats vs Team Stats (CRITICAL):
+  When computing individual player offensive stats (PA, AB, H, HR, RBI, R, BB%, K%, AVG, OBP, SLG, OPS, etc.):
+  ALWAYS query `statcast.boxscore_batting` (with `JOIN statcast.players p FINAL` and `JOIN statcast.games g FINAL`).
+  NEVER query `statcast.boxscore_teams` or `statcast.boxscore_positions` for individual player hitting stats!
+- Statcast Batted Ball Quality Metrics & Population (BBE) (CRITICAL):
+  When calculating Exit Velocity (`avg(s.launch_speed)`), HardHit% (>= 95 mph), Barrel%, and SweetSpot%:
+  The population MUST be in-play batted balls (Batted Ball Events): filter by `s.type = 'X' AND s.launch_speed IS NOT NULL`.
+  Do NOT omit `s.type = 'X'` (omitting it includes foul balls, severely diluting and underestimating average exit velocity and hard hit percentage).
+  For Barrel%, use `s.launch_speed_angle = 6` (e.g., `round(countIf(s.launch_speed_angle = 6) * 100.0 / count(), 2) AS barrel_pct`).
 - Return ONLY the executable SQL query. Do not wrap in markdown quotes (no ```sql) and do not provide explanatory text.
 
 ### Example Queries:
