@@ -106,6 +106,7 @@ def test_text_to_sql_prompt_construction():
     assert "ReplacingMergeTree Deduplication & FINAL Modifier" in prompt
     assert "statcast.boxscore_batting" in prompt
     assert "s.type = 'X'" in prompt
+    assert "Preventing Fan-Out between Different Table Granularities" in prompt
 
 
 def test_training_data_rules_coverage():
@@ -115,11 +116,14 @@ def test_training_data_rules_coverage():
     assert "FINAL" in docs_text
     assert "boxscore_batting" in docs_text
     assert "launch_speed_angle = 6" in docs_text
+    assert "Granularity Fan-out Prevention" in docs_text
 
     sql_texts = " ".join([sql for _, sql in SQL_EXAMPLES])
     assert "FINAL" in sql_texts
     assert "statcast.boxscore_batting" in sql_texts
     assert "launch_speed_angle = 6" in sql_texts
+    assert "WITH batting_stats AS" in sql_texts
+    assert "statcast_metrics AS" in sql_texts
 
 
 
