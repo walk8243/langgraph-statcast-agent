@@ -22,13 +22,13 @@
 2. 対象の Markdown ファイルを開き、エディタ右上の「プレビュー」アイコンをクリックすると、スライド形式でリアルタイムにプレビューできます。
 
 ### 2. コマンドラインでの HTML 出力（ローカルビルド）
-Node.js 環境があれば、`npm run build` で単一の HTML ファイルとして出力できます。
+Node.js 環境があれば、`npm run build` で GitHub Pages 公開用フォルダ（`../docs/`）に HTML ファイルを出力できます。
 
 ```bash
-cd docs/slides
+cd slides
 npm install
 
-# 両方のスライドを HTML にビルド（dist/ ディレクトリに出力）
+# 両方のスライドを HTML にビルド（../docs/ ディレクトリに出力）
 npm run build
 
 # 個別ビルド
@@ -36,7 +36,7 @@ npm run build:business
 npm run build:engineers
 ```
 
-生成された `dist/*.html` はブラウザで直接開くことができ、キーボードの矢印キーでページ送り可能なスライドショーとして動作します。
+生成された `../docs/*.html` はブラウザで直接開くことができ、キーボードの矢印キーでページ送り可能なスライドショーとして動作します。また、リポジトリの `docs/` フォルダを GitHub Pages の配信元に設定することで、Web サイトとしてそのまま一般公開できます。
 
 ---
 

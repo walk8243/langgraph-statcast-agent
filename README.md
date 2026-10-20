@@ -200,7 +200,7 @@ docker compose run --rm agent --player-id 660271 --year 2024
 - 着手前に実行計画を立案し、Issueコメントに投稿
 - **1 issue 1 PR** を原則とし、PR分割時は子Issueを起票して親子関係を紐付け
 
-詳細なルールやテンプレートの使い方は [docs/workflow.md](docs/workflow.md) を参照してください。
+詳細なルールやテンプレートの使い方は [.agents/docs/workflow.md](.agents/docs/workflow.md) を参照してください。
 
 ---
 

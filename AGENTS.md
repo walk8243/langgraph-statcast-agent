@@ -2,7 +2,7 @@
 
 このリポジトリで作業するすべての AI コーディングエージェント（Antigravity, Copilot, etc.）および開発者は、以下のプロジェクト管理・開発ワークフローを遵守してください。
 
-詳細な規定は [docs/workflow.md](docs/workflow.md) を参照してください。
+詳細な規定は [.agents/docs/workflow.md](.agents/docs/workflow.md) を参照してください。
 
 ---
 
