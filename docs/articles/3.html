@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>村上宗隆がMLBに刻んだ衝撃：2026年Statcastデータが証明する「52本塁打」の真実と圧倒的パワー | MLB Statcast Agent</title>
+  <meta name="description" content="村上宗隆選手の2026年打撃スタッツ（本塁打・打球初速・飛距離）に関する分析レポート">
+  <style>
+:root {
+  --bg: #f8fafc;
+  --card-bg: #ffffff;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --primary: #1e3a8a;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --border: #e2e8f0;
+  --code-bg: #1e293b;
+  --code-text: #f1f5f9;
+  --tag-bg: #eff6ff;
+  --tag-text: #2563eb;
+  --table-stripe: #f8fafc;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', 'Helvetica Neue', 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+  background-color: var(--bg);
+  color: var(--text-main);
+  line-height: 1.7;
+  padding: 32px 16px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.container {
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ナビゲーション・ヘッダー */
+.nav-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.95rem;
+}
+
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+}
+
+.breadcrumbs a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.breadcrumbs a:hover {
+  text-decoration: underline;
+}
+
+.badge {
+  display: inline-block;
+  background: var(--tag-bg);
+  color: var(--tag-text);
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  border: 1px solid #bfdbfe;
+}
+
+.badge-outline {
+  display: inline-block;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  border: 1px solid var(--border);
+}
+
+/* ヒーローヘッダー */
+header.hero {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+header.hero h1 {
+  font-size: 2.2rem;
+  color: var(--primary);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 12px 0;
+  line-height: 1.3;
+}
+
+header.hero p.subtitle {
+  font-size: 1.05rem;
+  color: var(--text-muted);
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+/* カードスタイル */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  margin-bottom: 24px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card.hoverable:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.04);
+}
+
+/* ボタン */
+.btn {
+  display: inline-block;
+  text-align: center;
+  background-color: var(--accent);
+  color: #ffffff !important;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 10px 20px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.btn:hover {
+  background-color: var(--accent-hover);
+}
+
+.btn-secondary {
+  display: inline-block;
+  text-align: center;
+  background-color: #f1f5f9;
+  color: #334155 !important;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  transition: background-color 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background-color: #e2e8f0;
+}
+
+/* プロンプト・お題ブロック */
+.prompt-box {
+  background-color: #eff6ff;
+  border-left: 4px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  padding: 14px 18px;
+  margin: 16px 0;
+  font-size: 0.95rem;
+}
+
+.prompt-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.prompt-text {
+  font-style: italic;
+  color: #1e293b;
+}
+
+/* アコーディオン・SQLブロック */
+details.sql-accordion {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin: 16px 0;
+  overflow: hidden;
+}
+
+details.sql-accordion summary {
+  padding: 12px 16px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #334155;
+  user-select: none;
+  background: #f1f5f9;
+}
+
+details.sql-accordion summary:hover {
+  background: #e2e8f0;
+}
+
+.sql-content {
+  padding: 16px;
+  background: var(--code-bg);
+  color: var(--code-text);
+  font-family: Consolas, Monaco, 'Courier New', monospace;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* 記事本文スタイル (Markdown レンダリング) */
+.article-body {
+  font-size: 1.05rem;
+  line-height: 1.85;
+  color: #334155;
+}
+
+.article-body h1 {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: var(--primary);
+  margin: 36px 0 16px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #bfdbfe;
+}
+
+.article-body h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 32px 0 14px 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.article-body h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 24px 0 10px 0;
+}
+
+.article-body p {
+  margin: 14px 0;
+}
+
+.article-body ul, .article-body ol {
+  margin: 14px 0;
+  padding-left: 28px;
+}
+
+.article-body li {
+  margin: 6px 0;
+}
+
+.article-body strong {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.article-body blockquote {
+  border-left: 4px solid var(--accent);
+  background: #f1f5f9;
+  padding: 12px 18px;
+  margin: 18px 0;
+  color: #475569;
+  border-radius: 0 8px 8px 0;
+}
+
+.article-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 24px 0;
+  display: block;
+  overflow-x: auto;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.article-body th, .article-body td {
+  border: 1px solid var(--border);
+  padding: 10px 16px;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.article-body th {
+  background-color: #f1f5f9;
+  font-weight: 700;
+  color: var(--primary);
+  white-space: nowrap;
+}
+
+.article-body tr:nth-child(even) {
+  background-color: var(--table-stripe);
+}
+
+.article-body tr:hover {
+  background-color: #eff6ff;
+}
+
+.article-body code {
+  background-color: #e2e8f0;
+  color: #0f172a;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: Consolas, Monaco, monospace;
+  font-size: 0.88em;
+}
+
+.article-body pre code {
+  background: none;
+  color: inherit;
+  padding: 0;
+}
+
+.article-body pre {
+  background: var(--code-bg);
+  color: var(--code-text);
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 18px 0;
+}
+
+.article-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 36px 0;
+}
+
+/* ページネーション・フッター */
+.article-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+
+.article-nav a {
+  text-decoration: none;
+}
+
+footer {
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  padding-top: 24px;
+  margin-top: 48px;
+  width: 100%;
+}
+
+footer a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+footer a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+  header.hero h1 {
+    font-size: 1.6rem;
+  }
+  .article-body h1 {
+    font-size: 1.5rem;
+  }
+  .article-body h2 {
+    font-size: 1.3rem;
+  }
+  .card {
+    padding: 18px;
+  }
+}
+</style>
+</head>
+<body>
+
+  <div class="container">
+    <nav class="nav-bar">
+      <div class="breadcrumbs">
+        <a href="../index.html">トップ</a>
+        <span>&gt;</span>
+        <a href="index.html">記事一覧</a>
+        <span>&gt;</span>
+        <span>Article #3</span>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <span class="badge">Article #3</span>
+        <span class="badge-outline">gemini-3.5-flash-lite</span>
+      </div>
+    </nav>
+
+    <div class="card" style="border-top: 5px solid var(--accent);">
+      <h1 style="color: var(--primary); font-size: 1.85rem; font-weight: 800; line-height: 1.4; margin-bottom: 12px;">村上宗隆がMLBに刻んだ衝撃：2026年Statcastデータが証明する「52本塁打」の真実と圧倒的パワー</h1>
+      
+      <div style="display: flex; align-items: center; gap: 16px; font-size: 0.9rem; color: var(--text-muted); margin-bottom: 16px; flex-wrap: wrap;">
+        <span>📅 作成日時: 2026-10-06 01:37:15 JST</span>
+        <span>🤖 生成モデル: gemini-3.5-flash-lite</span>
+      </div>
+
+      <div class="prompt-box">
+        <div class="prompt-label">企画プロンプト / ユーザーの指示</div>
+        <div class="prompt-text">「村上宗隆選手の2026年打撃スタッツ（本塁打・打球初速・飛距離）に関する分析レポート」</div>
+      </div>
+
+      
+        <details class="sql-accordion">
+          <summary>🔍 実行された Text-to-SQL クエリを確認する</summary>
+          <pre class="sql-content"><code>SELECT
+    p.full_name AS player_name,
+    countIf(s.events = &#x27;home_run&#x27;) AS home_runs,
+    countIf(s.launch_speed &gt;= 95.0) AS hard_hit_count,
+    round(avg(s.launch_speed), 2) AS avg_launch_speed_mph,
+    round(max(s.launch_speed), 2) AS max_launch_speed_mph,
+    round(avg(s.launch_angle), 2) AS avg_launch_angle_deg,
+    round(avg(s.hit_distance_sc), 2) AS avg_distance_ft,
+    round(max(s.hit_distance_sc), 2) AS max_distance_ft,
+    count() AS total_pitches_seen
+FROM statcast.statcast_raw AS s
+JOIN statcast.players AS p ON toUInt64(s.batter) = p.player_id
+WHERE p.full_name LIKE &#x27;%Munetaka Murakami%&#x27; AND s.game_year = 2026
+GROUP BY player_name</code></pre>
+        </details>
+        
+    </div>
+
+    <main class="card">
+      <article class="article-body">
+        <h1>村上宗隆がMLBに刻んだ衝撃：2026年Statcastデータが証明する「52本塁打」の真実と圧倒的パワー</h1>
+<h2>概要・エグゼクティブサマリー</h2>
+<p>日本が誇る若きスラッガー、村上宗隆選手がメジャーリーグ（MLB）の舞台で迎えた<strong>2026年シーズン</strong>。その打撃パフォーマンスは、世界最高峰の投手陣をも凌駕する圧倒的なものでした。Statcast（スタットキャスト）の高度なトラッキングデータからは、単なる「本塁打の量産」にとどまらない、彼の打撃のメカニクスと進化の軌跡が鮮明に浮かび上がります。</p>
+<p>本レポートでは、2026年シーズンの全投球・打球データ（総対戦投球数3,664球）をもとに、村上選手の真の打撃力を多角的に解剖します。</p>
+<ul>
+<li><strong>シーズン52本塁打の到達</strong>: メジャーの長距離砲の証である「50本塁打」の大台をクリアし、歴史的なアーチストの仲間入りを果たした。</li>
+<li><strong>驚異的な爆発力（マックス114.1 mph）</strong>: 自己最高クラスの最高打球初速を記録し、捉えた際の破壊力はMLBトップクラスであることを証明。</li>
+<li><strong>理想的な打球角度（平均20.37度）</strong>: 本塁打を量産する背景には、ライナー性の強い打球から高角度のアーチまでを描く最適なスイング軌道が存在する。</li>
+<li><strong>圧倒的なハードヒット量産（261回）</strong>: 95 mph（約152.9 km/h）以上のハードヒットを200回超記録し、コンスタントに強い打球を放ち続けた。</li>
+</ul>
+<hr />
+<h2>集計データ一覧</h2>
+<p>2026年シーズンにおける、村上宗隆選手のStatcastトラッキングデータ集計結果は以下の通りです。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">player_name</th>
+<th style="text-align: right;">home_runs</th>
+<th style="text-align: right;">hard_hit_count</th>
+<th style="text-align: right;">avg_launch_speed_mph</th>
+<th style="text-align: right;">max_launch_speed_mph</th>
+<th style="text-align: right;">avg_launch_angle_deg</th>
+<th style="text-align: right;">avg_distance_ft</th>
+<th style="text-align: right;">max_distance_ft</th>
+<th style="text-align: right;">total_pitches_seen</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Munetaka Murakami</td>
+<td style="text-align: right;">52</td>
+<td style="text-align: right;">261</td>
+<td style="text-align: right;">86.59</td>
+<td style="text-align: right;">114.1</td>
+<td style="text-align: right;">20.37</td>
+<td style="text-align: right;">173.41</td>
+<td style="text-align: right;">451</td>
+<td style="text-align: right;">3664</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>詳細考察・データが示すポイント</h2>
+<h3>1. 「52本塁打」と「ハードヒット261回」が示す破壊力の本質</h3>
+<p>村上選手が放った <strong>52本塁打</strong> という数字は、現在のMLBにおいても極めてエリートなスラッガーだけが到達できる領域です。特筆すべきは、それを裏付ける <strong>ハードヒット（打球初速95 mph以上）の回数が「261回」</strong> に達している点です。</p>
+<p>総対戦投球数（<code>total_pitches_seen</code>）が3,664球であることを踏まえると、彼は見逃しや空振りを除く多くのコンタクト局面で、MLBの一流投手たちが投じる速球や重い変化球に対し、いかに強烈なインパクトを残し続けたかが分かります。平均打球初速は <strong>86.59 mph</strong> ですが、これは凡打やセーフティなコンタクトも含めた全体平均であり、甘い球を仕留めた際の効率性の高さが52本という本塁打数に直結しています。</p>
+<h3>2. 最大初速 114.1 mph と最大飛距離 451フィートの怪物性</h3>
+<p>データをさらに深掘りすると、村上選手の「天井の高さ（ポテンシャルの上限）」に驚かされます。<br />
+* <strong>最高打球初速（Max Launch Speed）: 114.1 mph（約183.6 km/h）</strong><br />
+* <strong>最高飛距離（Max Distance）: 451フィート（約137.5メートル）</strong></p>
+<p>114.1 mphという打球初速は、MLBのスタットキャスト計測においても「超一流のハードヒッター」の証左です。バットの芯で完璧に捉えた際のエネルギー伝達効率が極めて高く、一度捉えられた打球は外野手の頭を遥かに越え、スタンドの深くまで到達します。451フィートという飛距離は、メジャーの広大な球場であっても、フェンス際での失速を許さない圧倒的なパワーの証明です。</p>
+<h3>3. 最適化された平均打球角度（20.37度）</h3>
+<p>長距離打者にとって、打球初速と並んで極めて重要なのが <strong>打球角度（Launch Angle）</strong> です。村上選手の2026年シーズンの平均打球角度は <strong>20.37度</strong> でした。</p>
+<p>一般的に、長打を生み出しやすい「バレルゾーン（Barrel Zone）」の角度は、打球初速に応じて変化しますが、20度前後という数字は<strong>「ライナー性と高角度のフライ性の打球の黄金比」</strong>と言えます。低すぎればゴロになり、高すぎれば外野手のフライになってしまうところを、この絶妙な角度でヒットやホームランへと昇華させています。</p>
+<hr />
+<h2>まとめと今後の展望</h2>
+<p>2026年シーズンの村上宗隆選手は、Statcastのデータが示す通り、<strong>「圧倒的な最高初速（114.1 mph）」「高水準のハードヒット量産（261回）」「理想的な打球角度（平均20.37度）」</strong>を高い次元で融合させ、<strong>52本塁打</strong>という歴史的な偉業を成し遂げました。</p>
+<p>厳しいメジャーの配球や環境に適応しながらも、自らの持ち味である「強烈なインパクト」を毎試合のように体現し続けたその打撃は、もはやフロックではなく本物です。</p>
+<p>相手バッテリーからの徹底マークや配球の変化が進む中でも、これだけの質の高い打球をコンスタントに生み出せる能力があれば、今後さらなる進化やタイトルの獲得も十分に期待できます。MLBの歴史にその名を深く刻む村上選手の、次なる一打から目が離せません。</p>
+      </article>
+
+      <div class="article-nav">
+        <div><a href="2.html" class="btn-secondary">← 前の記事 (#2)</a></div>
+        <div style="text-align: center;">
+          <a href="index.html" class="btn-secondary">記事一覧へ戻る</a>
+        </div>
+        <div><a href="4.html" class="btn-secondary">次の記事 (#4) →</a></div>
+      </div>
+    </main>
+
+    <footer>
+      <p>
+        <a href="../index.html">スライド資料ポータルへ</a> | 
+        <a href="index.html">生成記事一覧</a> | 
+        GitHub: <a href="https://github.com/walk8243/langgraph-statcast-agent" target="_blank" rel="noopener noreferrer">walk8243/langgraph-statcast-agent</a>
+      </p>
+    </footer>
+  </div>
+
+</body>
+</html>

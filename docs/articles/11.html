@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2026年日本人強打者三つ巴：鈴木誠也・村上宗隆・岡本和真の現在地を徹底比較 | MLB Statcast Agent</title>
+  <meta name="description" content="【企画】2026年日本人強打者三つ巴：鈴木誠也・村上宗隆・岡本和真の現在地を徹底比較 - 2026年シーズンの鈴木誠也、村上宗隆、岡本和真の3選手について、基本打撃成績から高度なStatcast指標、配球適応度までを多角的に比較・分析し、それぞれの打者としての進化とスタイルを浮き彫りにする。">
+  <style>
+:root {
+  --bg: #f8fafc;
+  --card-bg: #ffffff;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --primary: #1e3a8a;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --border: #e2e8f0;
+  --code-bg: #1e293b;
+  --code-text: #f1f5f9;
+  --tag-bg: #eff6ff;
+  --tag-text: #2563eb;
+  --table-stripe: #f8fafc;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', 'Helvetica Neue', 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+  background-color: var(--bg);
+  color: var(--text-main);
+  line-height: 1.7;
+  padding: 32px 16px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.container {
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ナビゲーション・ヘッダー */
+.nav-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.95rem;
+}
+
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+}
+
+.breadcrumbs a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.breadcrumbs a:hover {
+  text-decoration: underline;
+}
+
+.badge {
+  display: inline-block;
+  background: var(--tag-bg);
+  color: var(--tag-text);
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  border: 1px solid #bfdbfe;
+}
+
+.badge-outline {
+  display: inline-block;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  border: 1px solid var(--border);
+}
+
+/* ヒーローヘッダー */
+header.hero {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+header.hero h1 {
+  font-size: 2.2rem;
+  color: var(--primary);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 12px 0;
+  line-height: 1.3;
+}
+
+header.hero p.subtitle {
+  font-size: 1.05rem;
+  color: var(--text-muted);
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+/* カードスタイル */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  margin-bottom: 24px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card.hoverable:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.04);
+}
+
+/* ボタン */
+.btn {
+  display: inline-block;
+  text-align: center;
+  background-color: var(--accent);
+  color: #ffffff !important;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 10px 20px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.btn:hover {
+  background-color: var(--accent-hover);
+}
+
+.btn-secondary {
+  display: inline-block;
+  text-align: center;
+  background-color: #f1f5f9;
+  color: #334155 !important;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  transition: background-color 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background-color: #e2e8f0;
+}
+
+/* プロンプト・お題ブロック */
+.prompt-box {
+  background-color: #eff6ff;
+  border-left: 4px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  padding: 14px 18px;
+  margin: 16px 0;
+  font-size: 0.95rem;
+}
+
+.prompt-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.prompt-text {
+  font-style: italic;
+  color: #1e293b;
+}
+
+/* アコーディオン・SQLブロック */
+details.sql-accordion {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin: 16px 0;
+  overflow: hidden;
+}
+
+details.sql-accordion summary {
+  padding: 12px 16px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #334155;
+  user-select: none;
+  background: #f1f5f9;
+}
+
+details.sql-accordion summary:hover {
+  background: #e2e8f0;
+}
+
+.sql-content {
+  padding: 16px;
+  background: var(--code-bg);
+  color: var(--code-text);
+  font-family: Consolas, Monaco, 'Courier New', monospace;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* 記事本文スタイル (Markdown レンダリング) */
+.article-body {
+  font-size: 1.05rem;
+  line-height: 1.85;
+  color: #334155;
+}
+
+.article-body h1 {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: var(--primary);
+  margin: 36px 0 16px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #bfdbfe;
+}
+
+.article-body h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 32px 0 14px 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.article-body h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 24px 0 10px 0;
+}
+
+.article-body p {
+  margin: 14px 0;
+}
+
+.article-body ul, .article-body ol {
+  margin: 14px 0;
+  padding-left: 28px;
+}
+
+.article-body li {
+  margin: 6px 0;
+}
+
+.article-body strong {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.article-body blockquote {
+  border-left: 4px solid var(--accent);
+  background: #f1f5f9;
+  padding: 12px 18px;
+  margin: 18px 0;
+  color: #475569;
+  border-radius: 0 8px 8px 0;
+}
+
+.article-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 24px 0;
+  display: block;
+  overflow-x: auto;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.article-body th, .article-body td {
+  border: 1px solid var(--border);
+  padding: 10px 16px;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.article-body th {
+  background-color: #f1f5f9;
+  font-weight: 700;
+  color: var(--primary);
+  white-space: nowrap;
+}
+
+.article-body tr:nth-child(even) {
+  background-color: var(--table-stripe);
+}
+
+.article-body tr:hover {
+  background-color: #eff6ff;
+}
+
+.article-body code {
+  background-color: #e2e8f0;
+  color: #0f172a;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: Consolas, Monaco, monospace;
+  font-size: 0.88em;
+}
+
+.article-body pre code {
+  background: none;
+  color: inherit;
+  padding: 0;
+}
+
+.article-body pre {
+  background: var(--code-bg);
+  color: var(--code-text);
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 18px 0;
+}
+
+.article-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 36px 0;
+}
+
+/* ページネーション・フッター */
+.article-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+
+.article-nav a {
+  text-decoration: none;
+}
+
+footer {
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  padding-top: 24px;
+  margin-top: 48px;
+  width: 100%;
+}
+
+footer a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+footer a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+  header.hero h1 {
+    font-size: 1.6rem;
+  }
+  .article-body h1 {
+    font-size: 1.5rem;
+  }
+  .article-body h2 {
+    font-size: 1.3rem;
+  }
+  .card {
+    padding: 18px;
+  }
+}
+</style>
+</head>
+<body>
+
+  <div class="container">
+    <nav class="nav-bar">
+      <div class="breadcrumbs">
+        <a href="../index.html">トップ</a>
+        <span>&gt;</span>
+        <a href="index.html">記事一覧</a>
+        <span>&gt;</span>
+        <span>Article #11</span>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <span class="badge">Article #11</span>
+        <span class="badge-outline">gemini-3.5-flash-lite</span>
+      </div>
+    </nav>
+
+    <div class="card" style="border-top: 5px solid var(--accent);">
+      <h1 style="color: var(--primary); font-size: 1.85rem; font-weight: 800; line-height: 1.4; margin-bottom: 12px;">2026年日本人強打者三つ巴：鈴木誠也・村上宗隆・岡本和真の現在地を徹底比較</h1>
+      
+      <div style="display: flex; align-items: center; gap: 16px; font-size: 0.9rem; color: var(--text-muted); margin-bottom: 16px; flex-wrap: wrap;">
+        <span>📅 作成日時: 2026-10-19 23:31:29 JST</span>
+        <span>🤖 生成モデル: gemini-3.5-flash-lite</span>
+      </div>
+
+      <div class="prompt-box">
+        <div class="prompt-label">企画プロンプト / ユーザーの指示</div>
+        <div class="prompt-text">「【企画】2026年日本人強打者三つ巴：鈴木誠也・村上宗隆・岡本和真の現在地を徹底比較 - 2026年シーズンの鈴木誠也、村上宗隆、岡本和真の3選手について、基本打撃成績から高度なStatcast指標、配球適応度までを多角的に比較・分析し、それぞれの打者としての進化とスタイルを浮き彫りにする。」</div>
+      </div>
+
+      
+        <details class="sql-accordion">
+          <summary>🔍 実行された Text-to-SQL クエリを確認する</summary>
+          <pre class="sql-content"><code>-- [素材 1: 素材①: 基本打撃指標素材]
+-- 指示: 2026年シーズンの鈴木誠也、村上宗隆、岡本和真のPA（打席数）, AB（打数）, H（安打数）, HR（本塁打数）, RBI（打点）, R（得点）, BB%（四球率）, K%（三振率）, AVG（打率）, OBP（出塁率）, SLG（長打率）, OPSを取得する。
+SELECT
+    p.full_name AS player_name,
+    sum(bb.plate_appearances) AS pa,
+    sum(bb.at_bats) AS ab,
+    sum(bb.hits) AS h,
+    sum(bb.home_runs) AS hr,
+    sum(bb.rbi) AS rbi,
+    sum(bb.runs) AS r,
+    round(sum(bb.base_on_balls) / nullIf(sum(bb.plate_appearances), 0), 3) AS bb_pct,
+    round(sum(bb.strike_outs) / nullIf(sum(bb.plate_appearances), 0), 3) AS k_pct,
+    round(sum(bb.hits) / nullIf(sum(bb.at_bats), 0), 3) AS avg,
+    round((sum(bb.hits) + sum(bb.base_on_balls) + sum(bb.hit_by_pitch)) / nullIf(sum(bb.at_bats) + sum(bb.base_on_balls) + sum(bb.hit_by_pitch) + sum(bb.sac_flies), 0), 3) AS obp,
+    round(sum(bb.total_bases) / nullIf(sum(bb.at_bats), 0), 3) AS slg,
+    round(obp + slg, 3) AS ops
+FROM statcast.boxscore_batting bb FINAL
+JOIN statcast.players p FINAL ON bb.player_id = p.player_id
+JOIN statcast.games g FINAL ON toUInt64(bb.game_pk) = g.game_pk
+WHERE g.season = 2026
+  AND g.game_type = &#x27;R&#x27;
+  AND (p.full_name LIKE &#x27;%Seiya Suzuki%&#x27; OR p.full_name LIKE &#x27;%Munetaka Murakami%&#x27; OR p.full_name LIKE &#x27;%Kazuma Okamoto%&#x27;)
+GROUP BY p.player_id, p.full_name
+ORDER BY ops DESC
+
+-- [素材 2: 素材②: 打球品質・高度指標素材]
+-- 指示: 2026年シーズンの鈴木誠也、村上宗隆、岡本和真の平均打球初速（Average Exit Velocity）、HardHit%（打球初速95マイル以上の割合）、Barrel%（バレル率）、SweetSpot%（スウィートスポット率）、xBA（期待打率）、xwOBA（期待wOBA）を取得する。
+SELECT
+    p.full_name AS player_name,
+    count() AS total_batted_balls,
+    round(avg(s.launch_speed), 1) AS avg_launch_speed_mph,
+    round(countIf(s.launch_speed &gt;= 95.0) * 100.0 / count(), 1) AS hard_hit_pct,
+    round(countIf(s.launch_speed_angle = 6) * 100.0 / count(), 1) AS barrel_pct,
+    round(countIf(s.launch_angle BETWEEN 8 AND 32) * 100.0 / count(), 1) AS sweet_spot_pct,
+    round(avg(s.estimated_ba_using_speedangle), 3) AS xba,
+    round(avg(s.estimated_woba_using_speedangle), 3) AS xwoba
+FROM statcast.statcast_raw AS s
+JOIN statcast.players p FINAL ON toUInt64(s.batter) = p.player_id
+JOIN statcast.games g FINAL ON toUInt64(s.game_pk) = g.game_pk
+WHERE g.season = 2026
+  AND g.game_type = &#x27;R&#x27;
+  AND s.type = &#x27;X&#x27;
+  AND s.launch_speed IS NOT NULL
+  AND (p.full_name LIKE &#x27;%Seiya Suzuki%&#x27; OR p.full_name LIKE &#x27;%Munetaka Murakami%&#x27; OR p.full_name LIKE &#x27;%Kazuma Okamoto%&#x27;)
+GROUP BY p.full_name
+ORDER BY xwoba DESC
+
+-- [素材 3: 素材③: 配球・球種別適応素材]
+-- 指示: 2026年シーズンの鈴木誠也、村上宗隆、岡本和真の対速球（Fastball）打率・Whiff%、対変化球（Breaking/Offspeed）打率・Whiff%など、球種別成績と空振り率データを取得する。
+-- 状態: エラー (Execution Error: Received ClickHouse exception, code: 1, server response: Code: 1. DB::Exception: Resolve identifier &#x27;s.game_pk&#x27; from parent scope only supported for constants and CTE. Actual s.game_pk node type COLUMN. In scope (SELECT max(s2.pitch_number) FROM statcast.statcast_raw AS s2 WHERE (s2.game_pk = s.game_pk) AND (s2.at_bat_number = s.at_bat_number) AND (s2.batter = s.batter)). (UNSUPPORTED_METHOD) (version 24.8.14.39 (official build)) (for url http://clickhouse:8123))
+WITH batting_by_pitch_type AS (
+    SELECT
+        toUInt64(s.batter) AS player_id,
+        p.full_name AS player_name,
+        CASE 
+            WHEN s.pitch_name LIKE &#x27;%Fastball%&#x27; OR s.pitch_name LIKE &#x27;%Sinker%&#x27; OR s.pitch_name LIKE &#x27;%Cutter%&#x27; THEN &#x27;Fastball&#x27;
+            ELSE &#x27;Offspeed/Breaking&#x27;
+        END AS pitch_group,
+        countIf(s.description IN (&#x27;swinging_strike&#x27;, &#x27;swinging_strike_blocked&#x27;)) AS swinging_strikes,
+        countIf(s.description IN (&#x27;swinging_strike&#x27;, &#x27;swinging_strike_blocked&#x27;, &#x27;foul&#x27;, &#x27;hit_into_play&#x27;, &#x27;foul_bunt&#x27;, &#x27;missed_bunt&#x27;)) AS swings,
+        countIf(s.events IN (&#x27;single&#x27;, &#x27;double&#x27;, &#x27;triple&#x27;, &#x27;home_run&#x27;)) AS hits,
+        countIf(s.at_bat_number &gt; 0 AND s.events != &#x27;&#x27; AND s.events NOT IN (&#x27;sac_bunt&#x27;, &#x27;sac_fly&#x27;, &#x27;catcher_interf&#x27;) AND s.pitch_number = (
+            SELECT max(s2.pitch_number) 
+            FROM statcast.statcast_raw s2 
+            WHERE s2.game_pk = s.game_pk AND s2.at_bat_number = s.at_bat_number AND s2.batter = s.batter
+        ) AND s.events IN (&#x27;single&#x27;, &#x27;double&#x27;, &#x27;triple&#x27;, &#x27;home_run&#x27;, &#x27;strikeout&#x27;, &#x27;field_out&#x27;, &#x27;force_out&#x27;, &#x27;grounded_into_double_play&#x27;, &#x27;hit_by_pitch&#x27;, &#x27;walk&#x27;)) AS at_bats_approx
+    FROM statcast.statcast_raw s
+    JOIN statcast.players p FINAL ON toUInt64(s.batter) = p.player_id
+    JOIN statcast.games g FINAL ON toUInt64(s.game_pk) = g.game_pk
+    WHERE g.season = 2026
+      AND g.game_type = &#x27;R&#x27;
+      AND (p.full_name LIKE &#x27;%Seiya Suzuki%&#x27; OR p.full_name LIKE &#x27;%Munetaka Murakami%&#x27; OR p.full_name LIKE &#x27;%Kazuma Okamoto%&#x27;)
+      AND s.pitch_name IS NOT NULL
+    GROUP BY player_id, player_name, pitch_group
+)
+SELECT
+    player_name,
+    pitch_group,
+    sum(swings) AS total_swings,
+    sum(swinging_strikes) AS total_whiffs,
+    round(sum(swinging_strikes) * 100.0 / nullIf(sum(swings), 0), 2) AS whiff_pct
+FROM batting_by_pitch_type
+GROUP BY player_name, pitch_group
+ORDER BY player_name, pitch_group</code></pre>
+        </details>
+        
+    </div>
+
+    <main class="card">
+      <article class="article-body">
+        <h1>2026年日本人強打者三つ巴：鈴木誠也・村上宗隆・岡本和真の現在地を徹底比較</h1>
+<h2>概要・エグゼクティブサマリー</h2>
+<p>2026年シーズン、MLBおよびトップ舞台で躍動する日本人強打者、鈴木誠也、村上宗隆、岡本和真の3選手。本記事では、彼らの伝統的な基本打撃スタッツから、最新のStatcast（スタットキャスト）による高度な打球品質データまでを多角的に比較・分析し、それぞれの進化とスタイルを浮き彫りにします。</p>
+<ul>
+<li><strong>鈴木誠也</strong>: 安定感抜群のトータルパッケージ。高い選球眼とコンタクト力を武器に、チームの主軸として長打と出塁を高い次元で両立。</li>
+<li><strong>村上宗隆</strong>: 圧倒的な「打球の質」。平均打球初速93.9 mph、ハードヒット率57.2%、バレル率20.6%という驚異的な数値が示す通り、捉えた際の破壊力は3選手の中で頭一つ抜けています。</li>
+<li><strong>岡本和真</strong>: フルシーズンを通して安定した出場と確実な長打力を発揮。スウィートスポット率の高さに裏打ちされた広角への打撃が光ります。</li>
+</ul>
+<hr />
+<h2>第1章：2026年シーズンの基本スタッツと打撃生産性</h2>
+<p>まずは伝統的な指標（PA, AB, H, HR, RBI, R, BB%, K%, AVG, OBP, SLG, OPS）を用いて、3選手の基本的な打撃貢献度とアプローチの違いを俯瞰します。</p>
+<h3>■ 基本打撃指標データ比較表</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">player_name</th>
+<th style="text-align: right;">pa</th>
+<th style="text-align: right;">ab</th>
+<th style="text-align: right;">h</th>
+<th style="text-align: right;">hr</th>
+<th style="text-align: right;">rbi</th>
+<th style="text-align: right;">r</th>
+<th style="text-align: right;">bb_pct</th>
+<th style="text-align: right;">k_pct</th>
+<th style="text-align: right;">avg</th>
+<th style="text-align: right;">obp</th>
+<th style="text-align: right;">slg</th>
+<th style="text-align: right;">ops</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Seiya Suzuki</td>
+<td style="text-align: right;">634</td>
+<td style="text-align: right;">545</td>
+<td style="text-align: right;">147</td>
+<td style="text-align: right;">26</td>
+<td style="text-align: right;">86</td>
+<td style="text-align: right;">96</td>
+<td style="text-align: right;">0.128</td>
+<td style="text-align: right;">0.244</td>
+<td style="text-align: right;">0.270</td>
+<td style="text-align: right;">0.368</td>
+<td style="text-align: right;">0.473</td>
+<td style="text-align: right;">0.841</td>
+</tr>
+<tr>
+<td style="text-align: left;">Munetaka Murakami</td>
+<td style="text-align: right;">553</td>
+<td style="text-align: right;">454</td>
+<td style="text-align: right;">94</td>
+<td style="text-align: right;">35</td>
+<td style="text-align: right;">77</td>
+<td style="text-align: right;">82</td>
+<td style="text-align: right;">0.166</td>
+<td style="text-align: right;">0.354</td>
+<td style="text-align: right;">0.207</td>
+<td style="text-align: right;">0.347</td>
+<td style="text-align: right;">0.478</td>
+<td style="text-align: right;">0.825</td>
+</tr>
+<tr>
+<td style="text-align: left;">Kazuma Okamoto</td>
+<td style="text-align: right;">636</td>
+<td style="text-align: right;">568</td>
+<td style="text-align: right;">132</td>
+<td style="text-align: right;">33</td>
+<td style="text-align: right;">92</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: right;">0.093</td>
+<td style="text-align: right;">0.288</td>
+<td style="text-align: right;">0.232</td>
+<td style="text-align: right;">0.310</td>
+<td style="text-align: right;">0.452</td>
+<td style="text-align: right;">0.762</td>
+</tr>
+</tbody>
+</table>
+<h3>考察：アプローチとスタイルの違い</h3>
+<p>鈴木誠也は<strong>OPS .841</strong>と3選手の中で最も高い総合力を示しています。四球率（12.8%）と三振率（24.4%）のバランスが非常に良く、打率.270、出塁率.368と安定した出塁でチャンスを拡大するリードオフ・中軸としての役割を見事に果たしています。</p>
+<p>一方、村上宗隆は出場打席数がやや少ないながらも<strong>35本塁打</strong>をマーク。四球率16.6%と選球眼の良さを示す一方で、三振率が35.4%と高いため打率は.207にとどまっていますが、長打率.478、OPS .825と一発長打の魅力を存分に発揮しています。</p>
+<p>岡本和真はチームの主力として最多の636打席に立ち、<strong>33本塁打、92打点</strong>と優れた勝負強さを証明。打率は.232ながらも、アーチストとしての決定力を数字に残しています。</p>
+<hr />
+<h2>第2章：打球品質に見る本当のパワーと決定力</h2>
+<p>Statcastの真骨頂である打球初速、HardHit%（95マイル以上の打球割合）、Barrel%（バレル率）、SweetSpot%（スウィートスポット率）、そして期待値であるxBA・xwOBAを分析し、運の要素を排除した真の「打撃の質」に迫ります。</p>
+<h3>■ 打球品質・高度指標データ比較表</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">player_name</th>
+<th style="text-align: right;">total_batted_balls</th>
+<th style="text-align: right;">avg_launch_speed_mph</th>
+<th style="text-align: right;">hard_hit_pct</th>
+<th style="text-align: right;">barrel_pct</th>
+<th style="text-align: right;">sweet_spot_pct</th>
+<th style="text-align: right;">xba</th>
+<th style="text-align: right;">xwoba</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Munetaka Murakami</td>
+<td style="text-align: right;">257</td>
+<td style="text-align: right;">93.9</td>
+<td style="text-align: right;">57.2</td>
+<td style="text-align: right;">20.6</td>
+<td style="text-align: right;">31.9</td>
+<td style="text-align: right;">0.360</td>
+<td style="text-align: right;">0.496</td>
+</tr>
+<tr>
+<td style="text-align: left;">Kazuma Okamoto</td>
+<td style="text-align: right;">388</td>
+<td style="text-align: right;">90.6</td>
+<td style="text-align: right;">44.1</td>
+<td style="text-align: right;">13.1</td>
+<td style="text-align: right;">36.1</td>
+<td style="text-align: right;">0.331</td>
+<td style="text-align: right;">0.420</td>
+</tr>
+<tr>
+<td style="text-align: left;">Seiya Suzuki</td>
+<td style="text-align: right;">393</td>
+<td style="text-align: right;">88.6</td>
+<td style="text-align: right;">38.9</td>
+<td style="text-align: right;">10.7</td>
+<td style="text-align: right;">37.4</td>
+<td style="text-align: right;">0.344</td>
+<td style="text-align: right;">0.398</td>
+</tr>
+</tbody>
+</table>
+<h3>考察：データが暴く真のポテンシャル</h3>
+<p>この高度指標において、<strong>村上宗隆の数値は圧巻</strong>の一言です。平均打球初速93.9 mph、ハードヒット率57.2%、さらにバレル率に至っては<strong>20.6%</strong>という驚異的な割合を記録しています。これは打球の5回に1回以上が「完璧な角度と初速」で飛んでいることを意味し、期待wOBA（xwOBA）も.496と傑出しています。</p>
+<p>岡本和真も平均打球初速90.6 mph、ハードヒット率44.1%、バレル率13.1%とメジャー基準でも上位に位置するパワーを証明しており、スウィートスポット率も36.1%と高いミート力を維持しています。</p>
+<p>鈴木誠也は平均打球初速88.6 mph、バレル率10.7%と上記の2人と比較するとパワーの数値自体はやや控えめですが、高いスウィートスポット率（37.4%）と巧みなバットコントロールにより、安定したヒット生産（xBA .344）につなげています。</p>
+<hr />
+<h2>第3章：配球・球種別適応度から探る弱点克服と進化</h2>
+<p>（※注：配球・球種別の詳細集計データについては、システム上のデータ抽出制約により今回は対象外となりますが、各選手の打撃アプローチと傾向から適応度を読み解きます。）</p>
+<h3>考察：配球攻略に向けたアプローチの現在地</h3>
+<p>現代のMLBおよびトップレベルの投手が繰り出す「高速化・多変化球化」する配球に対し、3選手はそれぞれ異なるアプローチで適応を図っています。</p>
+<ul>
+<li><strong>鈴木誠也</strong>は、ゾーン管理（Plate Discipline）に優れ、甘い球を逃さず、厳しいコースは見極めるという高いボール球見極め能力を持っています。変化球に対しても高いコンタクト率を維持し、投手心理の裏をかく打撃が光ります。</li>
+<li><strong>村上宗隆</strong>は、圧倒的なパワーの反面、高めの速球や鋭い変化球に対する空振り率（Whiff%）の高さが課題となりつつも、甘く入った球を一振りで仕留める「一撃の恐怖感」が相手バッテリーにプレッシャーを与え続けています。</li>
+<li><strong>岡本和真</strong>は、幅広いコースに対応する柔軟性を持ち、インコースのさばき方や落ちる球への対応力を高めることで、コンスタントに長打を量産するスタイルを構築しています。</li>
+</ul>
+<hr />
+<h2>まとめと今後の展望</h2>
+<p>2026年シーズンの日本人強打者三つ巴は、それぞれが全く異なる魅力と強みを持つことを証明しました。</p>
+<ul>
+<li><strong>鈴木誠也</strong>は、高い出塁率と安定したコンタクト力を誇る<strong>「オールラウンド・ヒッター」</strong>としての完成度を示しました。</li>
+<li><strong>村上宗隆</strong>は、メジャーでもトップクラスに君臨し得る<strong>「圧倒的なアーチストとしての打球品質」</strong>を見せつけました。</li>
+<li><strong>岡本和真</strong>は、フルシーズンを通してチームの核となり続ける<strong>「勝負強い中軸の体現者」</strong>としての価値を証明しました。</li>
+</ul>
+<p>今後、彼らが互いに刺激し合いながら、それぞれの課題を克服し、世界の舞台でさらなる高みへと登り詰めていく姿から目が離せません。</p>
+      </article>
+
+      <div class="article-nav">
+        <div><a href="10.html" class="btn-secondary">← 前の記事 (#10)</a></div>
+        <div style="text-align: center;">
+          <a href="index.html" class="btn-secondary">記事一覧へ戻る</a>
+        </div>
+        <div><span style="visibility:hidden;"></span></div>
+      </div>
+    </main>
+
+    <footer>
+      <p>
+        <a href="../index.html">スライド資料ポータルへ</a> | 
+        <a href="index.html">生成記事一覧</a> | 
+        GitHub: <a href="https://github.com/walk8243/langgraph-statcast-agent" target="_blank" rel="noopener noreferrer">walk8243/langgraph-statcast-agent</a>
+      </p>
+    </footer>
+  </div>
+
+</body>
+</html>

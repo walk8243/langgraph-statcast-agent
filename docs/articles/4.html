@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2024年ナショナル・リーグ西地区：ホームラン争いとStatcastデータが明かすパワーヒッターたちの実態 | MLB Statcast Agent</title>
+  <meta name="description" content="2024年のナショナル・リーグ西地区のホームラン争いに関する分析レポート">
+  <style>
+:root {
+  --bg: #f8fafc;
+  --card-bg: #ffffff;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --primary: #1e3a8a;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --border: #e2e8f0;
+  --code-bg: #1e293b;
+  --code-text: #f1f5f9;
+  --tag-bg: #eff6ff;
+  --tag-text: #2563eb;
+  --table-stripe: #f8fafc;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', 'Helvetica Neue', 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+  background-color: var(--bg);
+  color: var(--text-main);
+  line-height: 1.7;
+  padding: 32px 16px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.container {
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ナビゲーション・ヘッダー */
+.nav-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.95rem;
+}
+
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+}
+
+.breadcrumbs a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.breadcrumbs a:hover {
+  text-decoration: underline;
+}
+
+.badge {
+  display: inline-block;
+  background: var(--tag-bg);
+  color: var(--tag-text);
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  border: 1px solid #bfdbfe;
+}
+
+.badge-outline {
+  display: inline-block;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  border: 1px solid var(--border);
+}
+
+/* ヒーローヘッダー */
+header.hero {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+header.hero h1 {
+  font-size: 2.2rem;
+  color: var(--primary);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 12px 0;
+  line-height: 1.3;
+}
+
+header.hero p.subtitle {
+  font-size: 1.05rem;
+  color: var(--text-muted);
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+/* カードスタイル */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  margin-bottom: 24px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card.hoverable:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.04);
+}
+
+/* ボタン */
+.btn {
+  display: inline-block;
+  text-align: center;
+  background-color: var(--accent);
+  color: #ffffff !important;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 10px 20px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.btn:hover {
+  background-color: var(--accent-hover);
+}
+
+.btn-secondary {
+  display: inline-block;
+  text-align: center;
+  background-color: #f1f5f9;
+  color: #334155 !important;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  transition: background-color 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background-color: #e2e8f0;
+}
+
+/* プロンプト・お題ブロック */
+.prompt-box {
+  background-color: #eff6ff;
+  border-left: 4px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  padding: 14px 18px;
+  margin: 16px 0;
+  font-size: 0.95rem;
+}
+
+.prompt-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.prompt-text {
+  font-style: italic;
+  color: #1e293b;
+}
+
+/* アコーディオン・SQLブロック */
+details.sql-accordion {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin: 16px 0;
+  overflow: hidden;
+}
+
+details.sql-accordion summary {
+  padding: 12px 16px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #334155;
+  user-select: none;
+  background: #f1f5f9;
+}
+
+details.sql-accordion summary:hover {
+  background: #e2e8f0;
+}
+
+.sql-content {
+  padding: 16px;
+  background: var(--code-bg);
+  color: var(--code-text);
+  font-family: Consolas, Monaco, 'Courier New', monospace;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* 記事本文スタイル (Markdown レンダリング) */
+.article-body {
+  font-size: 1.05rem;
+  line-height: 1.85;
+  color: #334155;
+}
+
+.article-body h1 {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: var(--primary);
+  margin: 36px 0 16px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #bfdbfe;
+}
+
+.article-body h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 32px 0 14px 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.article-body h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 24px 0 10px 0;
+}
+
+.article-body p {
+  margin: 14px 0;
+}
+
+.article-body ul, .article-body ol {
+  margin: 14px 0;
+  padding-left: 28px;
+}
+
+.article-body li {
+  margin: 6px 0;
+}
+
+.article-body strong {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.article-body blockquote {
+  border-left: 4px solid var(--accent);
+  background: #f1f5f9;
+  padding: 12px 18px;
+  margin: 18px 0;
+  color: #475569;
+  border-radius: 0 8px 8px 0;
+}
+
+.article-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 24px 0;
+  display: block;
+  overflow-x: auto;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.article-body th, .article-body td {
+  border: 1px solid var(--border);
+  padding: 10px 16px;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.article-body th {
+  background-color: #f1f5f9;
+  font-weight: 700;
+  color: var(--primary);
+  white-space: nowrap;
+}
+
+.article-body tr:nth-child(even) {
+  background-color: var(--table-stripe);
+}
+
+.article-body tr:hover {
+  background-color: #eff6ff;
+}
+
+.article-body code {
+  background-color: #e2e8f0;
+  color: #0f172a;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: Consolas, Monaco, monospace;
+  font-size: 0.88em;
+}
+
+.article-body pre code {
+  background: none;
+  color: inherit;
+  padding: 0;
+}
+
+.article-body pre {
+  background: var(--code-bg);
+  color: var(--code-text);
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 18px 0;
+}
+
+.article-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 36px 0;
+}
+
+/* ページネーション・フッター */
+.article-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+
+.article-nav a {
+  text-decoration: none;
+}
+
+footer {
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  padding-top: 24px;
+  margin-top: 48px;
+  width: 100%;
+}
+
+footer a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+footer a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+  header.hero h1 {
+    font-size: 1.6rem;
+  }
+  .article-body h1 {
+    font-size: 1.5rem;
+  }
+  .article-body h2 {
+    font-size: 1.3rem;
+  }
+  .card {
+    padding: 18px;
+  }
+}
+</style>
+</head>
+<body>
+
+  <div class="container">
+    <nav class="nav-bar">
+      <div class="breadcrumbs">
+        <a href="../index.html">トップ</a>
+        <span>&gt;</span>
+        <a href="index.html">記事一覧</a>
+        <span>&gt;</span>
+        <span>Article #4</span>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <span class="badge">Article #4</span>
+        <span class="badge-outline">gemini-3.5-flash-lite</span>
+      </div>
+    </nav>
+
+    <div class="card" style="border-top: 5px solid var(--accent);">
+      <h1 style="color: var(--primary); font-size: 1.85rem; font-weight: 800; line-height: 1.4; margin-bottom: 12px;">2024年ナショナル・リーグ西地区：ホームラン争いとStatcastデータが明かすパワーヒッターたちの実態</h1>
+      
+      <div style="display: flex; align-items: center; gap: 16px; font-size: 0.9rem; color: var(--text-muted); margin-bottom: 16px; flex-wrap: wrap;">
+        <span>📅 作成日時: 2026-10-06 01:44:49 JST</span>
+        <span>🤖 生成モデル: gemini-3.5-flash-lite</span>
+      </div>
+
+      <div class="prompt-box">
+        <div class="prompt-label">企画プロンプト / ユーザーの指示</div>
+        <div class="prompt-text">「2024年のナショナル・リーグ西地区のホームラン争いに関する分析レポート」</div>
+      </div>
+
+      
+        <details class="sql-accordion">
+          <summary>🔍 実行された Text-to-SQL クエリを確認する</summary>
+          <pre class="sql-content"><code>SELECT
+    COALESCE(t.team_name, s.home_team) AS team_name,
+    p.full_name AS batter_name,
+    countIf(s.events = &#x27;home_run&#x27;) AS home_runs,
+    round(avg(s.launch_speed), 1) AS avg_launch_speed,
+    round(max(s.launch_speed), 1) AS max_launch_speed,
+    round(avg(s.hit_distance_sc), 1) AS avg_hit_distance
+FROM statcast.statcast_raw AS s
+JOIN statcast.players AS p ON toUInt64(s.batter) = p.player_id
+LEFT JOIN statcast.boxscore_batting AS bb ON toUInt64(s.game_pk) = bb.game_pk AND toUInt64(s.batter) = bb.player_id
+LEFT JOIN statcast.boxscore_teams AS bt ON toUInt64(s.game_pk) = bt.game_pk AND bb.team_id = bt.team_id
+LEFT JOIN statcast.teams AS t ON bt.team_id = t.team_id
+WHERE s.game_year = 2024
+  AND s.home_team IN (&#x27;LAD&#x27;, &#x27;SD&#x27;, &#x27;SF&#x27;, &#x27;ARI&#x27;, &#x27;COL&#x27;)
+GROUP BY team_name, batter_name
+HAVING home_runs &gt; 0
+ORDER BY home_runs DESC, avg_launch_speed DESC
+LIMIT 20</code></pre>
+        </details>
+        
+    </div>
+
+    <main class="card">
+      <article class="article-body">
+        <h1>2024年ナショナル・リーグ西地区：ホームラン争いとStatcastデータが明かすパワーヒッターたちの実態</h1>
+<h2>概要・エグゼクティブサマリー</h2>
+<p>2024シーズンのナショナル・リーグ西地区（NL West）におけるホームランおよび打球データ（Statcast）の集計結果に基づき、地区内の長打力傾向を検証します。ドジャース、パドレス、ジャイアンツ、ダイヤモンドバックス、ロッキーズという強力な打線を擁するチームが集う同地区において、本分析は以下のポイントに着目して行われました。</p>
+<ul>
+<li><strong>データ抽出のスコープ</strong>: 2024年シーズンにおけるNL West所属チームの本拠地ゲームを対象に、Statcastの生データからホームラン数、平均打球初速（Launch Speed）、最高打球初速、平均飛距離（Hit Distance）を集計。</li>
+<li><strong>解析の目的</strong>: 単なる本塁打数だけでなく、打球の質（Statcast指標）を多角的に評価し、各打者のパワーの真の姿を浮き彫りにする。</li>
+</ul>
+<hr />
+<h2>集計データ一覧</h2>
+<p>今回のクエリ条件（2024年・NL West所属チームの試合における本塁打記録を持つ打者、ホームラン数降順・平均打球初速降順、上位20名）に基づき抽出されたデータは以下の通りです。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">チーム名 (Team)</th>
+<th style="text-align: left;">選手名 (Batter)</th>
+<th style="text-align: center;">ホームラン数 (HR)</th>
+<th style="text-align: center;">平均打球初速 (Avg EV: mph)</th>
+<th style="text-align: center;">最高打球初速 (Max EV: mph)</th>
+<th style="text-align: center;">平均飛距離 (Avg Dist: ft)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><em>(該当データなし)</em></td>
+<td style="text-align: left;"><em>(該当データなし)</em></td>
+<td style="text-align: center;">-</td>
+<td style="text-align: center;">-</td>
+<td style="text-align: center;">-</td>
+<td style="text-align: center;">-</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>注記</strong>: 指定された条件およびデータベースの現状のフィルタリング（または環境上のデータロード状況）により、該当する集計結果は <code>0件</code> となりました。そのため、本稿ではこの「データが0件となった背景」およびStatcast分析におけるアプローチ手法について、専門的視点から考察を深めます。</p>
+</blockquote>
+<hr />
+<h2>詳細考察・データが示すポイント</h2>
+<p>今回の集計においてヒット件数が「0件」となった背景、およびStatcastデータを用いた本格的な長打力分析を行う上で重要となるポイントを解説します。</p>
+<h3>1. データベースのクエリ条件とスコープの厳密性</h3>
+<p>今回のSQLクエリでは、<code>s.home_team IN ('LAD', 'SD', 'SF', 'ARI', 'COL')</code> という条件と、<code>boxscore_teams</code> や <code>teams</code> テーブルを結合する複雑な絞り込みを行っています。Statcastの生データ（<code>statcast_raw</code>）とボックススコアの結合において、チームIDやゲームPKのマッチング条件が厳格である場合、特定のフィルタ（特にホームチームの定義やチーム名の結合部）でデータがヒットしないケースが生じます。<br />
+メジャーリーグのデータ分析において、データソース間のリレーション（特にレプリカ環境やローカルのClickHouse環境におけるチームIDの紐付け）の確認は、正確なインサイトを得るための第一歩となります。</p>
+<h3>2. Statcast指標（打球初速・飛距離）が示す現代野球の真実</h3>
+<p>通常、Statcastを用いたホームラン分析では以下の指標が極めて重要視されます。<br />
+- <strong>打球初速 (Exit Velocity / Launch Speed)</strong>: ホームランの再現性を測る最も信頼性の高い指標。平均打球初速が90 mphを超える打者は、常に質の高いコンタクトができている証明になります。<br />
+- <strong>最高打球初速 (Max Exit Velocity)</strong>: その選手の「物理的なパワーの天井」を示します。110 mphを超える打球をどれだけ放っているかが、スラッガーとしての脅威度を測る物差しです。<br />
+- <strong>打球角度 (Launch Angle) との相関</strong>: どんなに初速が速くても、角度が低すぎればライナー性のヒット（ハードヒット）、高すぎればフライアウトになります。理想的なホームランゾーン（一般的に25〜35度付近）にどれだけ打球を集められるかが、年間30本塁打以上の壁を突破する鍵となります。</p>
+<h3>3. NL Westの球場特性（パークファクター）</h3>
+<p>ナショナル・リーグ西地区は、打撃環境が極端に異なる球場が混在しています。<br />
+- <strong>ロッキーズの本拠地ドジャースタジアム（Coors Field / 厳密にはロッキーズの本拠地）</strong>: 標高が高いため空気抵抗が少なく、飛距離が伸びる「打者天国」。<br />
+- <strong>ジャイアンツの本拠地オラクル・パーク (Oracle Park)</strong>: サンフランシスコ湾からの強風や冷気により、右打者にとってライト方向へのホームランが非常に難しい「投手天国」。</p>
+<p>このように、単なるホームラン数だけでなく、Statcastの「Expected Home Runs (xHR)」や「Expected Slugging (xSLG)」といった期待値指標を用いることで、球場の影響を排除した真の打撃力を評価することが可能になります。</p>
+<hr />
+<h2>まとめと今後の展望</h2>
+<p>今回の2024年NL Westホームラン争いのデータ抽出・検証においては、クエリの結合条件等により直接的な数値リストの提示には至りませんでしたが、メジャーリーグの高度なデータ分析における「データの正確な紐付けの重要性」と「Statcast指標が持つ本質的な価値」を改めて確認する機会となりました。</p>
+<p>MLBのシーズンは長く、選手の疲労度や投手の対策によって打球の質は刻々と変化します。今後さらにデータベースの結合ロジックを最適化し、大谷翔平選手（LAD）をはじめとする西地区の錚々たるスラッガーたちの「打球初速・角度・飛距離」の相関関係を可視化することで、より深いホームラン争いのドラマを描き出すことができるでしょう。</p>
+      </article>
+
+      <div class="article-nav">
+        <div><a href="3.html" class="btn-secondary">← 前の記事 (#3)</a></div>
+        <div style="text-align: center;">
+          <a href="index.html" class="btn-secondary">記事一覧へ戻る</a>
+        </div>
+        <div><a href="5.html" class="btn-secondary">次の記事 (#5) →</a></div>
+      </div>
+    </main>
+
+    <footer>
+      <p>
+        <a href="../index.html">スライド資料ポータルへ</a> | 
+        <a href="index.html">生成記事一覧</a> | 
+        GitHub: <a href="https://github.com/walk8243/langgraph-statcast-agent" target="_blank" rel="noopener noreferrer">walk8243/langgraph-statcast-agent</a>
+      </p>
+    </footer>
+  </div>
+
+</body>
+</html>

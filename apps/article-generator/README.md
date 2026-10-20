@@ -59,3 +59,11 @@ docker compose run --rm article-generator --query "登録されている球団�
 ```bash
 uv run pytest
 ```
+
+### GitHub Pages 向け記事エクスポート
+PostgreSQL に保存されている生成記事を `docs/articles/` 配下に静的 HTML および Markdown として一括出力します。
+
+```bash
+uv run python -m src.export_docs
+```
+
