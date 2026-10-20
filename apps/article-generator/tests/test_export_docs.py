@@ -70,3 +70,10 @@ def test_generate_index_html():
     assert "Article 2" in index_html
     assert "1.html" in index_html
     assert "2.html" in index_html
+
+
+def test_default_published_article_ids():
+    from src.export_docs import DEFAULT_PUBLISHED_ARTICLE_IDS
+    assert 11 in DEFAULT_PUBLISHED_ARTICLE_IDS
+    assert len(DEFAULT_PUBLISHED_ARTICLE_IDS) >= 1
+

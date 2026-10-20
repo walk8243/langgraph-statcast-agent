@@ -61,9 +61,18 @@ uv run pytest
 ```
 
 ### GitHub Pages 向け記事エクスポート
-PostgreSQL に保存されている生成記事を `docs/articles/` 配下に静的 HTML および Markdown として一括出力します。
+PostgreSQL に保存されている生成記事を `docs/articles/` 配下に静的 HTML および Markdown として出力します。
+デフォルトでは公開対象に指定された記事（Article #11）のみが出力されます。
 
 ```bash
+# デフォルト公開記事（#11）をエクスポート
 uv run python -m src.export_docs
+
+# 特定の記事IDを指定してエクスポート
+uv run python -m src.export_docs --article-ids 10 11
+
+# 全記事をエクスポート
+uv run python -m src.export_docs --all
 ```
+
 

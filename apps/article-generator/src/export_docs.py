@@ -621,24 +621,60 @@ def generate_index_html(articles: List[Article]) -> str:
 """
 
 
-def export_articles(output_dir: Path) -> None:
-    """Fetch articles from PostgreSQL and generate HTML files in output_dir."""
+# デフォルトでGitHub Pagesに公開する記事IDリスト（指定がない場合はこのリストの記事のみエクスポート）
+DEFAULT_PUBLISHED_ARTICLE_IDS: List[int] = [11]
+
+
+def export_articles(
+    output_dir: Path,
+    article_ids: Optional[List[int]] = None,
+    export_all: bool = False,
+) -> None:
+    """Fetch articles from PostgreSQL and generate HTML files in output_dir.
+
+    Args:
+        output_dir: Target directory for docs/articles
+        article_ids: Specific article IDs to export. If None and not export_all, DEFAULT_PUBLISHED_ARTICLE_IDS is used.
+        export_all: If True, export all articles in the database.
+    """
     output_dir.mkdir(parents=True, exist_ok=True)
     markdown_dir = output_dir / "markdown"
     markdown_dir.mkdir(parents=True, exist_ok=True)
 
     client = PostgresClient()
     logger.info("Connecting to PostgreSQL to fetch articles...")
-    # Fetch all articles (ordered by id ASC for linking, or created_at DESC)
-    articles_desc = client.list_articles(limit=500, offset=0)
-    logger.info(f"Retrieved {len(articles_desc)} articles.")
+    all_articles = client.list_articles(limit=500, offset=0)
+    logger.info(f"Retrieved {len(all_articles)} total articles from database.")
 
-    if not articles_desc:
+    if not all_articles:
         logger.warning("No articles found in PostgreSQL.")
         return
 
+    # フィルタリング
+    target_ids = None
+    if not export_all:
+        target_ids = set(article_ids if article_ids is not None else DEFAULT_PUBLISHED_ARTICLE_IDS)
+        filtered_articles = [a for a in all_articles if a.id in target_ids]
+    else:
+        filtered_articles = all_articles
+
+    if not filtered_articles:
+        logger.warning(f"No articles matched the filter (target IDs: {target_ids}).")
+        return
+
+    logger.info(
+        f"Exporting {len(filtered_articles)} article(s): {[a.id for a in filtered_articles]}"
+    )
+
+    # 既存の出力ディレクトリ内の古いHTML/MDファイルをクリーンアップ（index.htmlは後で上書き）
+    for old_file in output_dir.glob("*.html"):
+        if old_file.name != "index.html":
+            old_file.unlink(missing_ok=True)
+    for old_md in markdown_dir.glob("*.md"):
+        old_md.unlink(missing_ok=True)
+
     # Sort by ID asc for proper previous/next chaining
-    articles_asc = sorted(articles_desc, key=lambda a: a.id if a.id else 0)
+    articles_asc = sorted(filtered_articles, key=lambda a: a.id if a.id else 0)
 
     # Generate individual article pages
     for i, art in enumerate(articles_asc):
@@ -655,6 +691,11 @@ def export_articles(output_dir: Path) -> None:
         logger.info(f"Generated {file_path.name}")
 
     # Generate index page (ordered by created_at DESC, i.e., latest first)
+    articles_desc = sorted(
+        filtered_articles,
+        key=lambda a: a.created_at or datetime.min.replace(tzinfo=timezone.utc),
+        reverse=True,
+    )
     index_html = generate_index_html(articles_desc)
     index_path = output_dir / "index.html"
     index_path.write_text(index_html, encoding="utf-8")
@@ -671,10 +712,23 @@ def main() -> None:
         default=Path(__file__).resolve().parents[3] / "docs" / "articles",
         help="Target directory for output files (default: docs/articles)",
     )
+    parser.add_argument(
+        "--article-ids",
+        type=int,
+        nargs="+",
+        default=None,
+        help="Specific article IDs to export (e.g. --article-ids 11). Defaults to DEFAULT_PUBLISHED_ARTICLE_IDS [11].",
+    )
+    parser.add_argument(
+        "--all",
+        action="store_true",
+        help="Export all articles from database (overrides default published list)",
+    )
     args = parser.parse_args()
 
-    export_articles(args.output_dir)
+    export_articles(args.output_dir, article_ids=args.article_ids, export_all=args.all)
 
 
 if __name__ == "__main__":
     main()
+
