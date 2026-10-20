@@ -5,20 +5,25 @@ from __future__ import annotations
 import argparse
 from datetime import datetime, timezone, timedelta
 import html
-import json
 import logging
 from pathlib import Path
-import re
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 import markdown
-from src.config import settings
 from src.postgres_client import Article, PostgresClient
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
 
 JST = timezone(timedelta(hours=9))
+
+# 記事IDごとの英語スラグラベル（ファイル名: [id]_[english_title].html に使用）
+ARTICLE_SLUGS: Dict[int, str] = {
+    11: "japanese-sluggers-comparison-2026",
+}
+
+# デフォルトでGitHub Pagesに公開する記事IDリスト
+DEFAULT_PUBLISHED_ARTICLE_IDS: List[int] = [11]
 
 
 def format_jst(dt: Optional[datetime]) -> str:
@@ -42,6 +47,12 @@ def render_markdown(md_text: str) -> str:
             "markdown.extensions.sane_lists",
         ],
     )
+
+
+def get_article_filename(article_id: int) -> str:
+    """Return filename like [id]_[english_title].html."""
+    slug = ARTICLE_SLUGS.get(article_id, "article")
+    return f"{article_id}_{slug}.html"
 
 
 SHARED_CSS = """
@@ -135,28 +146,6 @@ body {
   border: 1px solid var(--border);
 }
 
-/* ヒーローヘッダー */
-header.hero {
-  text-align: center;
-  margin-bottom: 40px;
-}
-
-header.hero h1 {
-  font-size: 2.2rem;
-  color: var(--primary);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  margin: 12px 0;
-  line-height: 1.3;
-}
-
-header.hero p.subtitle {
-  font-size: 1.05rem;
-  color: var(--text-muted);
-  max-width: 680px;
-  margin: 0 auto;
-}
-
 /* カードスタイル */
 .card {
   background: var(--card-bg);
@@ -166,11 +155,6 @@ header.hero p.subtitle {
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
   margin-bottom: 24px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.card.hoverable:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.04);
 }
 
 /* ボタン */
@@ -389,11 +373,10 @@ details.sql-accordion summary:hover {
   margin: 36px 0;
 }
 
-/* ページネーション・フッター */
+/* ページ下部ナビゲーション */
 .article-nav {
   display: flex;
-  justify-content: space-between;
-  gap: 16px;
+  justify-content: center;
   margin-top: 40px;
   padding-top: 24px;
   border-top: 1px solid var(--border);
@@ -424,9 +407,6 @@ footer a:hover {
 }
 
 @media (max-width: 640px) {
-  header.hero h1 {
-    font-size: 1.6rem;
-  }
   .article-body h1 {
     font-size: 1.5rem;
   }
@@ -440,8 +420,8 @@ footer a:hover {
 """
 
 
-def generate_article_html(article: Article, prev_id: Optional[int], next_id: Optional[int]) -> str:
-    """Generate individual article HTML string."""
+def generate_article_html(article: Article) -> str:
+    """Generate standalone article HTML string."""
     title_escaped = html.escape(article.title)
     prompt_escaped = html.escape(article.prompt)
     model_escaped = html.escape(article.model_name)
@@ -459,17 +439,6 @@ def generate_article_html(article: Article, prev_id: Optional[int], next_id: Opt
         </details>
         """
 
-    prev_link = (
-        f'<a href="{prev_id}.html" class="btn-secondary">← 前の記事 (#{prev_id})</a>'
-        if prev_id
-        else '<span style="visibility:hidden;"></span>'
-    )
-    next_link = (
-        f'<a href="{next_id}.html" class="btn-secondary">次の記事 (#{next_id}) →</a>'
-        if next_id
-        else '<span style="visibility:hidden;"></span>'
-    )
-
     return f"""<!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -484,9 +453,7 @@ def generate_article_html(article: Article, prev_id: Optional[int], next_id: Opt
   <div class="container">
     <nav class="nav-bar">
       <div class="breadcrumbs">
-        <a href="../index.html">トップ</a>
-        <span>&gt;</span>
-        <a href="index.html">記事一覧</a>
+        <a href="../index.html">トップ (ポータル)</a>
         <span>&gt;</span>
         <span>Article #{article.id}</span>
       </div>
@@ -518,18 +485,13 @@ def generate_article_html(article: Article, prev_id: Optional[int], next_id: Opt
       </article>
 
       <div class="article-nav">
-        <div>{prev_link}</div>
-        <div style="text-align: center;">
-          <a href="index.html" class="btn-secondary">記事一覧へ戻る</a>
-        </div>
-        <div>{next_link}</div>
+        <a href="../index.html" class="btn-secondary">← ポータルへ戻る</a>
       </div>
     </main>
 
     <footer>
       <p>
-        <a href="../index.html">スライド資料ポータルへ</a> | 
-        <a href="index.html">生成記事一覧</a> | 
+        <a href="../index.html">スライド＆記事ポータルへ戻る</a> | 
         GitHub: <a href="https://github.com/walk8243/langgraph-statcast-agent" target="_blank" rel="noopener noreferrer">walk8243/langgraph-statcast-agent</a>
       </p>
     </footer>
@@ -538,91 +500,6 @@ def generate_article_html(article: Article, prev_id: Optional[int], next_id: Opt
 </body>
 </html>
 """
-
-
-def generate_index_html(articles: List[Article]) -> str:
-    """Generate articles index HTML string."""
-    cards_html = []
-    for art in articles:
-        title_escaped = html.escape(art.title)
-        prompt_escaped = html.escape(art.prompt)
-        model_escaped = html.escape(art.model_name)
-        created_str = format_jst(art.created_at)
-
-        cards_html.append(f"""
-      <div class="card hoverable">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
-          <div style="display: flex; gap: 8px;">
-            <span class="badge">Article #{art.id}</span>
-            <span class="badge-outline">{model_escaped}</span>
-          </div>
-          <span style="font-size: 0.85rem; color: var(--text-muted);">📅 {created_str}</span>
-        </div>
-
-        <h2 style="font-size: 1.35rem; color: var(--primary); font-weight: 700; margin-bottom: 10px; line-height: 1.4;">
-          <a href="{art.id}.html" style="color: inherit; text-decoration: none;">{title_escaped}</a>
-        </h2>
-
-        <p style="font-size: 0.92rem; color: #475569; margin-bottom: 16px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-          <strong>お題:</strong> {prompt_escaped}
-        </p>
-
-        <div style="display: flex; justify-content: flex-end;">
-          <a href="{art.id}.html" class="btn">記事を読む →</a>
-        </div>
-      </div>
-        """)
-
-    articles_list_str = "\n".join(cards_html)
-
-    return f"""<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MLB データ分析・解説レポート一覧 | Statcast Agent</title>
-  <meta name="description" content="Statcast 投球・打球データから Text-to-SQL と Gemini LLM により自動生成された MLB 解説レポート一覧です。">
-  <style>{SHARED_CSS}</style>
-</head>
-<body>
-
-  <div class="container">
-    <nav class="nav-bar">
-      <div class="breadcrumbs">
-        <a href="../index.html">トップ</a>
-        <span>&gt;</span>
-        <span>記事一覧</span>
-      </div>
-      <div>
-        <a href="../index.html" class="btn-secondary" style="padding: 6px 14px; font-size: 0.85rem;">スライド資料へ</a>
-      </div>
-    </nav>
-
-    <header class="hero">
-      <div class="badge">MLB Statcast Agent</div>
-      <h1>Text-to-SQL 自動生成解説記事</h1>
-      <p class="subtitle">自然言語のテーマ指示から、ClickHouse（Statcast投球・打球生データ）を自動集計し、Gemini LLM により多段オーケストレーション執筆された全 {len(articles)} 件の分析記事一覧です。</p>
-    </header>
-
-    <div style="display: flex; flex-direction: column; gap: 8px;">
-      {articles_list_str}
-    </div>
-
-    <footer>
-      <p>
-        <a href="../index.html">スライド資料ポータルへ</a> | 
-        GitHub: <a href="https://github.com/walk8243/langgraph-statcast-agent" target="_blank" rel="noopener noreferrer">walk8243/langgraph-statcast-agent</a>
-      </p>
-    </footer>
-  </div>
-
-</body>
-</html>
-"""
-
-
-# デフォルトでGitHub Pagesに公開する記事IDリスト（指定がない場合はこのリストの記事のみエクスポート）
-DEFAULT_PUBLISHED_ARTICLE_IDS: List[int] = [11]
 
 
 def export_articles(
@@ -630,7 +507,7 @@ def export_articles(
     article_ids: Optional[List[int]] = None,
     export_all: bool = False,
 ) -> None:
-    """Fetch articles from PostgreSQL and generate HTML files in output_dir.
+    """Fetch articles from PostgreSQL and generate standalone HTML files in output_dir.
 
     Args:
         output_dir: Target directory for docs/articles
@@ -638,8 +515,6 @@ def export_articles(
         export_all: If True, export all articles in the database.
     """
     output_dir.mkdir(parents=True, exist_ok=True)
-    markdown_dir = output_dir / "markdown"
-    markdown_dir.mkdir(parents=True, exist_ok=True)
 
     client = PostgresClient()
     logger.info("Connecting to PostgreSQL to fetch articles...")
@@ -666,40 +541,27 @@ def export_articles(
         f"Exporting {len(filtered_articles)} article(s): {[a.id for a in filtered_articles]}"
     )
 
-    # 既存の出力ディレクトリ内の古いHTML/MDファイルをクリーンアップ（index.htmlは後で上書き）
+    # 既存の出力ディレクトリ内のファイルをクリーンアップ（指定外の古いファイルを完全削除）
     for old_file in output_dir.glob("*.html"):
-        if old_file.name != "index.html":
-            old_file.unlink(missing_ok=True)
-    for old_md in markdown_dir.glob("*.md"):
-        old_md.unlink(missing_ok=True)
+        old_file.unlink(missing_ok=True)
+    markdown_dir = output_dir / "markdown"
+    if markdown_dir.exists():
+        for old_md in markdown_dir.glob("*"):
+            old_md.unlink(missing_ok=True)
+        try:
+            markdown_dir.rmdir()
+        except Exception:
+            pass
 
-    # Sort by ID asc for proper previous/next chaining
-    articles_asc = sorted(filtered_articles, key=lambda a: a.id if a.id else 0)
-
-    # Generate individual article pages
-    for i, art in enumerate(articles_asc):
-        prev_id = articles_asc[i - 1].id if i > 0 else None
-        next_id = articles_asc[i + 1].id if i < len(articles_asc) - 1 else None
-
-        html_content = generate_article_html(art, prev_id, next_id)
-        file_path = output_dir / f"{art.id}.html"
+    # 各記事の単一 HTML ファイルを出力
+    for art in filtered_articles:
+        if not art.id:
+            continue
+        filename = get_article_filename(art.id)
+        html_content = generate_article_html(art)
+        file_path = output_dir / filename
         file_path.write_text(html_content, encoding="utf-8")
-
-        # Also save raw markdown for reference
-        md_file_path = markdown_dir / f"{art.id}.md"
-        md_file_path.write_text(art.content_markdown, encoding="utf-8")
-        logger.info(f"Generated {file_path.name}")
-
-    # Generate index page (ordered by created_at DESC, i.e., latest first)
-    articles_desc = sorted(
-        filtered_articles,
-        key=lambda a: a.created_at or datetime.min.replace(tzinfo=timezone.utc),
-        reverse=True,
-    )
-    index_html = generate_index_html(articles_desc)
-    index_path = output_dir / "index.html"
-    index_path.write_text(index_html, encoding="utf-8")
-    logger.info(f"Generated index: {index_path.name}")
+        logger.info(f"Generated standalone article HTML: {file_path.name}")
 
     logger.info("Export completed successfully!")
 
@@ -722,7 +584,7 @@ def main() -> None:
     parser.add_argument(
         "--all",
         action="store_true",
-        help="Export all articles from database (overrides default published list)",
+        help="Export all articles from database",
     )
     args = parser.parse_args()
 
@@ -731,4 +593,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

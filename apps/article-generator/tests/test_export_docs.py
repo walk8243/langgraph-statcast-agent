@@ -1,14 +1,12 @@
 """Unit tests for export_docs module."""
 
 from datetime import datetime, timezone
-from pathlib import Path
-import tempfile
 
 from src.export_docs import (
-    export_articles,
+    DEFAULT_PUBLISHED_ARTICLE_IDS,
     format_jst,
     generate_article_html,
-    generate_index_html,
+    get_article_filename,
     render_markdown,
 )
 from src.postgres_client import Article
@@ -28,9 +26,14 @@ def test_render_markdown():
     assert "Val1" in rendered
 
 
+def test_get_article_filename():
+    assert get_article_filename(11) == "11_japanese-sluggers-comparison-2026.html"
+    assert get_article_filename(999) == "999_article.html"
+
+
 def test_generate_article_html():
     art = Article(
-        id=1,
+        id=11,
         title="Test Article Title",
         prompt="Test Prompt",
         content_markdown="## Heading\n\nContent paragraph",
@@ -38,42 +41,14 @@ def test_generate_article_html():
         generated_sql="SELECT 1;",
         created_at=datetime(2026, 10, 19, 14, 0, 0, tzinfo=timezone.utc),
     )
-    html_output = generate_article_html(art, prev_id=None, next_id=2)
+    html_output = generate_article_html(art)
     assert "Test Article Title" in html_output
     assert "Test Prompt" in html_output
     assert "SELECT 1;" in html_output
     assert "gemini-3.5-flash-lite" in html_output
-    assert "2.html" in html_output
-
-
-def test_generate_index_html():
-    articles = [
-        Article(
-            id=1,
-            title="Article 1",
-            prompt="Prompt 1",
-            content_markdown="Body 1",
-            model_name="gemini-3.5-flash-lite",
-            created_at=datetime(2026, 10, 19, 14, 0, 0, tzinfo=timezone.utc),
-        ),
-        Article(
-            id=2,
-            title="Article 2",
-            prompt="Prompt 2",
-            content_markdown="Body 2",
-            model_name="gemini-3.5-flash-lite",
-            created_at=datetime(2026, 10, 20, 14, 0, 0, tzinfo=timezone.utc),
-        ),
-    ]
-    index_html = generate_index_html(articles)
-    assert "Article 1" in index_html
-    assert "Article 2" in index_html
-    assert "1.html" in index_html
-    assert "2.html" in index_html
+    assert "ポータルへ戻る" in html_output
 
 
 def test_default_published_article_ids():
-    from src.export_docs import DEFAULT_PUBLISHED_ARTICLE_IDS
     assert 11 in DEFAULT_PUBLISHED_ARTICLE_IDS
-    assert len(DEFAULT_PUBLISHED_ARTICLE_IDS) >= 1
-
+    assert len(DEFAULT_PUBLISHED_ARTICLE_IDS) == 1
