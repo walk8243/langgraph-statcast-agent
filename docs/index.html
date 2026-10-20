@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Text-to-SQL スライド資料 | MLB Statcast Agent</title>
+  <title>Text-to-SQL スライド＆自動生成記事ポータル | MLB Statcast Agent</title>
   <style>
     :root {
       --bg: #f8fafc;
@@ -14,6 +14,8 @@
       --accent: #2563eb;
       --accent-hover: #1d4ed8;
       --border: #e2e8f0;
+      --tag-bg: #eff6ff;
+      --tag-text: #2563eb;
     }
 
     * {
@@ -46,11 +48,11 @@
 
     .badge {
       display: inline-block;
-      background: #eff6ff;
-      color: var(--accent);
+      background: var(--tag-bg);
+      color: var(--tag-text);
       font-size: 0.85rem;
       font-weight: 700;
-      padding: 4px 12px;
+      padding: 4px 14px;
       border-radius: 9999px;
       border: 1px solid #bfdbfe;
       margin-bottom: 12px;
@@ -67,8 +69,27 @@
     p.subtitle {
       font-size: 1.1rem;
       color: var(--text-muted);
-      max-width: 680px;
+      max-width: 720px;
       margin: 0 auto;
+    }
+
+    .section-title {
+      font-size: 1.45rem;
+      color: var(--primary);
+      font-weight: 800;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title::before {
+      content: "";
+      display: inline-block;
+      width: 6px;
+      height: 1.3em;
+      background: var(--accent);
+      border-radius: 3px;
     }
 
     .grid {
@@ -96,6 +117,11 @@
       box-shadow: 0 12px 20px -5px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.05);
     }
 
+    .card.article-banner {
+      border-top: 5px solid #059669;
+      background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+    }
+
     .target-tag {
       font-size: 0.8rem;
       font-weight: 700;
@@ -103,6 +129,10 @@
       letter-spacing: 0.05em;
       color: var(--accent);
       margin-bottom: 8px;
+    }
+
+    .target-tag.article-tag {
+      color: #059669;
     }
 
     .card h2 {
@@ -140,6 +170,10 @@
       font-weight: bold;
     }
 
+    .card.article-banner .highlights li::before {
+      color: #059669;
+    }
+
     .btn {
       display: inline-block;
       text-align: center;
@@ -155,6 +189,62 @@
 
     .btn:hover {
       background-color: var(--accent-hover);
+    }
+
+    .btn-green {
+      background-color: #059669;
+    }
+
+    .btn-green:hover {
+      background-color: #047857;
+    }
+
+    .btn-outline {
+      background-color: transparent;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+    }
+
+    .btn-outline:hover {
+      background-color: #eff6ff;
+    }
+
+    /* 最近の記事リスト */
+    .recent-articles-list {
+      list-style: none;
+      margin-bottom: 20px;
+    }
+
+    .recent-articles-list li {
+      padding: 10px 0;
+      border-bottom: 1px dashed var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.95rem;
+    }
+
+    .recent-articles-list li:last-child {
+      border-bottom: none;
+    }
+
+    .recent-articles-list a {
+      color: var(--text-main);
+      text-decoration: none;
+      font-weight: 600;
+      flex: 1;
+    }
+
+    .recent-articles-list a:hover {
+      color: var(--accent);
+      text-decoration: underline;
+    }
+
+    .meta-tag {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      white-space: nowrap;
     }
 
     footer {
@@ -182,10 +272,12 @@
   <div class="container">
     <header>
       <div class="badge">MLB Statcast Agent</div>
-      <h1>Text-to-SQL プレゼンテーションスライド</h1>
-      <p class="subtitle">自然言語から SQL を自動生成・集計する基盤の導入実例と、読者・目的別のプレゼンテーション資料一覧です。</p>
+      <h1>Text-to-SQL スライド＆自動生成記事ポータル</h1>
+      <p class="subtitle">自然言語から SQL を自動生成し、ClickHouse（Statcast 生データ）を集計して解説記事・プレゼンテーション資料を出力する基盤の公開成果物一覧です。</p>
     </header>
 
+    <!-- セクション1: スライド資料 -->
+    <h2 class="section-title">プレゼンテーションスライド資料 (2 Patterns)</h2>
     <div class="grid">
       <!-- 非エンジニア向け -->
       <div class="card">
@@ -217,6 +309,27 @@
           </ul>
         </div>
         <a href="text-to-sql-for-engineers.html" class="btn">スライドを開く (18 slides)</a>
+      </div>
+    </div>
+
+    <!-- セクション2: 自動生成解説記事 -->
+    <h2 class="section-title">Text-to-SQL 自動生成解説記事</h2>
+    <div class="card article-banner" style="margin-bottom: 48px;">
+      <div>
+        <div class="target-tag article-tag">Generated Articles by Gemini & ClickHouse</div>
+        <h2>データ素材収集と考察記事執筆の多段オーケストレーション実例</h2>
+        <p class="desc">編集デスクAIとの対話から、Text-to-SQL を通じて必要なデータ素材（複数テーブル・選手間比較等）を自動抽出し、Gemini LLM が見出し・表・考察を含む総合記事を自動執筆しました。生成された実例記事を GitHub Pages でご覧いただけます。</p>
+        
+        <ul class="recent-articles-list">
+          <li>
+            <a href="articles/11_japanese-sluggers-comparison-2026.html">Article #11: 2026年日本人強打者三つ巴：鈴木誠也・村上宗隆・岡本和真の現在地を徹底比較</a>
+            <span class="meta-tag">2026-10-19 JST</span>
+          </li>
+        </ul>
+      </div>
+
+      <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+        <a href="articles/11_japanese-sluggers-comparison-2026.html" class="btn btn-green">記事を読む (Article #11) →</a>
       </div>
     </div>
 
