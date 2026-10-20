@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Text-to-SQL スライド資料 | MLB Statcast Agent</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --primary: #1e3a8a;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --border: #e2e8f0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', 'Helvetica Neue', 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding: 40px 20px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      max-width: 960px;
+      width: 100%;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .badge {
+      display: inline-block;
+      background: #eff6ff;
+      color: var(--accent);
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      border: 1px solid #bfdbfe;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      color: var(--primary);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+
+    p.subtitle {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 28px;
+      margin-bottom: 48px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-top: 5px solid var(--accent);
+      border-radius: 12px;
+      padding: 32px 28px;
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 20px -5px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+    }
+
+    .target-tag {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+
+    .card h2 {
+      font-size: 1.35rem;
+      color: var(--primary);
+      font-weight: 700;
+      margin-bottom: 14px;
+      line-height: 1.4;
+    }
+
+    .card p.desc {
+      font-size: 0.95rem;
+      color: #475569;
+      margin-bottom: 20px;
+    }
+
+    .highlights {
+      list-style: none;
+      margin-bottom: 28px;
+      font-size: 0.9rem;
+      color: #334155;
+    }
+
+    .highlights li {
+      position: relative;
+      padding-left: 20px;
+      margin-bottom: 8px;
+    }
+
+    .highlights li::before {
+      content: "✔";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-weight: bold;
+    }
+
+    .btn {
+      display: inline-block;
+      text-align: center;
+      background-color: var(--accent);
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1rem;
+      padding: 12px 24px;
+      border-radius: 8px;
+      transition: background-color 0.2s ease;
+    }
+
+    .btn:hover {
+      background-color: var(--accent-hover);
+    }
+
+    footer {
+      text-align: center;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+      padding-top: 24px;
+      width: 100%;
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <div class="badge">MLB Statcast Agent</div>
+      <h1>Text-to-SQL プレゼンテーションスライド</h1>
+      <p class="subtitle">自然言語から SQL を自動生成・集計する基盤の導入実例と、読者・目的別のプレゼンテーション資料一覧です。</p>
+    </header>
+
+    <div class="grid">
+      <!-- 非エンジニア向け -->
+      <div class="card">
+        <div>
+          <div class="target-tag">For Business / Planning</div>
+          <h2>言葉でデータを引き出す技術：Text-to-SQL が変えるデータ活用の現場</h2>
+          <p class="desc">普段からデータを見てサービス改善に取り組むビジネス・企画・アナリスト向けに、日常会話でデータを取り出せる仕組みとメリットを解説します。</p>
+          <ul class="highlights">
+            <li>抽出依頼待ち（数日）の解消とセルフサービス化</li>
+            <li>仮説検証サイクルの圧倒的な高速化</li>
+            <li>集計から考察記事までの全自動生成実例</li>
+            <li>最大の鍵「現場のドメイン知識蓄積」の価値</li>
+          </ul>
+        </div>
+        <a href="text-to-sql-for-business.html" class="btn">スライドを開く (14 slides)</a>
+      </div>
+
+      <!-- エンジニア向け -->
+      <div class="card">
+        <div>
+          <div class="target-tag">For Engineers / Developers</div>
+          <h2>Text-to-SQL 実践導入と既存データからの新サービス展開提案</h2>
+          <p class="desc">開発チーム・アーキテクト向けに、システム構成、動作シーケンス、実装上のハマりどころ、多段オーケストレーションへの進化を解説し、新サービスの可能性を提案します。</p>
+          <ul class="highlights">
+            <li>4層アーキテクチャ ＆ Vanna.ai 設計思想 + 独自実装</li>
+            <li>ClickHouse / Qdrant / Gemini 連携の型・FINAL・粒度課題</li>
+            <li>sqlparse による多重セキュリティガードレール</li>
+            <li>素材集めツールへの再定義と多段オーケストレーション</li>
+          </ul>
+        </div>
+        <a href="text-to-sql-for-engineers.html" class="btn">スライドを開く (18 slides)</a>
+      </div>
+    </div>
+
+    <footer>
+      <p>
+        ドキュメント詳細: <a href="https://github.com/walk8243/langgraph-statcast-agent/wiki/Text%E2%80%90to%E2%80%90SQL" target="_blank" rel="noopener noreferrer">GitHub Wiki: Text-to-SQL</a> | 
+        リポジトリ: <a href="https://github.com/walk8243/langgraph-statcast-agent" target="_blank" rel="noopener noreferrer">walk8243/langgraph-statcast-agent</a>
+      </p>
+    </footer>
+  </div>
+
+</body>
+</html>
