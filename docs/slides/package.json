@@ -1,0 +1,16 @@
+{
+  "name": "statcast-agent-slides",
+  "version": "1.0.0",
+  "description": "Text-to-SQL presentation slides built with Marp",
+  "scripts": {
+    "build": "npm run build:business && npm run build:engineers",
+    "build:business": "marp --no-stdin text-to-sql-for-business.md --theme ./theme.css --html -o dist/text-to-sql-for-business.html",
+    "build:engineers": "marp --no-stdin text-to-sql-for-engineers.md --theme ./theme.css --html -o dist/text-to-sql-for-engineers.html",
+    "build:pdf": "marp --no-stdin text-to-sql-for-business.md --theme ./theme.css --pdf -o dist/text-to-sql-for-business.pdf && marp --no-stdin text-to-sql-for-engineers.md --theme ./theme.css --pdf -o dist/text-to-sql-for-engineers.pdf",
+    "watch:business": "marp --no-stdin -w text-to-sql-for-business.md --theme ./theme.css --html -o dist/text-to-sql-for-business.html",
+    "watch:engineers": "marp --no-stdin -w text-to-sql-for-engineers.md --theme ./theme.css --html -o dist/text-to-sql-for-engineers.html"
+  },
+  "devDependencies": {
+    "@marp-team/marp-cli": "^4.0.0"
+  }
+}

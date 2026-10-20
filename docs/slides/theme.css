@@ -1,0 +1,239 @@
+/* @theme statcast-blue */
+@import 'default';
+
+:root {
+  --color-background: #f8fafc;
+  --color-foreground: #1e293b;
+  --color-primary: #1e3a8a;
+  --color-primary-light: #3b82f6;
+  --color-accent: #2563eb;
+  --color-muted: #64748b;
+  --color-card-bg: #ffffff;
+  --color-border: #cbd5e1;
+}
+
+section {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: 'Segoe UI', 'Helvetica Neue', 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+  font-size: 26px;
+  line-height: 1.5;
+  padding: 40px 60px;
+}
+
+/* ヘッダー・フッター・ページ番号 */
+header {
+  font-size: 14px;
+  color: var(--color-muted);
+  font-weight: 500;
+}
+
+footer {
+  font-size: 14px;
+  color: var(--color-muted);
+  font-weight: 500;
+}
+
+/* 見出しスタイル */
+h1 {
+  color: var(--color-primary);
+  font-size: 1.7rem;
+  font-weight: 700;
+  margin-bottom: 0.8rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 3px solid var(--color-accent);
+}
+
+h2 {
+  color: #1e40af;
+  font-size: 1.35rem;
+  font-weight: 600;
+  margin-top: 0.8rem;
+  margin-bottom: 0.5rem;
+}
+
+h3 {
+  color: #1d4ed8;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+/* 強調・リンク */
+strong {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+em {
+  color: #0369a1;
+  font-style: normal;
+  font-weight: 600;
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+
+/* リスト */
+ul, ol {
+  margin-top: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+
+li {
+  margin-bottom: 0.3rem;
+}
+
+/* テーブルスタイル */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  margin: 0.8rem 0;
+  background-color: #ffffff;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+}
+
+th {
+  background-color: var(--color-primary);
+  color: #ffffff;
+  font-weight: 600;
+  padding: 8px 12px;
+  border: 1px solid #1e40af;
+  text-align: left;
+}
+
+td {
+  padding: 7px 12px;
+  border: 1px solid var(--color-border);
+  color: var(--color-foreground);
+}
+
+tr:nth-child(even) {
+  background-color: #f1f5f9;
+}
+
+/* 引用・注目ボックス */
+blockquote {
+  background: #eff6ff;
+  border-left: 5px solid var(--color-accent);
+  margin: 0.8rem 0;
+  padding: 0.6rem 1.2rem;
+  color: var(--color-primary);
+  border-radius: 0 6px 6px 0;
+  font-size: 0.95rem;
+}
+
+blockquote p {
+  margin: 0;
+}
+
+/* コードブロック */
+pre {
+  background-color: #0f172a;
+  color: #f8fafc;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 0.75rem;
+  border: 1px solid #334155;
+}
+
+code {
+  background-color: #e2e8f0;
+  color: #0f172a;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.88em;
+  font-family: 'Consolas', 'Courier New', monospace;
+}
+
+pre code {
+  background-color: transparent;
+  color: inherit;
+  padding: 0;
+}
+
+/* 2カラム / 3カラム レイアウト */
+.columns-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.columns-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+/* カードコンポーネント */
+.card {
+  background-color: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  border-top: 4px solid var(--color-accent);
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 0.05);
+  font-size: 0.88rem;
+}
+
+.card h3 {
+  margin-top: 0;
+  margin-bottom: 0.4rem;
+  font-size: 1rem;
+}
+
+.card p {
+  margin: 0;
+  color: #334155;
+}
+
+/* タイトルスライド (lead) クラス */
+section.lead {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+section.lead h1 {
+  font-size: 2.2rem;
+  border-bottom: none;
+  margin-bottom: 0.5rem;
+}
+
+section.lead p {
+  color: var(--color-muted);
+  font-size: 1.1rem;
+}
+
+/* ダーク反転スライド (invert) クラス */
+section.invert {
+  background-color: #0f172a;
+  color: #f8fafc;
+}
+
+section.invert h1 {
+  color: #60a5fa;
+  border-bottom: 3px solid #38bdf8;
+}
+
+section.invert h2 {
+  color: #93c5fd;
+}
+
+section.invert strong {
+  color: #38bdf8;
+}
+
+section.invert blockquote {
+  background: #1e293b;
+  border-left-color: #38bdf8;
+  color: #e2e8f0;
+}
