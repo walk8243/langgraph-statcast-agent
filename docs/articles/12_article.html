@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>進化し続ける鈴木誠也：2024-2026年データが証明する「真の打者への階段」 | MLB Statcast Agent</title>
+  <meta name="description" content="【企画】進化し続ける鈴木誠也：2024-2026年データが証明する「真の打者への階段」 - 鈴木誠也の2024年から2026年までの3シーズンにおける打撃データの変遷を追い、伝統的指標とStatcast指標の両面からその進化の正体に迫る。">
+  <style>
+:root {
+  --bg: #f8fafc;
+  --card-bg: #ffffff;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --primary: #1e3a8a;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --border: #e2e8f0;
+  --code-bg: #1e293b;
+  --code-text: #f1f5f9;
+  --tag-bg: #eff6ff;
+  --tag-text: #2563eb;
+  --table-stripe: #f8fafc;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', 'Helvetica Neue', 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+  background-color: var(--bg);
+  color: var(--text-main);
+  line-height: 1.7;
+  padding: 32px 16px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.container {
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ナビゲーション・ヘッダー */
+.nav-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.95rem;
+}
+
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+}
+
+.breadcrumbs a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.breadcrumbs a:hover {
+  text-decoration: underline;
+}
+
+.badge {
+  display: inline-block;
+  background: var(--tag-bg);
+  color: var(--tag-text);
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  border: 1px solid #bfdbfe;
+}
+
+.badge-outline {
+  display: inline-block;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  border: 1px solid var(--border);
+}
+
+/* カードスタイル */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  margin-bottom: 24px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* ボタン */
+.btn {
+  display: inline-block;
+  text-align: center;
+  background-color: var(--accent);
+  color: #ffffff !important;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 10px 20px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.btn:hover {
+  background-color: var(--accent-hover);
+}
+
+.btn-secondary {
+  display: inline-block;
+  text-align: center;
+  background-color: #f1f5f9;
+  color: #334155 !important;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  transition: background-color 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background-color: #e2e8f0;
+}
+
+/* プロンプト・お題ブロック */
+.prompt-box {
+  background-color: #eff6ff;
+  border-left: 4px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  padding: 14px 18px;
+  margin: 16px 0;
+  font-size: 0.95rem;
+}
+
+.prompt-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.prompt-text {
+  font-style: italic;
+  color: #1e293b;
+}
+
+/* アコーディオン・SQLブロック */
+details.sql-accordion {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin: 16px 0;
+  overflow: hidden;
+}
+
+details.sql-accordion summary {
+  padding: 12px 16px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #334155;
+  user-select: none;
+  background: #f1f5f9;
+}
+
+details.sql-accordion summary:hover {
+  background: #e2e8f0;
+}
+
+.sql-content {
+  padding: 16px;
+  background: var(--code-bg);
+  color: var(--code-text);
+  font-family: Consolas, Monaco, 'Courier New', monospace;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* 記事本文スタイル (Markdown レンダリング) */
+.article-body {
+  font-size: 1.05rem;
+  line-height: 1.85;
+  color: #334155;
+}
+
+.article-body h1 {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: var(--primary);
+  margin: 36px 0 16px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #bfdbfe;
+}
+
+.article-body h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 32px 0 14px 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.article-body h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 24px 0 10px 0;
+}
+
+.article-body p {
+  margin: 14px 0;
+}
+
+.article-body ul, .article-body ol {
+  margin: 14px 0;
+  padding-left: 28px;
+}
+
+.article-body li {
+  margin: 6px 0;
+}
+
+.article-body strong {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.article-body blockquote {
+  border-left: 4px solid var(--accent);
+  background: #f1f5f9;
+  padding: 12px 18px;
+  margin: 18px 0;
+  color: #475569;
+  border-radius: 0 8px 8px 0;
+}
+
+.article-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 24px 0;
+  display: block;
+  overflow-x: auto;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.article-body th, .article-body td {
+  border: 1px solid var(--border);
+  padding: 10px 16px;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.article-body th {
+  background-color: #f1f5f9;
+  font-weight: 700;
+  color: var(--primary);
+  white-space: nowrap;
+}
+
+.article-body tr:nth-child(even) {
+  background-color: var(--table-stripe);
+}
+
+.article-body tr:hover {
+  background-color: #eff6ff;
+}
+
+.article-body code {
+  background-color: #e2e8f0;
+  color: #0f172a;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: Consolas, Monaco, monospace;
+  font-size: 0.88em;
+}
+
+.article-body pre code {
+  background: none;
+  color: inherit;
+  padding: 0;
+}
+
+.article-body pre {
+  background: var(--code-bg);
+  color: var(--code-text);
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 18px 0;
+}
+
+.article-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 36px 0;
+}
+
+/* ページ下部ナビゲーション */
+.article-nav {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+
+.article-nav a {
+  text-decoration: none;
+}
+
+footer {
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  padding-top: 24px;
+  margin-top: 48px;
+  width: 100%;
+}
+
+footer a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+footer a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+  .article-body h1 {
+    font-size: 1.5rem;
+  }
+  .article-body h2 {
+    font-size: 1.3rem;
+  }
+  .card {
+    padding: 18px;
+  }
+}
+</style>
+</head>
+<body>
+
+  <div class="container">
+    <nav class="nav-bar">
+      <div class="breadcrumbs">
+        <a href="../index.html">トップ (ポータル)</a>
+        <span>&gt;</span>
+        <span>Article #12</span>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <span class="badge">Article #12</span>
+        <span class="badge-outline">gemini-3.5-flash-lite</span>
+      </div>
+    </nav>
+
+    <div class="card" style="border-top: 5px solid var(--accent);">
+      <h1 style="color: var(--primary); font-size: 1.85rem; font-weight: 800; line-height: 1.4; margin-bottom: 12px;">進化し続ける鈴木誠也：2024-2026年データが証明する「真の打者への階段」</h1>
+      
+      <div style="display: flex; align-items: center; gap: 16px; font-size: 0.9rem; color: var(--text-muted); margin-bottom: 16px; flex-wrap: wrap;">
+        <span>📅 作成日時: 2026-10-26 00:07:10 JST</span>
+        <span>🤖 生成モデル: gemini-3.5-flash-lite</span>
+      </div>
+
+      <div class="prompt-box">
+        <div class="prompt-label">企画プロンプト / ユーザーの指示</div>
+        <div class="prompt-text">「【企画】進化し続ける鈴木誠也：2024-2026年データが証明する「真の打者への階段」 - 鈴木誠也の2024年から2026年までの3シーズンにおける打撃データの変遷を追い、伝統的指標とStatcast指標の両面からその進化の正体に迫る。」</div>
+      </div>
+
+      
+        <details class="sql-accordion">
+          <summary>🔍 実行された Text-to-SQL クエリを確認する</summary>
+          <pre class="sql-content"><code>-- [素材 1: 素材①: 基本打撃指標素材]
+-- 指示: 鈴木誠也の2024年、2025年、2026年シーズンにおける PA, AB, H, HR, RBI, R, BB%, K%, AVG, OBP, SLG, OPS を集計
+SELECT
+    g.season AS season,
+    p.full_name AS player_name,
+    sum(bb.plate_appearances) AS pa,
+    sum(bb.at_bats) AS ab,
+    sum(bb.hits) AS h,
+    sum(bb.home_runs) AS hr,
+    sum(bb.rbi) AS rbi,
+    sum(bb.runs) AS r,
+    round(sum(bb.base_on_balls) / nullIf(sum(bb.plate_appearances), 0), 3) AS bb_pct,
+    round(sum(bb.strike_outs) / nullIf(sum(bb.plate_appearances), 0), 3) AS k_pct,
+    round(sum(bb.hits) / nullIf(sum(bb.at_bats), 0), 3) AS avg,
+    round((sum(bb.hits) + sum(bb.base_on_balls) + sum(bb.hit_by_pitch)) / nullIf(sum(bb.at_bats) + sum(bb.base_on_balls) + sum(bb.hit_by_pitch) + sum(bb.sac_flies), 0), 3) AS obp,
+    round(sum(bb.total_bases) / nullIf(sum(bb.at_bats), 0), 3) AS slg,
+    round(obp + slg, 3) AS ops
+FROM statcast.boxscore_batting bb FINAL
+JOIN statcast.players p FINAL ON bb.player_id = p.player_id
+JOIN statcast.games g FINAL ON toUInt64(bb.game_pk) = g.game_pk
+WHERE g.season IN (2024, 2025, 2026)
+  AND g.game_type = &#x27;R&#x27;
+  AND p.full_name LIKE &#x27;%Seiya Suzuki%&#x27;
+GROUP BY g.season, p.player_id, p.full_name
+ORDER BY g.season ASC
+
+-- [素材 2: 素材②: 打球品質・高度指標素材]
+-- 指示: 鈴木誠也の2024年、2025年、2026年シーズンにおける 平均打球初速, HardHit%, Barrel%, SweetSpot%, xBA, xwOBA を集計
+SELECT
+    g.season AS season,
+    count(s.launch_speed) AS batted_balls,
+    round(avg(s.launch_speed), 1) AS avg_launch_speed_mph,
+    round(countIf(s.launch_speed &gt;= 95.0) * 100.0 / count(s.launch_speed), 1) AS hard_hit_pct,
+    round(countIf(s.launch_speed_angle = 6) * 100.0 / count(s.launch_speed), 1) AS barrel_pct,
+    round(countIf(s.launch_angle BETWEEN 8 AND 32) * 100.0 / count(s.launch_speed), 1) AS sweet_spot_pct,
+    round(avg(s.estimated_ba_using_speedangle), 3) AS xba,
+    round(avg(s.estimated_woba_using_speedangle), 3) AS xwoba
+FROM statcast.statcast_raw AS s
+JOIN statcast.players p FINAL ON toUInt64(s.batter) = p.player_id
+JOIN statcast.games g FINAL ON toUInt64(s.game_pk) = g.game_pk
+WHERE g.season IN (2024, 2025, 2026)
+  AND g.game_type = &#x27;R&#x27;
+  AND s.type = &#x27;X&#x27;
+  AND s.launch_speed IS NOT NULL
+  AND p.full_name LIKE &#x27;%Seiya Suzuki%&#x27;
+GROUP BY g.season
+ORDER BY g.season ASC
+
+-- [素材 3: 素材③: 配球・球種別適応素材]
+-- 指示: 鈴木誠也の2024年、2025年、2026年シーズンにおける 球種別（Fastball, Offspeed, Breaking）の打率、長打率、Whiff%（空振り率）を集計
+WITH pitch_categorized AS (
+    SELECT
+        s.game_pk,
+        s.batter,
+        s.pitch_type,
+        s.pitch_name,
+        s.description,
+        s.events,
+        CASE
+            WHEN s.pitch_type IN (&#x27;FF&#x27;, &#x27;FT&#x27;, &#x27;SI&#x27;, &#x27;FC&#x27;, &#x27;FS&#x27;, &#x27;FA&#x27;) THEN &#x27;Fastball&#x27;
+            WHEN s.pitch_type IN (&#x27;CH&#x27;, &#x27;FO&#x27;, &#x27;SC&#x27;, &#x27;EP&#x27;) THEN &#x27;Offspeed&#x27;
+            ELSE &#x27;Breaking&#x27;
+        END AS pitch_category
+    FROM statcast.statcast_raw AS s
+    JOIN statcast.games g FINAL ON toUInt64(s.game_pk) = g.game_pk
+    WHERE g.season IN (2024, 2025, 2026)
+      AND g.game_type = &#x27;R&#x27;
+      AND toUInt64(s.batter) IN (
+          SELECT player_id FROM statcast.players FINAL WHERE full_name LIKE &#x27;%Seiya Suzuki%&#x27;
+      )
+),
+player_info AS (
+    SELECT player_id FROM statcast.players FINAL WHERE full_name LIKE &#x27;%Seiya Suzuki%&#x27;
+),
+batting_events AS (
+    SELECT
+        g.season,
+        pc.pitch_category,
+        countIf(pc.events IN (&#x27;single&#x27;, &#x27;double&#x27;, &#x27;triple&#x27;, &#x27;home_run&#x27;)) AS hits,
+        countIf(pc.events IN (&#x27;single&#x27;, &#x27;double&#x27;, &#x27;triple&#x27;, &#x27;home_run&#x27;, &#x27;field_out&#x27;, &#x27;strikeout&#x27;, &#x27;force_out&#x27;, &#x27;grounded_into_double_play&#x27;, &#x27;sac_fly&#x27;, &#x27;sac_bunt&#x27;) OR pc.events != &#x27;&#x27;) AS at_bats_approx,
+        countIf(pc.events = &#x27;single&#x27;) * 1 + countIf(pc.events = &#x27;double&#x27;) * 2 + countIf(pc.events = &#x27;triple&#x27;) * 3 + countIf(pc.events = &#x27;home_run&#x27;) * 4 AS total_bases_approx,
+        countIf(pc.description IN (&#x27;swinging_strike&#x27;, &#x27;swinging_strike_blocked&#x27;)) AS swinging_strikes,
+        countIf(pc.description IN (&#x27;swinging_strike&#x27;, &#x27;swinging_strike_blocked&#x27;, &#x27;foul&#x27;, &#x27;hit_into_play&#x27;, &#x27;foul_bunt&#x27;, &#x27;missed_bunt&#x27;)) AS total_swings
+    FROM pitch_categorized AS pc
+    JOIN statcast.games g FINAL ON toUInt64(pc.game_pk) = g.game_pk
+    GROUP BY g.season, pc.pitch_category
+)
+SELECT
+    season,
+    pitch_category,
+    round(hits / nullIf(at_bats_approx, 0), 3) AS avg,
+    round(total_bases_approx / nullIf(at_bats_approx, 0), 3) AS slg,
+    round(swinging_strikes * 100.0 / nullIf(total_swings, 0), 1) AS whiff_pct
+FROM batting_events
+WHERE at_bats_approx &gt; 0
+ORDER BY season DESC, pitch_category ASC</code></pre>
+        </details>
+        
+    </div>
+
+    <main class="card">
+      <article class="article-body">
+        <h1>進化し続ける鈴木誠也：2024-2026年データが証明する「真の打者への階段」</h1>
+<h2>概要・エグゼクティブサマリー</h2>
+<p>メジャーリーグの舞台で確固たる地位を築きつつある鈴木誠也。彼が2024年から2026年にかけて歩んできた3シーズンは、単なる「数字の推移」に留まらず、打者としてのモデルチェンジと進化の連続でした。伝統的な打撃指標から最先端のStatcast（スタットキャスト）データ、さらには配球別の適応プロセスに至るまで、多角的なアプローチからその実態を紐解くと、彼の打撃が「いかにしてメジャーのトップクラスへ近づいているか」が鮮明に浮かび上がります。</p>
+<p><strong>本記事の主要なハイライト：</strong><br />
+- <strong>長打力の開花と安定感</strong>: 2025年には自己最多の32本塁打、103打点をマークし、パワーヒッターとしての存在感を完全に確立。<br />
+- <strong>打球プロファイルの変遷</strong>: 2024年の圧倒的な打球品質から、2025年には球界トップクラスのバレル率（16.6%）を記録するなど、打球角度とパワーの融合を実現。<br />
+- <strong>アプローチの深化</strong>: 選球眼の向上（BB%の向上）が見られる一方で、球種ごとの適応やウィークポイントの克服に向けた絶え間ない試行錯誤がデータに表れている。</p>
+<hr />
+<h2>第1章：3年間の基本スタッツ推移と打撃の安定感</h2>
+<p>まずは、2024年から2026年までの3シーズンにおける鈴木誠也の伝統的な打撃指標（基本スタッツ）を確認する。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">season</th>
+<th style="text-align: left;">player_name</th>
+<th style="text-align: center;">pa</th>
+<th style="text-align: center;">ab</th>
+<th style="text-align: center;">h</th>
+<th style="text-align: center;">hr</th>
+<th style="text-align: center;">rbi</th>
+<th style="text-align: center;">r</th>
+<th style="text-align: center;">bb_pct</th>
+<th style="text-align: center;">k_pct</th>
+<th style="text-align: center;">avg</th>
+<th style="text-align: center;">obp</th>
+<th style="text-align: center;">slg</th>
+<th style="text-align: center;">ops</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">2024</td>
+<td style="text-align: left;">Seiya Suzuki</td>
+<td style="text-align: center;">585</td>
+<td style="text-align: center;">512</td>
+<td style="text-align: center;">145</td>
+<td style="text-align: center;">21</td>
+<td style="text-align: center;">73</td>
+<td style="text-align: center;">74</td>
+<td style="text-align: center;">0.108</td>
+<td style="text-align: center;">0.274</td>
+<td style="text-align: center;">0.283</td>
+<td style="text-align: center;">0.366</td>
+<td style="text-align: center;">0.482</td>
+<td style="text-align: center;">0.848</td>
+</tr>
+<tr>
+<td style="text-align: left;">2025</td>
+<td style="text-align: left;">Seiya Suzuki</td>
+<td style="text-align: center;">651</td>
+<td style="text-align: center;">571</td>
+<td style="text-align: center;">140</td>
+<td style="text-align: center;">32</td>
+<td style="text-align: center;">103</td>
+<td style="text-align: center;">75</td>
+<td style="text-align: center;">0.109</td>
+<td style="text-align: center;">0.252</td>
+<td style="text-align: center;">0.245</td>
+<td style="text-align: center;">0.326</td>
+<td style="text-align: center;">0.478</td>
+<td style="text-align: center;">0.804</td>
+</tr>
+<tr>
+<td style="text-align: left;">2026</td>
+<td style="text-align: left;">Seiya Suzuki</td>
+<td style="text-align: center;">634</td>
+<td style="text-align: center;">545</td>
+<td style="text-align: center;">147</td>
+<td style="text-align: center;">26</td>
+<td style="text-align: center;">86</td>
+<td style="text-align: center;">96</td>
+<td style="text-align: center;">0.128</td>
+<td style="text-align: center;">0.244</td>
+<td style="text-align: center;">0.27</td>
+<td style="text-align: center;">0.368</td>
+<td style="text-align: center;">0.473</td>
+<td style="text-align: center;">0.841</td>
+</tr>
+</tbody>
+</table>
+<p>2024シーズン、鈴木は585打席に立ち、打率.283、21本塁打、OPS .848という非常にバランスの取れた素晴らしい成績を残した。四球率（BB%）10.8%に対して三振率（K%）27.4%という数字は、やや三振が目立つものの、高い出塁率（.366）がそれを補う形であった。</p>
+<p>続く2025シーズン、打席数は651へと大きく増加し、フルシーズンを通して中軸としての責任を全うした。特筆すべきは本塁打数の激増である。自己最多となる32本塁打、そして103打点をマークし、打撃の軸足が「アベレージヒッター」から「量産型スラッガー」へとシフトしたことを証明した。打率は.245へと低下したものの、長打率.478、OPS .804と高い生産性を維持している。</p>
+<p>そして2026シーズンは、打率が.270へと再び上昇し、四球率も12.8%へ向上。三振率も24.4%へと低下し、アプローチの確実性がさらに増した。本塁打こそ26本と2025年から微減したものの、得点（R）が96へと大きく跳ね上がり、打線の中核としてチームの勝利に深く貢献している姿が数字から読み取れる。</p>
+<hr />
+<h2>第2章：Statcastが暴く「打球品質」の劇的進化</h2>
+<p>続いて、打者の真のポテンシャルを測るStatcastの「打球品質・高度指標」を検証する。これにより、当たり損ないの傾向や、どれだけ効率的に強い打球を放っているかが明らかになる。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">season</th>
+<th style="text-align: center;">batted_balls</th>
+<th style="text-align: center;">avg_launch_speed_mph</th>
+<th style="text-align: center;">hard_hit_pct</th>
+<th style="text-align: center;">barrel_pct</th>
+<th style="text-align: center;">sweet_spot_pct</th>
+<th style="text-align: center;">xba</th>
+<th style="text-align: center;">xwoba</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">2024</td>
+<td style="text-align: center;">355</td>
+<td style="text-align: center;">91.7</td>
+<td style="text-align: center;">49.3</td>
+<td style="text-align: center;">11.5</td>
+<td style="text-align: center;">40</td>
+<td style="text-align: center;">0.367</td>
+<td style="text-align: center;">0.442</td>
+</tr>
+<tr>
+<td style="text-align: left;">2025</td>
+<td style="text-align: center;">415</td>
+<td style="text-align: center;">91.3</td>
+<td style="text-align: center;">48.7</td>
+<td style="text-align: center;">16.6</td>
+<td style="text-align: center;">42.2</td>
+<td style="text-align: center;">0.346</td>
+<td style="text-align: center;">0.433</td>
+</tr>
+<tr>
+<td style="text-align: left;">2026</td>
+<td style="text-align: center;">393</td>
+<td style="text-align: center;">88.6</td>
+<td style="text-align: center;">38.9</td>
+<td style="text-align: center;">10.7</td>
+<td style="text-align: center;">37.4</td>
+<td style="text-align: center;">0.344</td>
+<td style="text-align: center;">0.398</td>
+</tr>
+</tbody>
+</table>
+<p>このデータテーブルは、鈴木の打撃における「質」のダイナミックな変化を雄弁に語っている。</p>
+<p>2024年は、平均打球初速が91.7 mph（約147.6 km/h）、HardHit%（95 mph以上の打球の割合）が49.3%と、リーグ屈指のハードヒッターとしての資質を遺憾なく発揮していた。expected指標であるxBA（.367）やxwOBA（.442）が非常に高く、不運な当たりが多かったことを示唆している。</p>
+<p>さらに驚異的なのが2025シーズンだ。打球数が415に増えた中で、<strong>バレル率（Barrel%）が16.6%</strong>という驚異的な数値に跳ね上がった。バレルとは「最適な打球角度と初速で放たれ、長打になる確率が非常に高い打球」を指すが、16%台という数字はメジャーリーガーの中でもトッププロスペクト、あるいはエリートスラッガーの領域である。スウィートスポット率（SweetSpot%）も42.2%へと向上しており、「いかに芯で捉え、理想的な角度でボールを上げるか」というメカニズムの深化が成功したシーズンだったと言える。</p>
+<p>2026シーズンに入ると、平均打球初速は88.6 mph、HardHit%は38.9%、バレル率も10.7%へとやや下降線を描いている。しかし、これは単なるパワーの衰えではなく、第1章で見たように三振率の低下（24.4%）や四球率の向上（12.8%）と連動しており、「力任せに引っ張る」スタイルから、よりコンタクト重視、あるいは状況に応じた柔軟なアプローチへと微調整を行った結果である可能性が高い。</p>
+<hr />
+<h2>第3章：配球・球種別適応力に見るアプローチの深化</h2>
+<p>投手陣が繰り出す多彩な球種に対し、鈴木がどのようにアプローチを変化させてきたのか。最後に球種別（Fastball, Breaking, Offspeed）の適応データを見てみよう。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">season</th>
+<th style="text-align: left;">pitch_category</th>
+<th style="text-align: center;">avg</th>
+<th style="text-align: center;">slg</th>
+<th style="text-align: center;">whiff_pct</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">2026</td>
+<td style="text-align: left;">Breaking</td>
+<td style="text-align: center;">0.205</td>
+<td style="text-align: center;">0.368</td>
+<td style="text-align: center;">28.8</td>
+</tr>
+<tr>
+<td style="text-align: left;">2026</td>
+<td style="text-align: left;">Fastball</td>
+<td style="text-align: center;">0.245</td>
+<td style="text-align: center;">0.414</td>
+<td style="text-align: center;">15.4</td>
+</tr>
+<tr>
+<td style="text-align: left;">2026</td>
+<td style="text-align: left;">Offspeed</td>
+<td style="text-align: center;">0.267</td>
+<td style="text-align: center;">0.556</td>
+<td style="text-align: center;">31.5</td>
+</tr>
+<tr>
+<td style="text-align: left;">2025</td>
+<td style="text-align: left;">Breaking</td>
+<td style="text-align: center;">0.178</td>
+<td style="text-align: center;">0.322</td>
+<td style="text-align: center;">31.2</td>
+</tr>
+<tr>
+<td style="text-align: left;">2025</td>
+<td style="text-align: left;">Fastball</td>
+<td style="text-align: center;">0.234</td>
+<td style="text-align: center;">0.460</td>
+<td style="text-align: center;">15.6</td>
+</tr>
+<tr>
+<td style="text-align: left;">2025</td>
+<td style="text-align: left;">Offspeed</td>
+<td style="text-align: center;">0.254</td>
+<td style="text-align: center;">0.576</td>
+<td style="text-align: center;">30.4</td>
+</tr>
+<tr>
+<td style="text-align: left;">2024</td>
+<td style="text-align: left;">Breaking</td>
+<td style="text-align: center;">0.235</td>
+<td style="text-align: center;">0.382</td>
+<td style="text-align: center;">30.1</td>
+</tr>
+<tr>
+<td style="text-align: left;">2024</td>
+<td style="text-align: left;">Fastball</td>
+<td style="text-align: center;">0.256</td>
+<td style="text-align: center;">0.460</td>
+<td style="text-align: center;">18.4</td>
+</tr>
+<tr>
+<td style="text-align: left;">2024</td>
+<td style="text-align: left;">Offspeed</td>
+<td style="text-align: center;">0.231</td>
+<td style="text-align: center;">0.288</td>
+<td style="text-align: center;">31.8</td>
+</tr>
+</tbody>
+</table>
+<p>この球種別データからは、メジャーの投手たちが仕掛けてくる配球の罠と、それに対する鈴木の高度な適応の軌跡が浮かび上がってくる。</p>
+<p>まず<strong>Fastball（速球系）</strong>に対するアプローチを見ると、Whiff%（空振り率）が2024年の18.4%から、2025年（15.6%）、2026年（15.4%）へと一貫して低下している。これはメジャーの剛速球に対するタイミグの合わせ方がより確実なものになり、差し込まれるケースが減っている証拠だ。</p>
+<p>一方で、<strong>Breaking（変化球系）</strong>に対しては苦戦の痕跡が見える。2024年には打率.235、長打率.382だったものが、2025年には打率.178、長打率.322まで落ち込んだ。2026年には打率.205、長打率.368と持ち直しているものの、空振り率（28.8%〜31.2%前後）も含め、メジャー特有の鋭く曲がり落ちるスライダーやカーブへの対応は継続的な課題であり、相手バッテリーもここに活路を見出そうとしていることがうかがえる。</p>
+<p>最も特筆すべきは<strong>Offspeed（オフスピード系：チェンジアップやフォークなど）</strong>の進化だ。2024年は長打率.288にとどまっていたが、2025年には長打率.576、2026年も長打率.556と、<strong>ゾーンに来たオフスピード系を完璧に捉えて長打にする能力が劇的に向上</strong>している。変化球でタイミングを外すアプローチに対し、鈴木は「落ちる球や緩い球を我慢して呼び込み、長打にする」という技術をこの3年間で完全に自分のものにしたと言える。</p>
+<hr />
+<h2>まとめと今後の展望</h2>
+<p>2024年から2026年までの3シーズンにわたるデータを総括すると、鈴木誠也という打者は単なる「パワーヒッターへの変貌」を遂げただけでなく、<strong>「状況や配球に応じた高度なアジャスト能力を持つ成熟した打者」</strong>へと階段を駆け上がっていることが証明された。</p>
+<ul>
+<li><strong>2024年</strong>: 高い打球初速と優れたxBAが示す通り、メジャーの環境への適応とベースとなる高い打撃素質を証明。</li>
+<li><strong>2025年</strong>: バレル率16.6%に代表される爆発的な打球品質の向上により、32本塁打・103打点というキャリアハイを達成。</li>
+<li><strong>2026年</strong>: パワー偏重から脱却し、三振率の低下、選球眼の向上、そしてオフスピード系に対する圧倒的な長打力（SLG .556）を手に入れ、より総合力の高い打者へ進化。</li>
+</ul>
+<p>変化球（Breaking）に対する空振り率のコントロールやさらなるアベレージの向上といった伸び代を残しつつも、データが示す彼の進化の軌跡は実にエキサイティングである。相手バッテリーがどのような配球で攻めてこようとも、それをデータで分析し、自らのスイングを微調整して適応していく――。鈴木誠也がメジャーリーグの真の「強打者（The Elite Hitter）」として君臨する未来は、すでに数字の裏付けをもって現実のものとなっている。</p>
+      </article>
+
+      <div class="article-nav">
+        <a href="../index.html" class="btn-secondary">← ポータルへ戻る</a>
+      </div>
+    </main>
+
+    <footer>
+      <p>
+        <a href="../index.html">スライド＆記事ポータルへ戻る</a> | 
+        GitHub: <a href="https://github.com/walk8243/langgraph-statcast-agent" target="_blank" rel="noopener noreferrer">walk8243/langgraph-statcast-agent</a>
+      </p>
+    </footer>
+  </div>
+
+</body>
+</html>
