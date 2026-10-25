@@ -167,7 +167,7 @@ export default function HomePage() {
               iconPosition="after"
               size="large"
             >
-              試合速報 (Live)
+              試合速報
             </Button>
           </Link>
           <Link href="/articles" style={{ textDecoration: "none" }}>

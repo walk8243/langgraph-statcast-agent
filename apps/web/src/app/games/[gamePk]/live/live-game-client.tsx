@@ -609,7 +609,7 @@ export default function LiveGameClient({ initialData }: LiveGameClientProps) {
           <Card className={styles.card}>
             <CardHeader
               image={<Sport24Regular />}
-              header={<Text weight="semibold">ラインスコア (Line Score)</Text>}
+              header={<Text weight="semibold">ラインスコア</Text>}
             />
             <div className={styles.tableContainer}>
               <Table size="small">
@@ -871,7 +871,7 @@ export default function LiveGameClient({ initialData }: LiveGameClientProps) {
           <Card className={styles.card}>
             <CardHeader
               image={<Target24Regular />}
-              header={<Text weight="semibold">一球速報 & ストライクゾーン (Statcast)</Text>}
+              header={<Text weight="semibold">一球速報 & ストライクゾーン</Text>}
               description={
                 activePlay
                   ? `${activePlay.batter_name} (打者) vs ${activePlay.pitcher_name} (投手)`
@@ -976,7 +976,7 @@ export default function LiveGameClient({ initialData }: LiveGameClientProps) {
                 </div>
                 <div style={{ display: "flex", alignItems: "center", columnGap: "4px" }}>
                   <div style={{ width: "10px", height: "10px", borderRadius: "50%", backgroundColor: "#0078d4" }} />
-                  <Caption1>打球 (In Play)</Caption1>
+                  <Caption1>打球</Caption1>
                 </div>
               </div>
             </div>
@@ -1037,21 +1037,21 @@ export default function LiveGameClient({ initialData }: LiveGameClientProps) {
 
                       <div className={styles.statcastCardGrid}>
                         <div className={styles.metricCard}>
-                          <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>初速 (Velocity)</Caption1>
+                          <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>初速</Caption1>
                           <Text weight="bold" size={300}>
                             {pitch.start_speed ? `${pitch.start_speed.toFixed(1)} mph` : "-"}
                           </Text>
                         </div>
 
                         <div className={styles.metricCard}>
-                          <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>回転数 (Spin)</Caption1>
+                          <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>回転数</Caption1>
                           <Text weight="bold" size={300}>
                             {pitch.spin_rate ? `${Math.round(pitch.spin_rate)} rpm` : "-"}
                           </Text>
                         </div>
 
                         <div className={styles.metricCard}>
-                          <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>縦変化 (Induced)</Caption1>
+                          <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>縦変化</Caption1>
                           <Text weight="bold" size={300}>
                             {pitch.break_vertical_induced !== null
                               ? `${pitch.break_vertical_induced.toFixed(1)}"`
@@ -1060,7 +1060,7 @@ export default function LiveGameClient({ initialData }: LiveGameClientProps) {
                         </div>
 
                         <div className={styles.metricCard}>
-                          <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>横変化 (Horizontal)</Caption1>
+                          <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>横変化</Caption1>
                           <Text weight="bold" size={300}>
                             {pitch.break_horizontal !== null
                               ? `${pitch.break_horizontal.toFixed(1)}"`
@@ -1070,7 +1070,7 @@ export default function LiveGameClient({ initialData }: LiveGameClientProps) {
 
                         {pitch.launch_speed !== null && (
                           <div className={styles.metricCard}>
-                            <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>打球速度 (Exit)</Caption1>
+                            <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>打球速度</Caption1>
                             <Text weight="bold" size={300} style={{ color: tokens.colorBrandForeground1 }}>
                               {pitch.launch_speed.toFixed(1)} mph
                             </Text>
@@ -1079,7 +1079,7 @@ export default function LiveGameClient({ initialData }: LiveGameClientProps) {
 
                         {pitch.launch_angle !== null && (
                           <div className={styles.metricCard}>
-                            <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>打球角度 (Angle)</Caption1>
+                            <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>打球角度</Caption1>
                             <Text weight="bold" size={300}>
                               {pitch.launch_angle.toFixed(1)}°
                             </Text>
@@ -1088,7 +1088,7 @@ export default function LiveGameClient({ initialData }: LiveGameClientProps) {
 
                         {pitch.total_distance !== null && (
                           <div className={styles.metricCard}>
-                            <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>飛距離 (Distance)</Caption1>
+                            <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>飛距離</Caption1>
                             <Text weight="bold" size={300} style={{ color: tokens.colorBrandForeground1 }}>
                               {pitch.total_distance} ft
                             </Text>
