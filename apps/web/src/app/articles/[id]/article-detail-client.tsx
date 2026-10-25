@@ -289,7 +289,7 @@ export function ArticleDetailClient({ article }: ArticleDetailClientProps) {
         <div className={styles.promptContainer}>
           <div className={styles.promptHeader}>
             <Comment20Regular />
-            <span>分析指示 (Prompt)</span>
+            <span>分析指示</span>
           </div>
           <div className={styles.promptBody}>&ldquo;{article.prompt}&rdquo;</div>
         </div>

@@ -170,7 +170,7 @@ export default function GamesClient({ games, currentDate, latestDate, today }: G
       <header className={styles.header}>
         <Title1>MLB 試合一覧 &amp; リアルタイム速報</Title1>
         <Subtitle1 style={{ color: tokens.colorNeutralForeground2 }}>
-          進行中（Live）および日本時間（JST）の日付ごとに試合を選択して、一球速報・スコアボード・Statcast指標をリアルタイムに閲覧できます。
+          進行中および日本時間の日付ごとに試合を選択して、一球速報・スコアボード・Statcast指標をリアルタイムに閲覧できます。
         </Subtitle1>
       </header>
 
@@ -331,7 +331,7 @@ export default function GamesClient({ games, currentDate, latestDate, today }: G
                       icon={<ArrowRight16Regular />}
                       iconPosition="after"
                     >
-                      {isLive ? "一球速報を見る (Live)" : "試合結果・詳細を見る"}
+                      {isLive ? "一球速報を見る" : "試合結果・詳細を見る"}
                     </Button>
                   </Link>
                 </CardFooter>

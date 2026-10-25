@@ -381,7 +381,7 @@ export default function PlayerDetailClient({
       <section className={styles.contentSection}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <Sparkle20Regular style={{ color: tokens.colorBrandForeground1 }} />
-          <Title2>AI解説レポート (Statcast Agent)</Title2>
+          <Title2>AI解説レポート</Title2>
         </div>
 
         {!latestReport ? (
@@ -461,7 +461,7 @@ export default function PlayerDetailClient({
               </div>
 
               <div className={styles.metricCard}>
-                <Caption1 className={styles.metricLabel}>平均打球初速 (Avg EV)</Caption1>
+                <Caption1 className={styles.metricLabel}>平均打球初速</Caption1>
                 <Text className={styles.metricValue}>
                   {Number(latestBatterStatcast.avg_exit_velocity).toFixed(1)}{" "}
                   <span style={{ fontSize: "14px", fontWeight: "normal" }}>mph</span>
@@ -470,7 +470,7 @@ export default function PlayerDetailClient({
               </div>
 
               <div className={styles.metricCard}>
-                <Caption1 className={styles.metricLabel}>最高打球初速 (Max EV)</Caption1>
+                <Caption1 className={styles.metricLabel}>最高打球初速</Caption1>
                 <Text className={styles.metricValue}>
                   {Number(latestBatterStatcast.max_exit_velocity).toFixed(1)}{" "}
                   <span style={{ fontSize: "14px", fontWeight: "normal" }}>mph</span>
@@ -479,7 +479,7 @@ export default function PlayerDetailClient({
               </div>
 
               <div className={styles.metricCard}>
-                <Caption1 className={styles.metricLabel}>平均打球角度 (Launch Angle)</Caption1>
+                <Caption1 className={styles.metricLabel}>平均打球角度</Caption1>
                 <Text className={styles.metricValue}>
                   {Number(latestBatterStatcast.avg_launch_angle).toFixed(1)}°
                 </Text>
@@ -497,10 +497,10 @@ export default function PlayerDetailClient({
 
             <div style={{ marginTop: "16px", display: "flex", gap: "16px", flexWrap: "wrap" }}>
               <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>
-                総打球数 (Batted Balls): <strong>{latestBatterStatcast.batted_balls}</strong>
+                総打球数: <strong>{latestBatterStatcast.batted_balls}</strong>
               </Caption1>
               <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>
-                見た投球数 (Pitches Seen): <strong>{latestBatterStatcast.pitches_seen}</strong>
+                見た投球数: <strong>{latestBatterStatcast.pitches_seen}</strong>
               </Caption1>
             </div>
           </div>
@@ -521,21 +521,21 @@ export default function PlayerDetailClient({
                 <TableHeader>
                   <TableRow>
                     <TableHeaderCell>年度</TableHeaderCell>
-                    <TableHeaderCell>打率 (AVG)</TableHeaderCell>
-                    <TableHeaderCell>本塁打 (HR)</TableHeaderCell>
-                    <TableHeaderCell>打点 (RBI)</TableHeaderCell>
+                    <TableHeaderCell>打率</TableHeaderCell>
+                    <TableHeaderCell>本塁打</TableHeaderCell>
+                    <TableHeaderCell>打点</TableHeaderCell>
                     <TableHeaderCell>OPS</TableHeaderCell>
-                    <TableHeaderCell>試合 (G)</TableHeaderCell>
-                    <TableHeaderCell>打数 (AB)</TableHeaderCell>
-                    <TableHeaderCell>得点 (R)</TableHeaderCell>
-                    <TableHeaderCell>安打 (H)</TableHeaderCell>
-                    <TableHeaderCell>二塁打 (2B)</TableHeaderCell>
-                    <TableHeaderCell>三塁打 (3B)</TableHeaderCell>
-                    <TableHeaderCell>四球 (BB)</TableHeaderCell>
-                    <TableHeaderCell>三振 (SO)</TableHeaderCell>
-                    <TableHeaderCell>盗塁 (SB)</TableHeaderCell>
-                    <TableHeaderCell>出塁率 (OBP)</TableHeaderCell>
-                    <TableHeaderCell>長打率 (SLG)</TableHeaderCell>
+                    <TableHeaderCell>試合</TableHeaderCell>
+                    <TableHeaderCell>打数</TableHeaderCell>
+                    <TableHeaderCell>得点</TableHeaderCell>
+                    <TableHeaderCell>安打</TableHeaderCell>
+                    <TableHeaderCell>二塁打</TableHeaderCell>
+                    <TableHeaderCell>三塁打</TableHeaderCell>
+                    <TableHeaderCell>四球</TableHeaderCell>
+                    <TableHeaderCell>三振</TableHeaderCell>
+                    <TableHeaderCell>盗塁</TableHeaderCell>
+                    <TableHeaderCell>出塁率</TableHeaderCell>
+                    <TableHeaderCell>長打率</TableHeaderCell>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -632,7 +632,7 @@ export default function PlayerDetailClient({
                 </div>
 
                 <div className={styles.metricCard}>
-                  <Caption1 className={styles.metricLabel}>被平均打球初速 (Avg EV against)</Caption1>
+                  <Caption1 className={styles.metricLabel}>被平均打球初速</Caption1>
                   <Text className={styles.metricValue}>
                     {Number(latestPitcherStatcast.avg_exit_velocity).toFixed(1)}{" "}
                     <span style={{ fontSize: "14px", fontWeight: "normal" }}>mph</span>
@@ -643,16 +643,16 @@ export default function PlayerDetailClient({
 
               <div style={{ marginTop: "16px", display: "flex", gap: "16px", flexWrap: "wrap" }}>
                 <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>
-                  総投球数 (Total Pitches): <strong>{latestPitcherStatcast.total_pitches}</strong>
+                  総投球数: <strong>{latestPitcherStatcast.total_pitches}</strong>
                 </Caption1>
                 <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>
-                  スイング数 (Swings): <strong>{latestPitcherStatcast.swings}</strong>
+                  スイング数: <strong>{latestPitcherStatcast.swings}</strong>
                 </Caption1>
                 <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>
-                  空振り数 (Whiffs): <strong>{latestPitcherStatcast.whiffs}</strong>
+                  空振り数: <strong>{latestPitcherStatcast.whiffs}</strong>
                 </Caption1>
                 <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>
-                  見逃しストライク (Called Strikes): <strong>{latestPitcherStatcast.called_strikes}</strong>
+                  見逃しストライク: <strong>{latestPitcherStatcast.called_strikes}</strong>
                 </Caption1>
               </div>
             </div>
@@ -660,7 +660,7 @@ export default function PlayerDetailClient({
 
           {latestPitchTypeStats.length > 0 && (
             <div className={styles.statsCard}>
-              <Title3>球種別スタッツ (Pitch Arsenal)</Title3>
+              <Title3>球種別スタッツ</Title3>
               <div className={styles.tableWrapper}>
                 <Table aria-label="Pitcher pitch types stats table">
                   <TableHeader>
@@ -727,21 +727,21 @@ export default function PlayerDetailClient({
                 <TableHeader>
                   <TableRow>
                     <TableHeaderCell>年度</TableHeaderCell>
-                    <TableHeaderCell>防御率 (ERA)</TableHeaderCell>
-                    <TableHeaderCell>勝 (W)</TableHeaderCell>
-                    <TableHeaderCell>負 (L)</TableHeaderCell>
-                    <TableHeaderCell>奪三振 (SO)</TableHeaderCell>
+                    <TableHeaderCell>防御率</TableHeaderCell>
+                    <TableHeaderCell>勝</TableHeaderCell>
+                    <TableHeaderCell>負</TableHeaderCell>
+                    <TableHeaderCell>奪三振</TableHeaderCell>
                     <TableHeaderCell>WHIP</TableHeaderCell>
-                    <TableHeaderCell>登板 (G)</TableHeaderCell>
-                    <TableHeaderCell>先発 (GS)</TableHeaderCell>
-                    <TableHeaderCell>セーブ (SV)</TableHeaderCell>
-                    <TableHeaderCell>投球回 (IP)</TableHeaderCell>
-                    <TableHeaderCell>被安打 (H)</TableHeaderCell>
-                    <TableHeaderCell>失点 (R)</TableHeaderCell>
-                    <TableHeaderCell>自責点 (ER)</TableHeaderCell>
-                    <TableHeaderCell>被本塁打 (HR)</TableHeaderCell>
-                    <TableHeaderCell>与四球 (BB)</TableHeaderCell>
-                    <TableHeaderCell>被打率 (BAA)</TableHeaderCell>
+                    <TableHeaderCell>登板</TableHeaderCell>
+                    <TableHeaderCell>先発</TableHeaderCell>
+                    <TableHeaderCell>セーブ</TableHeaderCell>
+                    <TableHeaderCell>投球回</TableHeaderCell>
+                    <TableHeaderCell>被安打</TableHeaderCell>
+                    <TableHeaderCell>失点</TableHeaderCell>
+                    <TableHeaderCell>自責点</TableHeaderCell>
+                    <TableHeaderCell>被本塁打</TableHeaderCell>
+                    <TableHeaderCell>与四球</TableHeaderCell>
+                    <TableHeaderCell>被打率</TableHeaderCell>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

@@ -2,17 +2,17 @@ import { query } from "@/lib/db";
 import { Team, LeagueGroup, DivisionGroup } from "@/types/team";
 
 const LEAGUE_LABELS: Record<string, string> = {
-  "American League": "アメリカン・リーグ (AL)",
-  "National League": "ナショナル・リーグ (NL)",
+  "American League": "アメリカン・リーグ",
+  "National League": "ナショナル・リーグ",
 };
 
 const DIVISION_LABELS: Record<string, string> = {
-  "American League East": "ア・リーグ 東地区 (East)",
-  "American League Central": "ア・リーグ 中地区 (Central)",
-  "American League West": "ア・リーグ 西地区 (West)",
-  "National League East": "ナ・リーグ 東地区 (East)",
-  "National League Central": "ナ・リーグ 中地区 (Central)",
-  "National League West": "ナ・リーグ 西地区 (West)",
+  "American League East": "ア・リーグ 東地区",
+  "American League Central": "ア・リーグ 中地区",
+  "American League West": "ア・リーグ 西地区",
+  "National League East": "ナ・リーグ 東地区",
+  "National League Central": "ナ・リーグ 中地区",
+  "National League West": "ナ・リーグ 西地区",
 };
 
 /**

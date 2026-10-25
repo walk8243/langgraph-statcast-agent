@@ -204,7 +204,7 @@ export function TeamsClient({ initialLeagueGroups, allTeams }: TeamsClientProps)
           <Title1>MLB チーム一覧</Title1>
         </div>
         <Subtitle2 style={{ color: tokens.colorNeutralForeground2 }}>
-          アメリカン・リーグ（AL）およびナショナル・リーグ（NL）の全30球団一覧
+          アメリカン・リーグおよびナショナル・リーグの全30球団一覧
         </Subtitle2>
         <Body1 style={{ color: tokens.colorNeutralForeground3 }}>
           各球団を選択すると、所属選手一覧（ロスター）および選手詳細・AI解説レポートへアクセスできます。
@@ -221,10 +221,10 @@ export function TeamsClient({ initialLeagueGroups, allTeams }: TeamsClientProps)
             すべての球団 ({allTeams.length})
           </Tab>
           <Tab value="American League">
-            アメリカン・リーグ (AL)
+            アメリカン・リーグ
           </Tab>
           <Tab value="National League">
-            ナショナル・リーグ (NL)
+            ナショナル・リーグ
           </Tab>
         </TabList>
 
