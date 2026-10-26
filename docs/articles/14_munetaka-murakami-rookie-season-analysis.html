@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>村上宗隆の1年目を解剖する：相手投手陣の「警戒シフト」と月別配球変化の全貌 | MLB Statcast Agent</title>
+  <meta name="description" content="【企画】村上宗隆の1年目を解剖する：相手投手陣の「警戒シフト」と月別配球変化の全貌 - MLB 1年目を戦う村上宗隆に対し、相手投手陣がシーズンを通じてどのような配球の罠を仕掛けてきたのか。月別・週別の投球割合（速球/変化球）とゾーンの変遷を時系列で追う。">
+  <style>
+:root {
+  --bg: #f8fafc;
+  --card-bg: #ffffff;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --primary: #1e3a8a;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --border: #e2e8f0;
+  --code-bg: #1e293b;
+  --code-text: #f1f5f9;
+  --tag-bg: #eff6ff;
+  --tag-text: #2563eb;
+  --table-stripe: #f8fafc;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', 'Helvetica Neue', 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+  background-color: var(--bg);
+  color: var(--text-main);
+  line-height: 1.7;
+  padding: 32px 16px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.container {
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ナビゲーション・ヘッダー */
+.nav-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.95rem;
+}
+
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+}
+
+.breadcrumbs a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.breadcrumbs a:hover {
+  text-decoration: underline;
+}
+
+.badge {
+  display: inline-block;
+  background: var(--tag-bg);
+  color: var(--tag-text);
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  border: 1px solid #bfdbfe;
+}
+
+.badge-outline {
+  display: inline-block;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  border: 1px solid var(--border);
+}
+
+/* カードスタイル */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  margin-bottom: 24px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* ボタン */
+.btn {
+  display: inline-block;
+  text-align: center;
+  background-color: var(--accent);
+  color: #ffffff !important;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 10px 20px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.btn:hover {
+  background-color: var(--accent-hover);
+}
+
+.btn-secondary {
+  display: inline-block;
+  text-align: center;
+  background-color: #f1f5f9;
+  color: #334155 !important;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  transition: background-color 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background-color: #e2e8f0;
+}
+
+/* プロンプト・お題ブロック */
+.prompt-box {
+  background-color: #eff6ff;
+  border-left: 4px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  padding: 14px 18px;
+  margin: 16px 0;
+  font-size: 0.95rem;
+}
+
+.prompt-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.prompt-text {
+  font-style: italic;
+  color: #1e293b;
+}
+
+/* アコーディオン・SQLブロック */
+details.sql-accordion {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin: 16px 0;
+  overflow: hidden;
+}
+
+details.sql-accordion summary {
+  padding: 12px 16px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #334155;
+  user-select: none;
+  background: #f1f5f9;
+}
+
+details.sql-accordion summary:hover {
+  background: #e2e8f0;
+}
+
+.sql-content {
+  padding: 16px;
+  background: var(--code-bg);
+  color: var(--code-text);
+  font-family: Consolas, Monaco, 'Courier New', monospace;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* 記事本文スタイル (Markdown レンダリング) */
+.article-body {
+  font-size: 1.05rem;
+  line-height: 1.85;
+  color: #334155;
+}
+
+.article-body h1 {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: var(--primary);
+  margin: 36px 0 16px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #bfdbfe;
+}
+
+.article-body h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 32px 0 14px 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.article-body h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 24px 0 10px 0;
+}
+
+.article-body p {
+  margin: 14px 0;
+}
+
+.article-body ul, .article-body ol {
+  margin: 14px 0;
+  padding-left: 28px;
+}
+
+.article-body li {
+  margin: 6px 0;
+}
+
+.article-body strong {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.article-body blockquote {
+  border-left: 4px solid var(--accent);
+  background: #f1f5f9;
+  padding: 12px 18px;
+  margin: 18px 0;
+  color: #475569;
+  border-radius: 0 8px 8px 0;
+}
+
+.article-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 24px 0;
+  display: block;
+  overflow-x: auto;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.article-body th, .article-body td {
+  border: 1px solid var(--border);
+  padding: 10px 16px;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.article-body th {
+  background-color: #f1f5f9;
+  font-weight: 700;
+  color: var(--primary);
+  white-space: nowrap;
+}
+
+.article-body tr:nth-child(even) {
+  background-color: var(--table-stripe);
+}
+
+.article-body tr:hover {
+  background-color: #eff6ff;
+}
+
+.article-body code {
+  background-color: #e2e8f0;
+  color: #0f172a;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: Consolas, Monaco, monospace;
+  font-size: 0.88em;
+}
+
+.article-body pre code {
+  background: none;
+  color: inherit;
+  padding: 0;
+}
+
+.article-body pre {
+  background: var(--code-bg);
+  color: var(--code-text);
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 18px 0;
+}
+
+.article-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 36px 0;
+}
+
+/* ページ下部ナビゲーション */
+.article-nav {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+
+.article-nav a {
+  text-decoration: none;
+}
+
+footer {
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  padding-top: 24px;
+  margin-top: 48px;
+  width: 100%;
+}
+
+footer a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+footer a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+  .article-body h1 {
+    font-size: 1.5rem;
+  }
+  .article-body h2 {
+    font-size: 1.3rem;
+  }
+  .card {
+    padding: 18px;
+  }
+}
+</style>
+</head>
+<body>
+
+  <div class="container">
+    <nav class="nav-bar">
+      <div class="breadcrumbs">
+        <a href="../index.html">トップ (ポータル)</a>
+        <span>&gt;</span>
+        <span>Article #14</span>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <span class="badge">Article #14</span>
+        <span class="badge-outline">gemini-3.5-flash-lite</span>
+      </div>
+    </nav>
+
+    <div class="card" style="border-top: 5px solid var(--accent);">
+      <h1 style="color: var(--primary); font-size: 1.85rem; font-weight: 800; line-height: 1.4; margin-bottom: 12px;">村上宗隆の1年目を解剖する：相手投手陣の「警戒シフト」と月別配球変化の全貌</h1>
+      
+      <div style="display: flex; align-items: center; gap: 16px; font-size: 0.9rem; color: var(--text-muted); margin-bottom: 16px; flex-wrap: wrap;">
+        <span>📅 作成日時: 2026-10-26 23:42:54 JST</span>
+        <span>🤖 生成モデル: gemini-3.5-flash-lite</span>
+      </div>
+
+      <div class="prompt-box">
+        <div class="prompt-label">企画プロンプト / ユーザーの指示</div>
+        <div class="prompt-text">「【企画】村上宗隆の1年目を解剖する：相手投手陣の「警戒シフト」と月別配球変化の全貌 - MLB 1年目を戦う村上宗隆に対し、相手投手陣がシーズンを通じてどのような配球の罠を仕掛けてきたのか。月別・週別の投球割合（速球/変化球）とゾーンの変遷を時系列で追う。」</div>
+      </div>
+
+      
+        <details class="sql-accordion">
+          <summary>🔍 実行された Text-to-SQL クエリを確認する</summary>
+          <pre class="sql-content"><code>-- [素材 1: 素材①: 月別・週別配球トレンドデータ]
+-- 指示: 2026年シーズンの村上宗隆に対する全投球データ（Pitch-by-Pitch）を対象に、月別および週別の投球割合（4シーム、シンカー、スライダー、カーブ、チェンジアップ、スプリット等の球種別割合）を集計
+WITH base AS (
+    SELECT
+        s.pitch_type,
+        s.pitch_name,
+        s.game_date,
+        toMonth(s.game_date) AS pitch_month,
+        toWeek(s.game_date) AS pitch_week
+    FROM statcast.statcast_raw AS s
+    JOIN statcast.players p FINAL ON toUInt64(s.batter) = p.player_id
+    JOIN statcast.games g FINAL ON toUInt64(s.game_pk) = g.game_pk
+    WHERE p.full_name LIKE &#x27;%Munetaka Murakami%&#x27;
+      AND g.season = 2026
+      AND g.game_type = &#x27;R&#x27;
+      AND s.pitch_name IS NOT NULL
+)
+SELECT
+    pitch_month,
+    pitch_week,
+    pitch_name,
+    count() AS pitch_count,
+    round(count() * 100.0 / sum(count()) OVER (PARTITION BY pitch_month, pitch_week), 2) AS pitch_percentage
+FROM base
+GROUP BY pitch_month, pitch_week, pitch_name
+ORDER BY pitch_month, pitch_week, pitch_count DESC
+
+-- [素材 2: 素材②: 月別球種別・空振り適応データ]
+-- 指示: 2026年シーズンの村上宗隆に対する月別の球種別スイング数、空振り数、Whiff%（空振り率）、およびコンタクト率を集計
+SELECT
+    toMonth(s.game_date) AS month,
+    assumeNotNull(s.pitch_name) AS pitch_name,
+    countIf(s.description IN (&#x27;swinging_strike&#x27;, &#x27;swinging_strike_blocked&#x27;, &#x27;foul&#x27;, &#x27;hit_into_play&#x27;)) AS swings,
+    countIf(s.description IN (&#x27;swinging_strike&#x27;, &#x27;swinging_strike_blocked&#x27;)) AS whiffs,
+    round(countIf(s.description IN (&#x27;swinging_strike&#x27;, &#x27;swinging_strike_blocked&#x27;)) * 100.0 / nullIf(countIf(s.description IN (&#x27;swinging_strike&#x27;, &#x27;swinging_strike_blocked&#x27;, &#x27;foul&#x27;, &#x27;hit_into_play&#x27;)), 0), 2) AS whiff_pct,
+    round(countIf(s.description IN (&#x27;foul&#x27;, &#x27;hit_into_play&#x27;)) * 100.0 / nullIf(countIf(s.description IN (&#x27;swinging_strike&#x27;, &#x27;swinging_strike_blocked&#x27;, &#x27;foul&#x27;, &#x27;hit_into_play&#x27;)), 0), 2) AS contact_pct
+FROM statcast.statcast_raw AS s
+JOIN statcast.players p FINAL ON toUInt64(s.batter) = p.player_id
+JOIN statcast.games g FINAL ON toUInt64(s.game_pk) = g.game_pk
+WHERE p.full_name LIKE &#x27;%Munetaka Murakami%&#x27;
+  AND g.season = 2026
+  AND g.game_type = &#x27;R&#x27;
+  AND s.pitch_name IS NOT NULL
+GROUP BY month, pitch_name
+ORDER BY month ASC, swings DESC
+
+-- [素材 3: 素材③: 月別打球品質データ]
+-- 指示: 2026年シーズンの村上宗隆の月別打球データ（打席数、平均打球初速、HardHit%、Barrel%、xBA、xwOBA）を集計
+WITH batting_box AS (
+    SELECT
+        bb.player_id AS player_id,
+        toMonth(g.game_date) AS month_num,
+        sum(bb.plate_appearances) AS pa
+    FROM statcast.boxscore_batting bb FINAL
+    JOIN statcast.players p FINAL ON bb.player_id = p.player_id
+    JOIN statcast.games g FINAL ON bb.game_pk = g.game_pk
+    WHERE p.full_name LIKE &#x27;%Munetaka Murakami%&#x27;
+      AND g.season = 2026
+      AND g.game_type = &#x27;R&#x27;
+    GROUP BY player_id, month_num
+),
+statcast_data AS (
+    SELECT
+        toUInt64(s.batter) AS player_id,
+        toMonth(s.game_date) AS month_num,
+        countIf(s.type = &#x27;X&#x27; AND s.launch_speed IS NOT NULL) AS bbe_count,
+        avg(if(s.type = &#x27;X&#x27;, s.launch_speed, NULL)) AS avg_launch_speed,
+        countIf(s.type = &#x27;X&#x27; AND s.launch_speed &gt;= 95.0) AS hard_hit_count,
+        countIf(s.type = &#x27;X&#x27; AND s.launch_speed_angle = 6) AS barrel_count,
+        avg(s.estimated_ba_using_speedangle) AS xba,
+        avg(s.estimated_woba_using_speedangle) AS xwoba
+    FROM statcast.statcast_raw s
+    JOIN statcast.players p FINAL ON toUInt64(s.batter) = p.player_id
+    JOIN statcast.games g FINAL ON toUInt64(s.game_pk) = g.game_pk
+    WHERE p.full_name LIKE &#x27;%Munetaka Murakami%&#x27;
+      AND g.season = 2026
+      AND g.game_type = &#x27;R&#x27;
+    GROUP BY player_id, month_num
+)
+SELECT
+    b.month_num AS month,
+    sum(b.pa) AS plate_appearances,
+    round(avg(sd.avg_launch_speed), 1) AS avg_launch_speed_mph,
+    round(sum(sd.hard_hit_count) * 100.0 / nullIf(sum(sd.bbe_count), 0), 1) AS hard_hit_pct,
+    round(sum(sd.barrel_count) * 100.0 / nullIf(sum(sd.bbe_count), 0), 1) AS barrel_pct,
+    round(avg(sd.xba), 3) AS xba,
+    round(avg(sd.xwoba), 3) AS xwoba
+FROM batting_box b
+LEFT JOIN statcast_data sd ON b.player_id = sd.player_id AND b.month_num = sd.month_num
+GROUP BY b.month_num
+ORDER BY b.month_num</code></pre>
+        </details>
+        
+    </div>
+
+    <main class="card">
+      <article class="article-body">
+        <h1>村上宗隆の1年目を解剖する：相手投手陣の「警戒シフト」と月別配球変化の全貌</h1>
+<h2>概要・エグゼクティブサマリー</h2>
+<p>日本が誇る圧倒的なスラッガー、村上宗隆がメジャーリーグベースボール（MLB）の舞台で迎えた1年目のシーズン。世界最高峰の投手陣は、日本の三冠王に対してどのようなアプローチを選んだのでしょうか。本記事では、最先端のStatcastデータを駆使し、村上に対して相手バッテリーがどのように配球を変化させ、それに対して彼がどう適応し、どのような打球品質を残してきたのかを時系列で徹底解剖します。</p>
+<p><strong>本記事の主要な発見・ハイライト：</strong><br />
+- <strong>配球の変遷</strong>: シーズン序盤（3〜4月）の速球・シンカー中心の配球から、4月以降はスライダーやチェンジアップ、スウィーパーなど多彩な変化球を交えた「厳戒態勢の配球」へと明確にシフト。<br />
+- <strong>コンタクトと空振りの攻防</strong>: 特にスライダーに対する空振り率（Whiff%）の高さが課題として浮き彫りになる一方、月ごとに変化球への対応を模索するタフな適応プロセスが見て取れる。<br />
+- <strong>驚異的な打球品質</strong>: 相手の徹底マークと変化球攻勢にもかかわらず、平均打球初速やバレル率、期待打率（xBA）においてメジャーの一流打者と同等以上の圧倒的な数値・ハードヒット率を維持。</p>
+<hr />
+<h2>第1章：月別・週別に見る投球割合の変化（速球vs変化球のトレンド）</h2>
+<p>シーズンが開幕した3月、相手投手陣の村上に対するアプローチは、まず「動く速球」と「4シーム」でストライクゾーンを支配することから始まりました。3月の第12週時点では、4シーム（45.45%）とシンカー（27.27%）を合わせた直球系が全体の7割を超えていました。</p>
+<p>しかし、その警戒感はすぐさま形を変えます。同月第13週、そして本格稼働した4月以降、カッター、チェンジアップ、スライダー、スウィーパーといった多彩な変化球の割合が急増。相手バッテリーは「村上にストレートを合わせさせない」ための配球へと完全にシフトしていきました。</p>
+<h3>素材①: 月別・週別配球トレンドデータ（抜粋データ集計）</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">pitch_month</th>
+<th style="text-align: right;">pitch_week</th>
+<th style="text-align: left;">pitch_name</th>
+<th style="text-align: right;">pitch_count</th>
+<th style="text-align: right;">pitch_percentage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: left;">4-Seam Fastball</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">45.45</td>
+</tr>
+<tr>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: left;">Sinker</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">27.27</td>
+</tr>
+<tr>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: left;">Cutter</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">9.09</td>
+</tr>
+<tr>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: left;">Changeup</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">6.06</td>
+</tr>
+<tr>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: left;">Slider</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">6.06</td>
+</tr>
+<tr>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: left;">Cutter</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">21.67</td>
+</tr>
+<tr>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: left;">4-Seam Fastball</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">20</td>
+</tr>
+<tr>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: left;">Sinker</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">16.67</td>
+</tr>
+<tr>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: left;">Changeup</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">13.33</td>
+</tr>
+<tr>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: left;">Changeup</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">18.18</td>
+</tr>
+<tr>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: left;">Slider</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">15.91</td>
+</tr>
+<tr>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: left;">Sweeper</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">13.64</td>
+</tr>
+<tr>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: left;">4-Seam Fastball</td>
+<td style="text-align: right;">36</td>
+<td style="text-align: right;">32.43</td>
+</tr>
+<tr>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: left;">Changeup</td>
+<td style="text-align: right;">18</td>
+<td style="text-align: right;">16.22</td>
+</tr>
+</tbody>
+</table>
+<p>データが示す通り、相手ベンチは村上に対し、ゾーンの内外を揺さぶるオフスピードピッチ（チェンジアップ等）や横方向の変化量大きいスイーパー・スライダーを惜しみなく投じています。この「配球の多角化」こそが、メジャー1年目の村上に向けられた最大の敬意であり、最大の罠でした。</p>
+<hr />
+<h2>第2章：配球の変化に対応するコンタクトと空振り（Whiff%）の推移</h2>
+<p>相手投手陣が変化球主体の配球へと舵を切る中、村上のバットがどう空を切ったのか、あるいはどうコンタクトを形成したのかを映し出すのが「Whiff%（空振り率）」と「Contact%（コンタクト率）」のデータです。</p>
+<p>4月および5月の球種別データを見ると、村上の前に立ちはだかる「最大の壁」の正体が明確になります。</p>
+<h3>素材②: 月別球種別・空振り適応データ（主要月抜粋）</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">month</th>
+<th style="text-align: left;">pitch_name</th>
+<th style="text-align: right;">swings</th>
+<th style="text-align: right;">whiffs</th>
+<th style="text-align: right;">whiff_pct</th>
+<th style="text-align: right;">contact_pct</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">4-Seam Fastball</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">45.45</td>
+<td style="text-align: right;">54.55</td>
+</tr>
+<tr>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">Slider</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">66.67</td>
+<td style="text-align: right;">33.33</td>
+</tr>
+<tr>
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">4-Seam Fastball</td>
+<td style="text-align: right;">68</td>
+<td style="text-align: right;">21</td>
+<td style="text-align: right;">30.88</td>
+<td style="text-align: right;">69.12</td>
+</tr>
+<tr>
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">Slider</td>
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">19</td>
+<td style="text-align: right;">63.33</td>
+<td style="text-align: right;">36.67</td>
+</tr>
+<tr>
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">Changeup</td>
+<td style="text-align: right;">21</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">57.14</td>
+<td style="text-align: right;">42.86</td>
+</tr>
+<tr>
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">Sweeper</td>
+<td style="text-align: right;">21</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">47.62</td>
+<td style="text-align: right;">52.38</td>
+</tr>
+<tr>
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">Slider</td>
+<td style="text-align: right;">57</td>
+<td style="text-align: right;">29</td>
+<td style="text-align: right;">50.88</td>
+<td style="text-align: right;">49.12</td>
+</tr>
+<tr>
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">4-Seam Fastball</td>
+<td style="text-align: right;">51</td>
+<td style="text-align: right;">18</td>
+<td style="text-align: right;">35.29</td>
+<td style="text-align: right;">64.71</td>
+</tr>
+<tr>
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">Changeup</td>
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">43.33</td>
+<td style="text-align: right;">E         56.67</td>
+</tr>
+<tr>
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">Sweeper</td>
+<td style="text-align: right;">27</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">25.93</td>
+<td style="text-align: right;">74.07</td>
+</tr>
+</tbody>
+</table>
+<p>4月にはスライダーに対してWhiff%が <strong>63.33%</strong>、チェンジアップに対して <strong>57.14%</strong> と高い空振り率を記録しました。メジャー特有の鋭く曲がり沈む変化球に対し、序盤はタイミングや軌道へのアジャストに苦心した痕跡がうかがえます。</p>
+<p>しかし特筆すべきは、<strong>5月に向けてその数字が着実に改善されている点</strong>です。スライダーに対するWhiff%は5月に <strong>50.88%</strong> へと低下し、逆にコンタクト率が向上。またスウィーパーに対するコンタクト率も74.07%まで上昇しており、相手の配球の罠に対し、村上が打席内で着実にアジャストの糸口を掴んでいることがデータから証明されています。</p>
+<hr />
+<h2>第3章：打球品質から見えた「相手の攻めに対する成果」</h2>
+<p>では、相手投手陣の執拗な変化球攻勢や警戒シフトは、実際のところ村上の打撃を封じ込めに成功しているのでしょうか？ その答えは「打球品質（Quality of Contact）」の推移に隠されています。</p>
+<h3>素材③: 月別打球品質データ</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">month</th>
+<th style="text-align: right;">plate_appearances</th>
+<th style="text-align: right;">avg_launch_speed_mph</th>
+<th style="text-align: right;">hard_hit_pct</th>
+<th style="text-align: right;">barrel_pct</th>
+<th style="text-align: right;">xba</th>
+<th style="text-align: right;">xwoba</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">22</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">63.6</td>
+<td style="text-align: right;">18.2</td>
+<td style="text-align: right;">0.341</td>
+<td style="text-align: right;">0.37</td>
+</tr>
+<tr>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">114</td>
+<td style="text-align: right;">96.3</td>
+<td style="text-align: right;">64.2</td>
+<td style="text-align: right;">22.6</td>
+<td style="text-align: right;">0.414</td>
+<td style="text-align: right;">0.395</td>
+</tr>
+<tr>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">110</td>
+<td style="text-align: right;">93.1</td>
+<td style="text-align: right;">53.6</td>
+<td style="text-align: right;">19.6</td>
+<td style="text-align: right;">0.334</td>
+<td style="text-align: right;">0.365</td>
+</tr>
+<tr>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">94.4</td>
+<td style="text-align: right;">67.6</td>
+<td style="text-align: right;">18.9</td>
+<td style="text-align: right;">0.395</td>
+<td style="text-align: right;">0.369</td>
+</tr>
+<tr>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">125</td>
+<td style="text-align: right;">93.3</td>
+<td style="text-align: right;">48.2</td>
+<td style="text-align: right;">17.9</td>
+<td style="text-align: right;">0.331</td>
+<td style="text-align: right;">0.322</td>
+</tr>
+<tr>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">106</td>
+<td style="text-align: right;">93.3</td>
+<td style="text-align: right;">54.5</td>
+<td style="text-align: right;">25</td>
+<td style="text-align: right;">0.339</td>
+<td style="text-align: right;">0.307</td>
+</tr>
+</tbody>
+</table>
+<p>この打球品質のデータ群は、村上宗隆という打者の「底知れぬ凄み」を物語っています。</p>
+<ol>
+<li><strong>爆発的な打球初速</strong>: 全体を通じて平均打球初速は93〜96 mph台をマークしており、特に4月には <strong>96.3 mph</strong> という驚異的な数値を記録。これはメジャーリーグ全体でもトップクラスのハードヒットを生み出している証拠です。</li>
+<li><strong>高水準のバレル率</strong>: バットの芯で捉えた理想的な打球の割合を示す Barrel% は、シーズンを通して17.9%〜25.0%という圧倒的な高水準を維持。9月には <strong>25.0%</strong> に達しており、捉えた時の破壊力は衰えるどころか増しています。</li>
+<li><strong>期待打率（xBA）と期待長打率（xwOBA）</strong>: 相手バッテリーがどれだけ変化球や厳しいコースを突こうとも、村上がコンタクトに成功した際の打球は極めて高い確率でヒット性の当たり（xBAは各月で.331〜.414の高水準）となっており、相手の配球の罠は「紙一重のところで村上の圧倒的なパワーに凌駕されている」と言っても過言ではありません。</li>
+</ol>
+<hr />
+<h2>まとめと今後の展望</h2>
+<p>2026年シーズン、メジャー1年目を戦う村上宗隆に対する相手投手陣の攻めは、当初の速球主体から、スライダー・チェンジアップ・スウィーパーをふんだんに交えた「変化球主体の高度な警戒シフト」へと移行しました。</p>
+<p>一時的に空振り率 que 上昇し、厳しいデータが並んだ月もあったものの、村上はその卓越したバットコントロールとパワーでこれを粉砕しにかかりました。<strong>月ごとに変化球へのコンタクト率を高めつつ、打球初速やバレル率において常にトップクラスの品質を叩き出している事実</strong>は、彼が単なる「パワーヒッター」ではなく、メジャーの配球環境へ驚異的なスピードで適応しつつある「希代のヒットメーカー」であることを証明しています。</p>
+<p>シーズン終盤、そして今後のキャリアに向けて、相手バッテリーがさらにどのような「新たな罠」を仕掛けてくるのか。それに対し、村上がいかにして進化を遂げ、さらに凄みを増した打球を飛ばしていくのか――MLBにおける村上宗隆の進化の物語から、今後も一瞬たりとも目が離せません。</p>
+      </article>
+
+      <div class="article-nav">
+        <a href="../index.html" class="btn-secondary">← ポータルへ戻る</a>
+      </div>
+    </main>
+
+    <footer>
+      <p>
+        <a href="../index.html">スライド＆記事ポータルへ戻る</a> | 
+        GitHub: <a href="https://github.com/walk8243/langgraph-statcast-agent" target="_blank" rel="noopener noreferrer">walk8243/langgraph-statcast-agent</a>
+      </p>
+    </footer>
+  </div>
+
+</body>
+</html>

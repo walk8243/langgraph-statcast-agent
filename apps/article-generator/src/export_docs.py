@@ -20,6 +20,8 @@ JST = timezone(timedelta(hours=9))
 # 記事IDごとの英語スラグラベル（ファイル名: [id]_[english_title].html に使用）
 ARTICLE_SLUGS: Dict[int, str] = {
     11: "japanese-sluggers-comparison-2026",
+    12: "seiya-suzuki-evolution-2024-2026",
+    14: "munetaka-murakami-rookie-season-analysis",
 }
 
 # デフォルトでGitHub Pagesに公開する記事IDリスト
