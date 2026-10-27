@@ -149,6 +149,12 @@ def main():
         help="Transport type (default: stdio)",
     )
     parser.add_argument(
+        "--host",
+        type=str,
+        default="0.0.0.0",
+        help="Host to bind for SSE/HTTP transport (default: 0.0.0.0)",
+    )
+    parser.add_argument(
         "--port",
         type=int,
         default=8003,
@@ -162,14 +168,14 @@ def main():
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
         stream=sys.stderr,
     )
-    logger.info(f"Starting Statcast MCP server using {args.transport} transport...")
+    logger.info(f"Starting Statcast MCP server using {args.transport} transport on {args.host}:{args.port}...")
 
     if args.transport == "stdio":
         mcp.run(transport="stdio")
     elif args.transport == "sse":
-        mcp.run(transport="sse", port=args.port)
+        mcp.run(transport="sse", host=args.host, port=args.port)
     elif args.transport == "streamable-http":
-        mcp.run(transport="streamable-http", port=args.port)
+        mcp.run(transport="streamable-http", host=args.host, port=args.port)
 
 
 if __name__ == "__main__":

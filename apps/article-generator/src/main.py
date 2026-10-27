@@ -468,6 +468,29 @@ def main() -> None:
         action="store_true",
         help="Start the FastAPI HTTP server for article generation service",
     )
+    parser.add_argument(
+        "--mcp",
+        action="store_true",
+        help="Start the Statcast Text-to-SQL MCP server",
+    )
+    parser.add_argument(
+        "--mcp-transport",
+        choices=["stdio", "sse", "streamable-http"],
+        default="stdio",
+        help="Transport type for MCP server (default: stdio)",
+    )
+    parser.add_argument(
+        "--mcp-host",
+        type=str,
+        default="0.0.0.0",
+        help="Host to bind for MCP server in SSE mode (default: 0.0.0.0)",
+    )
+    parser.add_argument(
+        "--mcp-port",
+        type=int,
+        default=8003,
+        help="Port for MCP server in SSE mode (default: 8003)",
+    )
 
     args = parser.parse_args()
 
@@ -499,6 +522,14 @@ def main() -> None:
         port_env = int(os.environ.get("PORT", "8002"))
         host_env = os.environ.get("HOST", "0.0.0.0")
         run_server(host=host_env, port=port_env)
+        sys.exit(0)
+    elif args.mcp:
+        import sys
+        from src.mcp_server import mcp
+        if args.mcp_transport == "stdio":
+            mcp.run(transport="stdio")
+        else:
+            mcp.run(transport=args.mcp_transport, host=args.mcp_host, port=args.mcp_port)
         sys.exit(0)
     else:
         parser.print_help()

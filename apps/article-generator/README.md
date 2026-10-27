@@ -87,18 +87,42 @@ Statcast Text-to-SQL エンジンを MCP サーバーとして公開し、Claude
 | `generate_sql` | `question: str` | 自然言語から ClickHouse 用 SQL のみを生成して返却（DB実行なし） |
 | `search_statcast_schema` | `keyword: str`, `item_type?: str` | Qdrant から Statcast のテーブル定義 (DDL)、指標ドキュメント、SQL例文を検索して返却 |
 
-### サーバー起動コマンド
-```bash
-# 標準入出力 (stdio) モード（Claude Desktop / Cursor 等での連携用）
-uv run statcast-mcp --transport stdio
+### サーバー起動方法
 
+#### 1. Docker Compose（推奨: SSE / HTTP モード）
+ホスト環境に Python や依存ライブラリをインストールすることなく、コンテナ常駐型として起動できます。
+
+```bash
+# プロジェクトルートで実行
+docker compose up -d statcast-mcp
+```
+起動すると、ポート `8003` で SSE エンドポイント (`http://localhost:8003/sse`) が公開されます。
+
+#### 2. ローカル実行 (uv)
+```bash
 # SSE / HTTP モード
-uv run statcast-mcp --transport sse --port 8003
+uv run statcast-mcp --transport sse --host 0.0.0.0 --port 8003
+
+# 標準入出力 (stdio) モード
+uv run statcast-mcp --transport stdio
 ```
 
-### Claude Desktop / Cursor の設定例
-Claude Desktop (`claude_desktop_config.json`) や Cursor の MCP 設定に以下を追加します：
+### AI クライアント（Claude Desktop / Cursor）の設定例
 
+#### A. Docker Compose (SSE) で接続する場合（推奨）
+コンテナが起動していれば、クライアント側には URL を指定するだけで接続できます。
+
+```json
+{
+  "mcpServers": {
+    "statcast-text-to-sql": {
+      "url": "http://localhost:8003/sse"
+    }
+  }
+}
+```
+
+#### B. ローカル stdio 経由で接続する場合
 ```json
 {
   "mcpServers": {
@@ -108,7 +132,9 @@ Claude Desktop (`claude_desktop_config.json`) や Cursor の MCP 設定に以下
         "run",
         "--directory",
         "d:/git/langgraph-statcast-agent/apps/article-generator",
-        "statcast-mcp"
+        "statcast-mcp",
+        "--transport",
+        "stdio"
       ],
       "env": {
         "GEMINI_API_KEY": "YOUR_GEMINI_API_KEY",
