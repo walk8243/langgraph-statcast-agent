@@ -494,8 +494,8 @@ def main() -> None:
     parser.add_argument(
         "--mcp-path",
         type=str,
-        default="/sse",
-        help="Path for MCP endpoint in SSE or streamable-http mode (default: /sse)",
+        default="/mcp",
+        help="Path for MCP endpoint in streamable-http or SSE mode (default: /mcp)",
     )
 
     args = parser.parse_args()
