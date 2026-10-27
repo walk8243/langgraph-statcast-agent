@@ -267,7 +267,7 @@ services:
       context: ./apps/article-generator
       dockerfile: Dockerfile
     container_name: statcast-mcp
-    command: ["--mcp", "--mcp-transport", "sse", "--mcp-host", "0.0.0.0", "--mcp-port", "8003"]
+    command: ["--mcp", "--mcp-transport", "streamable-http", "--mcp-host", "0.0.0.0", "--mcp-port", "8003", "--mcp-path", "/sse"]
     ports:
       - "${STATCAST_MCP_PORT:-8003}:8003"
     depends_on:

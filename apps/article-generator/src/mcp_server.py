@@ -160,6 +160,12 @@ def main():
         default=8003,
         help="Port for SSE/HTTP transport (default: 8003)",
     )
+    parser.add_argument(
+        "--path",
+        type=str,
+        default="/sse",
+        help="Path for SSE or Streamable HTTP endpoint (default: /sse)",
+    )
     args = parser.parse_args()
 
     # For stdio transport, stdout is used for JSON-RPC messages, so route logs strictly to stderr
@@ -168,14 +174,14 @@ def main():
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
         stream=sys.stderr,
     )
-    logger.info(f"Starting Statcast MCP server using {args.transport} transport on {args.host}:{args.port}...")
+    logger.info(f"Starting Statcast MCP server using {args.transport} transport on {args.host}:{args.port}{args.path}...")
 
     if args.transport == "stdio":
         mcp.run(transport="stdio")
     elif args.transport == "sse":
-        mcp.run(transport="sse", host=args.host, port=args.port)
+        mcp.run(transport="sse", host=args.host, port=args.port, sse_path=args.path)
     elif args.transport == "streamable-http":
-        mcp.run(transport="streamable-http", host=args.host, port=args.port)
+        mcp.run(transport="streamable-http", host=args.host, port=args.port, streamable_http_path=args.path)
 
 
 if __name__ == "__main__":

@@ -491,6 +491,12 @@ def main() -> None:
         default=8003,
         help="Port for MCP server in SSE mode (default: 8003)",
     )
+    parser.add_argument(
+        "--mcp-path",
+        type=str,
+        default="/sse",
+        help="Path for MCP endpoint in SSE or streamable-http mode (default: /sse)",
+    )
 
     args = parser.parse_args()
 
@@ -527,8 +533,10 @@ def main() -> None:
         from src.mcp_server import mcp
         if args.mcp_transport == "stdio":
             mcp.run(transport="stdio")
-        else:
-            mcp.run(transport=args.mcp_transport, host=args.mcp_host, port=args.mcp_port)
+        elif args.mcp_transport == "sse":
+            mcp.run(transport="sse", host=args.mcp_host, port=args.mcp_port, sse_path=args.mcp_path)
+        elif args.mcp_transport == "streamable-http":
+            mcp.run(transport="streamable-http", host=args.mcp_host, port=args.mcp_port, streamable_http_path=args.mcp_path)
         sys.exit(0)
     else:
         parser.print_help()
