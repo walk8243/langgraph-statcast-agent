@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "statcast-text-to-sql": {
-      "serverUrl": "http://localhost:8003/sse"
+      "serverUrl": "http://localhost:8003/mcp"
     }
   }
 }

@@ -163,8 +163,8 @@ def main():
     parser.add_argument(
         "--path",
         type=str,
-        default="/sse",
-        help="Path for SSE or Streamable HTTP endpoint (default: /sse)",
+        default="/mcp",
+        help="Path for Streamable HTTP or SSE endpoint (default: /mcp)",
     )
     args = parser.parse_args()
 

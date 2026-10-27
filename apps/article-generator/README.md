@@ -89,34 +89,34 @@ Statcast Text-to-SQL エンジンを MCP サーバーとして公開し、Claude
 
 ### サーバー起動方法
 
-#### 1. Docker Compose（推奨: SSE / HTTP モード）
+#### 1. Docker Compose（推奨: Streamable HTTP モード）
 ホスト環境に Python や依存ライブラリをインストールすることなく、コンテナ常駐型として起動できます。
 
 ```bash
 # プロジェクトルートで実行
 docker compose up -d statcast-mcp
 ```
-起動すると、ポート `8003` で SSE エンドポイント (`http://localhost:8003/sse`) が公開されます。
+起動すると、ポート `8003` で Streamable HTTP エンドポイント (`http://localhost:8003/mcp`) が公開されます。
 
 #### 2. ローカル実行 (uv)
 ```bash
-# SSE / HTTP モード
-uv run statcast-mcp --transport sse --host 0.0.0.0 --port 8003
+# Streamable HTTP モード
+uv run statcast-mcp --transport streamable-http --host 0.0.0.0 --port 8003
 
 # 標準入出力 (stdio) モード
 uv run statcast-mcp --transport stdio
 ```
 
-### AI クライアント（Claude Desktop / Cursor）の設定例
+### AI クライアント（Antigravity / Claude Desktop / Cursor）の設定例
 
-#### A. Docker Compose (SSE) で接続する場合（推奨）
+#### A. Docker Compose (Streamable HTTP) で接続する場合（推奨）
 コンテナが起動していれば、クライアント側には URL を指定するだけで接続できます。
 
 ```json
 {
   "mcpServers": {
     "statcast-text-to-sql": {
-      "url": "http://localhost:8003/sse"
+      "serverUrl": "http://localhost:8003/mcp"
     }
   }
 }
