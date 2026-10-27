@@ -18,6 +18,8 @@ dependencies = [
     "fastapi>=0.110.0",
     "uvicorn>=0.28.0",
     "markdown>=3.11.2",
+    "mcp>=1.0.0",
+    "tabulate>=0.9.0",
 ]
 
 [project.optional-dependencies]
@@ -29,6 +31,7 @@ dev = [
 
 [project.scripts]
 article-generator = "src.main:main"
+statcast-mcp = "src.mcp_server:main"
 
 [build-system]
 requires = ["hatchling"]
