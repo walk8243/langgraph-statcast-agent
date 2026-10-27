@@ -262,6 +262,33 @@ services:
     volumes:
       - ./apps/article-generator/src:/app/src
 
+  statcast-mcp:
+    build:
+      context: ./apps/article-generator
+      dockerfile: Dockerfile
+    container_name: statcast-mcp
+    command: ["--mcp", "--mcp-transport", "sse", "--mcp-host", "0.0.0.0", "--mcp-port", "8003"]
+    ports:
+      - "${STATCAST_MCP_PORT:-8003}:8003"
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+    environment:
+      - CLICKHOUSE_HOST=clickhouse
+      - CLICKHOUSE_HTTP_PORT=8123
+      - CLICKHOUSE_USER=${CLICKHOUSE_USER:-statcast}
+      - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD:-statcast_pass}
+      - CLICKHOUSE_DB=${CLICKHOUSE_DB:-statcast}
+      - QDRANT_HOST=qdrant
+      - QDRANT_HTTP_PORT=6333
+      - QDRANT_GRPC_PORT=6334
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-3.5-flash-lite}
+    volumes:
+      - ./apps/article-generator/src:/app/src
+
   web:
     build:
       context: ./apps/web

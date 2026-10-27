@@ -99,6 +99,13 @@ langgraph-statcast-agent/
 │       │   ├── tools/         # DB 参照・集計ツール定義
 │       │   └── index.ts
 │       └── package.json
+│   └── article-generator/     # Text-to-SQL・MCPサーバー・AI記事自動生成 (Python)
+│       ├── Dockerfile
+│       ├── src/
+│       │   ├── text_to_sql.py # Text-to-SQL コアエンジン (Qdrant + Gemini + ClickHouse)
+│       │   ├── mcp_server.py  # Model Context Protocol (MCP) サーバー
+│       │   └── server.py      # 記事生成 Web サーバー
+│       └── pyproject.toml
 ├── docker/
 │   └── pubsub/                # Pub/Sub エミュレータ初期設定スクリプト
 │       └── init-topics.sh

@@ -7,6 +7,7 @@ MLB Statcast データ（ClickHouse）に対する自然言語指示からの動
 - **ベクトル知識ベース**: ClickHouse のテーブルスキーマ (DDL)、Statcast 指標解説ドキュメント、SQL サンプルを Qdrant に登録・ベクトル検索
 - **SQL 安全性検証**: SELECT / WITH 句のみを許可し、変更系（DROP/ALTER/DELETE 等）のクエリをブロック
 - **高速 OLAP 集計**: ClickHouse での大規模投球・打球データの動的集計
+- **Model Context Protocol (MCP) サーバー**: Claude Desktop, Cursor, Antigravity などの AI クライアントから直接 Statcast データ分析や SQL 生成を呼び出せるインターフェースを提供
 
 ## 使い方
 
@@ -74,5 +75,78 @@ uv run python -m src.export_docs --article-ids 10 11
 # 全記事をエクスポート
 uv run python -m src.export_docs --all
 ```
+
+## Model Context Protocol (MCP) サーバー
+
+Statcast Text-to-SQL エンジンを MCP サーバーとして公開し、Claude Desktop, Cursor, Antigravity などの AI ツールから自然言語でデータを直接検索・集計できます。
+
+### 提供するツール一覧
+| ツール名 | 引数 | 説明 |
+| :--- | :--- | :--- |
+| `query_statcast` | `question: str` | 自然言語で質問を受け取り、SQL 生成 → ClickHouse 実行 → 結果テーブル（Markdown形式）を返却 |
+| `generate_sql` | `question: str` | 自然言語から ClickHouse 用 SQL のみを生成して返却（DB実行なし） |
+| `search_statcast_schema` | `keyword: str`, `item_type?: str` | Qdrant から Statcast のテーブル定義 (DDL)、指標ドキュメント、SQL例文を検索して返却 |
+
+### サーバー起動方法
+
+#### 1. Docker Compose（推奨: SSE / HTTP モード）
+ホスト環境に Python や依存ライブラリをインストールすることなく、コンテナ常駐型として起動できます。
+
+```bash
+# プロジェクトルートで実行
+docker compose up -d statcast-mcp
+```
+起動すると、ポート `8003` で SSE エンドポイント (`http://localhost:8003/sse`) が公開されます。
+
+#### 2. ローカル実行 (uv)
+```bash
+# SSE / HTTP モード
+uv run statcast-mcp --transport sse --host 0.0.0.0 --port 8003
+
+# 標準入出力 (stdio) モード
+uv run statcast-mcp --transport stdio
+```
+
+### AI クライアント（Claude Desktop / Cursor）の設定例
+
+#### A. Docker Compose (SSE) で接続する場合（推奨）
+コンテナが起動していれば、クライアント側には URL を指定するだけで接続できます。
+
+```json
+{
+  "mcpServers": {
+    "statcast-text-to-sql": {
+      "url": "http://localhost:8003/sse"
+    }
+  }
+}
+```
+
+#### B. ローカル stdio 経由で接続する場合
+```json
+{
+  "mcpServers": {
+    "statcast-text-to-sql": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "d:/git/langgraph-statcast-agent/apps/article-generator",
+        "statcast-mcp",
+        "--transport",
+        "stdio"
+      ],
+      "env": {
+        "GEMINI_API_KEY": "YOUR_GEMINI_API_KEY",
+        "CLICKHOUSE_HOST": "localhost",
+        "CLICKHOUSE_HTTP_PORT": "8123",
+        "QDRANT_HOST": "localhost",
+        "QDRANT_HTTP_PORT": "6333"
+      }
+    }
+  }
+}
+```
+
 
 
