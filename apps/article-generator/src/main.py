@@ -524,7 +524,6 @@ def main() -> None:
         run_server(host=host_env, port=port_env)
         sys.exit(0)
     elif args.mcp:
-        import sys
         from src.mcp_server import mcp
         if args.mcp_transport == "stdio":
             mcp.run(transport="stdio")
